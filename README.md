@@ -1,1 +1,1 @@
-# Photography-Managent
+# Photography-Management
