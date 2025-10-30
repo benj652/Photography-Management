@@ -59,18 +59,6 @@ body {
 .google-btn:hover {
     background-color: #c23321;
 }
-.github-btn {
-    background-color: #333;
-}
-.github-btn:hover {
-    background-color: #24292e;
-}
-.facebook-btn {
-    background-color: #3b5998;
-}
-.facebook-btn:hover {
-    background-color: #2d4373;
-}
 .divider {
     text-align: center;
     margin: 20px 0;
