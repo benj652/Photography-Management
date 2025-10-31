@@ -2,7 +2,7 @@
 Auth views
 """
 
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, json, render_template, session, redirect, url_for
 from constants import (
     AUTH_REDIRECT_URI,
     AUTHORIZE_ROUTE,
@@ -10,7 +10,11 @@ from constants import (
     CLIENT_KWARGS_KEY,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
+    GOOGLE_USER_EMAIL,
+    GOOGLE_USER_FAMILY_NAME,
+    GOOGLE_USER_GIVEN_NAME,
     GOOGLE_USER_INFO_API,
+    GOOGLE_USER_PICTURE,
     HOME_PREFIX,
     LOGIN_PAGE_ROUTE,
     LOGIN_ROUTE,
@@ -23,6 +27,8 @@ from constants import (
 )
 from authlib.integrations.flask_client import OAuth
 import os
+
+from models import User, db
 
 oauth = OAuth()
 google = None
@@ -53,10 +59,30 @@ def login():
 
 @auth_blueprint.route(AUTHORIZE_ROUTE)
 def authorize():
+    """
+    Authorize user and fetch user info from Google
+
+    the user item is in the following format:
+    {
+        'id': '114544450990536914219',
+        'email': 'bmjaff26@colby.edu',
+        'verified_email': True,
+        'name': 'Benjamin Jaffe',
+        'given_name': 'Benjamin',
+        'family_name': 'Jaffe',
+        'picture': 'https://lh3.googleusercontent.com/a/ACg8ocJwc-igE1-1TWV732HsBwAAu8kC9JpfbLsPOGVQD1aO2Cp_9w=s96-c',
+        'hd': 'colby.edu'
+    }
+    """
     token = google.authorize_access_token()
     resp = google.get(GOOGLE_USER_INFO_API, token=token)
-    user = resp.json()
-    session[USER_KEY] = user
+    google_user = resp.json()
+
+    app_user = get_user(google_user[GOOGLE_USER_EMAIL])
+    if not app_user:
+        app_user = create_new_user(google_user)
+
+    session[USER_KEY] = json.dumps(app_user.to_dict())
     return redirect(HOME_PREFIX)
 
 
@@ -69,3 +95,26 @@ def logout():
 @auth_blueprint.route(LOGIN_PAGE_ROUTE)
 def login_page():
     return render_template(LOGIN_TEMPLATE)
+
+
+def create_new_user(user):
+    """
+        This function exists so in the future, when we add roles and stuff
+        we will add the roles here.
+    """
+    new_user = User(
+        email=user[GOOGLE_USER_EMAIL],
+        first_name=user[GOOGLE_USER_GIVEN_NAME],
+        last_name=user[GOOGLE_USER_FAMILY_NAME],
+        profile_picture=user[GOOGLE_USER_PICTURE],
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return new_user
+
+def get_user(email):
+    """
+        Checks for existing user by email, if found return said user, else return None
+    """
+    existing_user = User.query.filter_by(email=email).first()
+    return existing_user

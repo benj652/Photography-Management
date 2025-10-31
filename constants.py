@@ -32,6 +32,29 @@ CLIENT_KWARGS_KEY = "scope"
 CLIENT_KWARGS_ITEMS = "openid email profile"
 GOOGLE_USER_INFO_API = "https://www.googleapis.com/oauth2/v1/userinfo"
 
+"""
+From the user object returned from google
+    the user item is in the following format:
+    {
+        'id': '114544450990536914219', 
+        'email': 'bmjaff26@colby.edu', 
+        'verified_email': True, 
+        'name': 'Benjamin Jaffe', 
+        'given_name': 'Benjamin', 
+        'family_name': 'Jaffe', 
+        'picture': 'https://lh3.googleusercontent.com/a/ACg8ocJwc-igE1-1TWV732HsBwAAu8kC9JpfbLsPOGVQD1aO2Cp_9w=s96-c', 
+        'hd': 'colby.edu'
+    }
+"""
+GOOGLE_USER_ID = "id"
+GOOGLE_USER_EMAIL = "email"
+GOOGLE_USER_VERIFIED_EMAIL = "verified_email"
+GOOGLE_USER_NAME = "name"
+GOOGLE_USER_GIVEN_NAME = "given_name"
+GOOGLE_USER_FAMILY_NAME = "family_name"
+GOOGLE_USER_PICTURE = "picture"
+GOOGLE_USER_HD = "hd"
+
 
 # Session keys
 USER_KEY = "user"
