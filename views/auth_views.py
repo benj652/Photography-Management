@@ -103,8 +103,8 @@ def login_page():
 
 def create_new_user(user):
     """
-        This function exists so in the future, when we add roles and stuff
-        we will add the roles here.
+    This function exists so in the future, when we add roles and stuff
+    we will add the roles here.
     """
     new_user = User(
         email=user[GOOGLE_USER_EMAIL],
@@ -116,9 +116,10 @@ def create_new_user(user):
     db.session.commit()
     return new_user
 
+
 def get_user(email):
     """
-        Checks for existing user by email, if found return said user, else return None
+    Checks for existing user by email, if found return said user, else return None
     """
     existing_user = User.query.filter_by(email=email).first()
     return existing_user

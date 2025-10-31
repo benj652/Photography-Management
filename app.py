@@ -6,6 +6,7 @@ from views import auth_blueprint, home_blueprint, init_oauth
 from constants import (
     AUTH_PREFIX,
     HOME_PREFIX,
+    NOT_FOUND_ROUTE,
     SECRET_KEY,
     SQLALCHEMY_DATABASE_URI,
     SQLALCHEMY_TRACK_MODIFICATIONS,
@@ -24,12 +25,14 @@ app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
 app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICATIONS)
 
 login_manager = LoginManager()
-login_manager.init_app(app)  
-login_manager.login_view = AUTH_PREFIX  
+login_manager.init_app(app)
+login_manager.login_view = AUTH_PREFIX
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 db.init_app(app)
 
@@ -39,9 +42,11 @@ init_oauth(app)
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 
+
 @app.errorhandler(404)
 def page_not_found(e):
-    return redirect(url_for("home.home"))
+    return redirect(url_for(NOT_FOUND_ROUTE))
+
 
 if __name__ == "__main__":
     with app.app_context():

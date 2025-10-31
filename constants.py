@@ -13,6 +13,7 @@ AUTH_REDIRECT_URI = "auth.authorize"
 
 # home routes
 HOME_PREFIX = "/home"
+NOT_FOUND_ROUTE = "home.home"
 
 # Template constants
 LOGIN_TEMPLATE = "login.html"
