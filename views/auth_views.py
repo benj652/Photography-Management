@@ -4,6 +4,7 @@ Auth views
 
 from flask import Blueprint, json, render_template, session, redirect, url_for
 from constants import (
+    AUTH_PREFIX,
     AUTH_REDIRECT_URI,
     AUTHORIZE_ROUTE,
     CLIENT_KWARGS_ITEMS,
@@ -27,7 +28,7 @@ from constants import (
 )
 from authlib.integrations.flask_client import OAuth
 import os
-
+from flask_login import login_required, login_user, logout_user
 from models import User, db
 
 oauth = OAuth()
@@ -82,14 +83,17 @@ def authorize():
     if not app_user:
         app_user = create_new_user(google_user)
 
-    session[USER_KEY] = json.dumps(app_user.to_dict())
+    login_user(app_user)
+    session[USER_KEY] = app_user.id
     return redirect(HOME_PREFIX)
 
 
 @auth_blueprint.route(LOGOUT_ROUTE)
+@login_required
 def logout():
     session.pop(USER_KEY, None)
-    return redirect(USER_KEY)
+    logout_user()
+    return redirect(AUTH_PREFIX)
 
 
 @auth_blueprint.route(LOGIN_PAGE_ROUTE)

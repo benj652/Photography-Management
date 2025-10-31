@@ -1,6 +1,7 @@
 from flask import Flask
+from flask_login import LoginManager
 
-from models import db
+from models import db, User
 from views import auth_blueprint, home_blueprint, init_oauth
 from constants import (
     AUTH_PREFIX,
@@ -21,6 +22,14 @@ app = Flask(__name__)
 app.secret_key = os.getenv(SECRET_KEY)
 app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
 app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICATIONS)
+
+login_manager = LoginManager()
+login_manager.init_app(app)  
+login_manager.login_view = AUTH_PREFIX  
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 db.init_app(app)
 
