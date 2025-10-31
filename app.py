@@ -1,19 +1,28 @@
 from flask import Flask
 
-# from models import db
+from models import db
 from views import auth_blueprint, home_blueprint, init_oauth
-from constants import  AUTH_PREFIX, HOME_PREFIX, SECRET_KEY
+from constants import (
+    AUTH_PREFIX,
+    HOME_PREFIX,
+    SECRET_KEY,
+    SQLALCHEMY_DATABASE_URI,
+    SQLALCHEMY_TRACK_MODIFICATIONS,
+)
 
 import os
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv(SECRET_KEY)
+app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
+app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICATIONS)
 
-# db.init_app(app)
+db.init_app(app)
 
 init_oauth(app)
 
@@ -22,6 +31,6 @@ app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 
 if __name__ == "__main__":
-    # with app.app_context():
-    #     db.create_all()  # Create database tables
+    with app.app_context():
+        db.create_all()  # Create database tables
     app.run(debug=True)
