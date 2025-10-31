@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask_login import LoginManager
 
 from models import db, User
@@ -38,6 +38,10 @@ init_oauth(app)
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect(url_for("home.home"))
 
 if __name__ == "__main__":
     with app.app_context():
