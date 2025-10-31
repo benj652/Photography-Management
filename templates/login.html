@@ -21,9 +21,10 @@
 
     <!-- Google OAuth Button Placeholder -->
     <div class="oauth-buttons">
-        <button class="oauth-btn google-btn" type="button">
+        <button id="loginBtn" class="oauth-btn google-btn" type="button">
             <i class="fab fa-google"></i> Sign in with Google
         </button>
     </div>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </div>
 {% endblock %}

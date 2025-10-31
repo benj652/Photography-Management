@@ -1,8 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model):
+item_tags = db.Table(
+    'item_tags',
+    db.Column('item_id', db.Integer, db.ForeignKey('item.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
+)
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
@@ -10,6 +17,14 @@ class User(db.Model):
     profile_picture = db.Column(db.String(200))
     def __repr__(self):
         return f'<User {self.email}>'
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "profile_picture": self.profile_picture,
+        }
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
