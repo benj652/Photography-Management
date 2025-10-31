@@ -1,10 +1,11 @@
 # Flask route constants
 
 # Blueprint names
-USER_BLUEPRINT_NAME = "user"
+AUTH_BLUEPRINT_NAME = "auth"
 
 # User routes
-USER_PREFIX = "/user"
+AUTH_PREFIX = "/auth"
+LOGIN_PAGE_ROUTE = "/"
 LOGIN_ROUTE = "/login"
 
 # Template constants
