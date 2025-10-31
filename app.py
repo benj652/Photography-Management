@@ -1,20 +1,17 @@
-from flask import Flask, url_for, session, redirect
-from authlib.integrations.flask_client import OAuth
+from flask import Flask
 
 # from models import db
-from views import auth_blueprint, home_blueprint
-from constants import  AUTH_PREFIX
+from views import auth_blueprint, home_blueprint, init_oauth
+from constants import  AUTH_PREFIX, HOME_PREFIX, SECRET_KEY
 
 import os
 
 from dotenv import load_dotenv
-
-from views.auth_views import init_oauth
 load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = os.getenv("SECERET_KEY")
+app.secret_key = os.getenv(SECRET_KEY)
 
 # db.init_app(app)
 
@@ -22,7 +19,7 @@ init_oauth(app)
 
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
-app.register_blueprint(home_blueprint, url_prefix='/home')
+app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 
 if __name__ == "__main__":
     # with app.app_context():
