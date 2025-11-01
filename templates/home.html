@@ -29,56 +29,18 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<td>101</td>
-								<td>Canon EOS R6</td>
-								<td>2</td>
-								<td>camera, full-frame</td>
-								<td>Studio A</td>
-								<td>—</td>
-								<td>2025-10-10 14:32</td>
-								<td>benj@example.com</td>
-							</tr>
-							<tr>
-								<td>102</td>
-								<td>Sigma 35mm f/1.4</td>
-								<td>1</td>
-								<td>lens, prime</td>
-								<td>Equipment Locker</td>
-								<td>—</td>
-								<td>2025-09-21 09:05</td>
-								<td>alice@example.com</td>
-							</tr>
-							<tr>
-								<td>103</td>
-								<td>SanDisk 128GB</td>
-								<td>10</td>
-								<td>memory, sd-card</td>
-								<td>Accessories Bin</td>
-								<td>2028-01-01</td>
-								<td>2025-10-01 11:11</td>
-								<td>chris@example.com</td>
-							</tr>
-							<tr>
-								<td>104</td>
-								<td>Light Stand</td>
-								<td>5</td>
-								<td>lighting, support</td>
-								<td>Studio B</td>
-								<td>—</td>
-								<td>2025-08-12 16:40</td>
-								<td>dana@example.com</td>
-							</tr>
-							<tr>
-								<td>105</td>
-								<td>Tripod</td>
-								<td>3</td>
-								<td>support, travel</td>
-								<td>Field Kit</td>
-								<td>—</td>
-								<td>2025-07-30 10:00</td>
-								<td>erin@example.com</td>
-							</tr>
+							{% for it in items %}
+								<tr>
+									<td>{{ it.id }}</td>
+									<td>{{ it.name }}</td>
+									<td>{{ it.quantity }}</td>
+									<td>{{ it.tags }}</td>
+									<td>{{ it.location }}</td>
+									<td>{{ it.expires }}</td>
+									<td>{{ it.last_updated }}</td>
+									<td>{{ it.updated_by }}</td>
+								</tr>
+							{% endfor %}
 						</tbody>
 					</table>
 				</div>
