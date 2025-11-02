@@ -121,13 +121,15 @@ def create_item():
 		else:
 			tag_names = []
 
+		# Fetch all existing tags in a single query
+		existing_tags = {t.name: t for t in Tag.query.filter(Tag.name.in_(tag_names)).all()}
 		for tn in tag_names:
-			tag = Tag.query.filter_by(name=tn).first()
+			tag = existing_tags.get(tn)
 			if not tag:
 				tag = Tag(name=tn)
 				db.session.add(tag)
+				existing_tags[tn] = tag
 			item.tags.append(tag)
-
 	db.session.add(item)
 	db.session.commit()
 
