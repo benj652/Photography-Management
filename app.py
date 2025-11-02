@@ -2,10 +2,11 @@ from flask import Flask, redirect, url_for
 from flask_login import LoginManager
 
 from models import db, User
-from views import auth_blueprint, home_blueprint, init_oauth
+from views import auth_blueprint, home_blueprint, item_blueprint, init_oauth
 from constants import (
     AUTH_PREFIX,
     HOME_PREFIX,
+    ITEM_PREFIX,
     NOT_FOUND_ROUTE,
     SECRET_KEY,
     SQLALCHEMY_DATABASE_URI,
@@ -41,6 +42,7 @@ init_oauth(app)
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
+app.register_blueprint(item_blueprint, url_prefix=ITEM_PREFIX)
 
 
 @app.errorhandler(404)

@@ -13,5 +13,25 @@
       {% block content %}{% endblock %}
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Runtime fallback: if bootstrap isn't available (CDN blocked), attempt to load an alternate CDN copy -->
+    <script>
+      (function(){
+        try {
+          if (typeof bootstrap === 'undefined') {
+            console.warn('Bootstrap JS not detected — attempting fallback CDN load');
+            var s = document.createElement('script');
+            s.src = 'https://unpkg.com/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js';
+            s.onload = function(){ console.log('Bootstrap loaded via fallback (unpkg)'); };
+            s.onerror = function(){
+              console.warn('Fallback CDN failed — no bootstrap JS available');
+            };
+            document.body.appendChild(s);
+          }
+        } catch (err) {
+          console.error('Error while attempting bootstrap fallback:', err);
+        }
+      })();
+    </script>
   </body>
 </html>

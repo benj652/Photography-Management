@@ -15,6 +15,9 @@ AUTH_REDIRECT_URI = "auth.authorize"
 HOME_PREFIX = "/home"
 NOT_FOUND_ROUTE = "home.home"
 
+# item routes
+ITEM_PREFIX = "/items"
+
 # Template constants
 LOGIN_TEMPLATE = "login.html"
 HOME_TEMPLATE = "home.html"
