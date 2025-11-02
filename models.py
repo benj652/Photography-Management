@@ -38,6 +38,12 @@ class Item(db.Model):
     def __repr__(self):
         return f'<Item {self.name}>'
 
+    # relationship to Location so templates and views can use `item.location`
+    location = db.relationship('Location', backref='items', foreign_keys=[location_id])
+
+    # optional convenience relationship to the User who last updated the item
+    updated_by_user = db.relationship('User', foreign_keys=[updated_by], backref='updated_items', uselist=False)
+
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
