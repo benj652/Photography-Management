@@ -47,5 +47,5 @@ def home():
             # If anything goes wrong querying the DB, fall back to mock data
             items_list = []
 
-    print(f"Current user: {current_user}")
+    current_app.logger.debug(f'Current user: {current_user}')
     return render_template('home.html', items=items_list)
