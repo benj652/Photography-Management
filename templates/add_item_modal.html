@@ -1,0 +1,61 @@
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('item.create_item') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input id="name" name="name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input id="quantity" name="quantity" type="number" min="0" class="form-control" value="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags (comma-separated)</label>
+                        <input id="tags" name="tags" class="form-control" placeholder="camera, lens" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="location_id" class="form-label">Location ID (optional)</label>
+                        <input id="location_id" name="location_id" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="expires" class="form-label">Expires</label>
+                        <input id="expires" name="expires" type="date" class="form-control" />
+                    </div>
+                    {# updated_by is set server-side from the logged-in user; do not allow clients to supply it #}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('openAddItemBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function (e) {
+        try {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var modalEl = document.getElementById('addItemModal');
+                if (modalEl) {
+                    var m = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    m.show();
+                }
+            } else {
+                console.warn('Bootstrap JS not found; modal may not work.');
+            }
+        } catch (err) {
+            console.error('Error showing modal:', err);
+        }
+    });
+});
+</script>
