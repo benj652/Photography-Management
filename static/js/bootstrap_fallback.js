@@ -1,0 +1,14 @@
+try {
+    if (typeof bootstrap === 'undefined') {
+      console.warn('Bootstrap JS not detected — attempting fallback CDN load');
+      var s = document.createElement('script');
+      s.src = 'https://unpkg.com/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js';
+      s.onload = function(){ console.log('Bootstrap loaded via fallback (unpkg)'); };
+      s.onerror = function(){
+        console.warn('Fallback CDN failed — no bootstrap JS available');
+      };
+      document.body.appendChild(s);
+    }
+  } catch (err) {
+    console.error('Error while attempting bootstrap fallback:', err);
+}
