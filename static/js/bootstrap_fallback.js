@@ -1,6 +1,4 @@
-// Runtime fallback: if Bootstrap isn't available via CDN, load an alternate CDN copy.
-(function(){
-  try {
+try {
     if (typeof bootstrap === 'undefined') {
       console.warn('Bootstrap JS not detected — attempting fallback CDN load');
       var s = document.createElement('script');
@@ -13,5 +11,4 @@
     }
   } catch (err) {
     console.error('Error while attempting bootstrap fallback:', err);
-  }
-})();
+}
