@@ -57,6 +57,33 @@ TAG_CREATE_ROUTE = "/create"
 TAG_UPDATE_ROUTE = "/update/<int:tag_id>"
 TAG_DELETE_ROUTE = "/delete/<int:tag_id>"
 
+# location fields
+LOCATION_PREFIX = "/location"
+LOCATION_ID = "id"
+LOCATION_NAME = "name"
+LOCATION_DEFAULT_NAME = "locations"
+
+"""
+=========================================
+ Location Routes (prefixed with "/location")
+=========================================
+
+GET     /location/all                   → Retrieve all locations
+GET     /location/one/<int:location_id> → Retrieve a specific location by ID
+POST    /location/create                → Create a new location
+PUT     /location/update/<int:location_id> → Update an existing location
+DELETE  /location/delete/<int:location_id> → Delete a location by ID
+"""
+
+
+LOCATION_ALL_ROUTE = "/all"
+LOCATION_GET_ONE_ROUTE = "/one/<int:location_id>"
+LOCATION_CREATE_ROUTE = "/create"
+LOCATION_UPDATE_ROUTE = "/update/<int:location_id>"
+LOCATION_DELETE_ROUTE = "/delete/<int:location_id>"
+
+LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
+
 # Template constants
 LOGIN_TEMPLATE = "login.html"
 HOME_TEMPLATE = "home.html"
