@@ -58,7 +58,7 @@ TAG_UPDATE_ROUTE = "/update/<int:tag_id>"
 TAG_DELETE_ROUTE = "/delete/<int:tag_id>"
 
 # Template constants
-LOGIN_TEMPLATE = "login.html"
+LOGIN_TEMPLATE = "landing.html"
 HOME_TEMPLATE = "home.html"
 
 # environment variable names
