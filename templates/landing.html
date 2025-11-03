@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+{% extends "index.html" %} {% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/landing.css') }}"
+/>
+{% endblock %} {% block content %}
+<body class="landing-page">
+  <div class="landing-container">
+    <div class="landing-left-section">
+      <div class="landing-logo">
+        <span class="logo-icon">📸</span>
+        <span class="logo-text">PhotoInventory</span>
+      </div>
+
+      <div class="landing-content">
+        <h1>Photography Equipment Management</h1>
+        <p class="landing-description">
+          Track and organize your photography equipment with ease. Keep detailed
+          records of your inventory, monitor quantities, manage locations, and
+          stay organized across your entire collection.
+        </p>
+      </div>
+
+      <div class="login-container">
+        <div class="login-header">
+          <img
+            src="{{ url_for('static', filename='images/colbyseal.svg') }}"
+            alt="Colby Seal"
+            class="colby-seal"
+          />
+          <h2>Get Started Now</h2>
+          <p class="login-subtitle">Let's get you signed in securely.</p>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'danger' if category == 'error' else category }}"
+        >
+          {{ message }}
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <!-- Google OAuth Button -->
+        <div class="oauth-buttons">
+          <button id="loginBtn" class="oauth-btn google-btn" type="button">
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+              class="google-logo"
+            />
+            Sign in with Google
+          </button>
+        </div>
+        <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+      </div>
+    </div>
+
+    <div class="landing-right-section">
+      <div class="landing-image-grid">
+        <div class="landing-image-card">
+          <img
+            src="{{ url_for('static', filename='images/andrew-konstantinov-unsplash.png') }}"
+            alt="Photography Equipment"
+          />
+        </div>
+        <div class="landing-image-card">
+          <img
+            src="{{ url_for('static', filename='images/dollar-gill-unsplash.png') }}"
+            alt="Photography Equipment"
+          />
+        </div>
+        <div class="landing-image-card">
+          <img
+            src="{{ url_for('static', filename='images/sebastian-pichler-unsplash.png') }}"
+            alt="Photography Equipment"
+          />
+        </div>
+        <div class="landing-image-card">
+          <img
+            src="{{ url_for('static', filename='images/simon-hughes-unsplash.png') }}"
+            alt="Photography Equipment"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %}
