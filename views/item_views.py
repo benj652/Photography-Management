@@ -13,6 +13,7 @@ from flask_login import current_user
 from models import db, Item, Tag, Location, User
 from sqlalchemy.orm import joinedload
 from datetime import datetime
+from flask_login import login_required
 
 
 item_blueprint = Blueprint('item', __name__)
@@ -48,6 +49,7 @@ def item_to_dict(item: Item) -> dict:
 
 
 @item_blueprint.route('/', methods=['GET'])
+@login_required
 def get_items():
 	"""Return JSON array of items."""
 	if 'sqlalchemy' not in current_app.extensions:
@@ -58,6 +60,7 @@ def get_items():
 
 
 @item_blueprint.route('/', methods=['POST'])
+@login_required
 def create_item():
 	"""Create an Item from JSON or form data. Returns the created item as JSON.
 
@@ -93,8 +96,6 @@ def create_item():
 		except Exception:
 			location = None
 
-	# Use the logged-in user's id for the updater when available.
-	# Do NOT accept an updated_by value from unauthenticated clients.
 	updated_by = None
 	if getattr(current_user, 'is_authenticated', False):
 		try:
@@ -107,7 +108,7 @@ def create_item():
 		quantity=quantity,
 		location_id=location.id if location else None,
 		expires=expires,
-		last_updated=datetime.utcnow(),
+		last_updated=datetime.now(),
 		updated_by=updated_by,
 	)
 
