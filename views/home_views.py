@@ -1,48 +1,43 @@
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, request
 from flask_login import login_required, current_user
-from models import Item, User
+from models import db, Item, User, Tag, Location, item_tags
 from sqlalchemy.orm import joinedload
+from constants import (
+    HOME_TEMPLATE,
+    FILTER_NAME,
+    FILTER_TAGS,
+    FILTER_LOCATION,
+)
 
 
-home_blueprint = Blueprint('home', __name__)
+home_blueprint = Blueprint('home', __name__, template_folder='../templates')
 
 
-@home_blueprint.route('/')
+@home_blueprint.route('/', methods=['GET'])
 @login_required
 def home():
-    """Render the home page.
+    # Start with the base query 
+    query = Item.query.options(
+        joinedload(Item.tags),
+        joinedload(Item.location)
+    )
 
-    If SQLAlchemy is configured, query real items from the DB and convert them
-    into the simple dict shape expected by the template. Otherwise fall back
-    to the static mock data already used during development.
-    """
-    items_list = []
+    # ---------- FILTERS ----------
+    name_filter = request.args.get(FILTER_NAME)
+    if name_filter:
+        query = query.filter(Item.name.ilike(f"%{name_filter}%"))
 
-    q = Item.query.options(joinedload(Item.tags), 
-                            joinedload(Item.location),
-                            joinedload(Item.updated_by_user))
-    items = q.all()
-    
-    for it in items:
-        tags = ', '.join([t.name for t in getattr(it, 'tags', [])])
-        loc = getattr(it, 'location', None)
-        location_name = loc.name if loc else None
-        updater = None
-        if it.updated_by_user:
-            updater = it.updated_by_user.email
-        elif it.updated_by:
-            updater = str(it.updated_by)
+    tags_filter = request.args.get(FILTER_TAGS)
+    if tags_filter:
+        tag_names = [t.strip() for t in tags_filter.split(',') if t.strip()]
+        if tag_names:
+            query = query.join(item_tags).join(Tag).filter(Tag.name.in_(tag_names))
 
-        items_list.append({
-            'id': it.id,
-            'name': it.name,
-            'quantity': it.quantity,
-            'tags': tags,
-            'location': location_name,
-            'expires': it.expires.isoformat() if it.expires else '—',
-            'last_updated': it.last_updated.strftime('%Y-%m-%d %H:%M') if it.last_updated else '—',
-            'updated_by': updater,
-        })
+    location_filter = request.args.get(FILTER_LOCATION)
+    if location_filter:
+        query = query.join(Location).filter(Location.name.ilike(f"%{location_filter}%"))
 
-    current_app.logger.debug(f'Current user: {current_user}')
-    return render_template('home.html', items=items_list)
+    # ---------- EXECUTE ----------
+    items = query.order_by(Item.last_updated.desc()).all()
+
+    return render_template(HOME_TEMPLATE, items=items)
