@@ -7,6 +7,8 @@ from constants import (
     ITEM_FIELD_LOCATION_ID,
     ITEM_FIELD_EXPIRES,
     ITEM_FIELD_UPDATED_BY,
+    TAG_ID,
+    TAG_NAME,
 )
 
 db = SQLAlchemy()
@@ -99,3 +101,8 @@ class Tag(db.Model):
     name = db.Column(db.String(200), nullable=False)
     def __repr__(self):
         return f'<Tag {self.name}>'
+    def to_dict(self):
+        return {
+            TAG_ID: self.id,
+            TAG_NAME: self.name,
+        }
