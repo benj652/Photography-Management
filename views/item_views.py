@@ -13,6 +13,14 @@ from flask_login import current_user
 from models import db, Item, Tag, Location, User
 from sqlalchemy.orm import joinedload
 from datetime import datetime
+from constants import (
+	ITEM_FIELD_NAME,
+	ITEM_FIELD_QUANTITY,
+	ITEM_FIELD_TAGS,
+	ITEM_FIELD_LOCATION_ID,
+	ITEM_FIELD_EXPIRES,
+	ITEM_FIELD_UPDATED_BY,
+)
 from flask_login import login_required
 
 
@@ -20,32 +28,36 @@ item_blueprint = Blueprint('item', __name__)
 
 
 def item_to_dict(item: Item) -> dict:
-	# convert Item to serializable dict, resolving tags and location
-	tags = [t.name for t in item.tags] if getattr(item, 'tags', None) else []
+	"""Use the model's to_dict (which uses constants) as the canonical JSON shape."""
 	try:
-		location_name = item.location.name if getattr(item, 'location', None) else None
+		return item.to_dict()
 	except Exception:
-		# relationship may not be configured; try to load by id
+		# fallback to a simple dict if something unexpected is present
+		tags = [t.name for t in item.tags] if getattr(item, 'tags', None) else []
 		location_name = None
-	updater_email = None
-	try:
-		if item.updated_by:
-			user = User.query.get(item.updated_by)
-			if user:
-				updater_email = user.email
-	except Exception:
+		try:
+			location_name = item.location.name if getattr(item, 'location', None) else None
+		except Exception:
+			location_name = None
 		updater_email = None
+		try:
+			if item.updated_by:
+				user = User.query.get(item.updated_by)
+				if user:
+					updater_email = user.email
+		except Exception:
+			updater_email = None
 
-	return {
-		'id': item.id,
-		'name': item.name,
-		'quantity': item.quantity,
-		'tags': tags,
-		'location': location_name,
-		'expires': item.expires.isoformat() if item.expires else None,
-		'last_updated': item.last_updated.isoformat() if item.last_updated else None,
-		'updated_by': updater_email or item.updated_by,
-	}
+		return {
+			'id': item.id,
+			ITEM_FIELD_NAME: item.name,
+			ITEM_FIELD_QUANTITY: item.quantity,
+			ITEM_FIELD_TAGS: tags,
+			'location': location_name,
+			ITEM_FIELD_EXPIRES: item.expires.isoformat() if item.expires else None,
+			'last_updated': item.last_updated.isoformat() if item.last_updated else None,
+			ITEM_FIELD_UPDATED_BY: updater_email or item.updated_by,
+		}
 
 
 @item_blueprint.route('/', methods=['GET'])
@@ -71,17 +83,17 @@ def create_item():
 		return jsonify({'error': 'database not configured'}), 503
 
 	data = request.get_json(silent=True) or request.form
-	name = data.get('name')
+	name = data.get(ITEM_FIELD_NAME)
 	if not name:
 		return jsonify({'error': 'name is required'}), 400
 
 	try:
-		quantity = int(data.get('quantity') or 1)
+		quantity = int(data.get(ITEM_FIELD_QUANTITY) or 1)
 	except Exception:
 		quantity = 1
 
 	expires = None
-	expires_raw = data.get('expires')
+	expires_raw = data.get(ITEM_FIELD_EXPIRES)
 	if expires_raw:
 		try:
 			expires = datetime.strptime(expires_raw, '%Y-%m-%d').date()
@@ -89,7 +101,7 @@ def create_item():
 			expires = None
 
 	location = None
-	location_id = data.get('location_id') or data.get('location')
+	location_id = data.get(ITEM_FIELD_LOCATION_ID) or data.get('location')
 	if location_id:
 		try:
 			location = Location.query.get(int(location_id))
@@ -113,7 +125,7 @@ def create_item():
 	)
 
 	# tags handling
-	tags_raw = data.get('tags')
+	tags_raw = data.get(ITEM_FIELD_TAGS)
 	if tags_raw:
 		if isinstance(tags_raw, str):
 			tag_names = [t.strip() for t in tags_raw.split(',') if t.strip()]

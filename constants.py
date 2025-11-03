@@ -18,6 +18,14 @@ NOT_FOUND_ROUTE = "home.home"
 # item routes
 ITEM_PREFIX = "/items"
 
+# item fields
+ITEM_FIELD_NAME = "name"
+ITEM_FIELD_QUANTITY = "quantity"
+ITEM_FIELD_TAGS = "tags"
+ITEM_FIELD_LOCATION_ID = "location_id"
+ITEM_FIELD_EXPIRES = "expires"
+ITEM_FIELD_UPDATED_BY = "updated_by"
+
 # Template constants
 LOGIN_TEMPLATE = "login.html"
 HOME_TEMPLATE = "home.html"
