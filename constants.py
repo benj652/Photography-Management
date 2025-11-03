@@ -1,5 +1,11 @@
 # Flask route constants
 
+# CRUD operation routes
+GET = "GET"
+POST = "POST"
+PUT = "PUT"
+DELETE = "DELETE"
+
 # Blueprint names
 AUTH_BLUEPRINT_NAME = "auth"
 
@@ -25,6 +31,31 @@ ITEM_FIELD_TAGS = "tags"
 ITEM_FIELD_LOCATION_ID = "location_id"
 ITEM_FIELD_EXPIRES = "expires"
 ITEM_FIELD_UPDATED_BY = "updated_by"
+
+# tags fields
+TAG_PREFIX = "/tags"
+TAG_ID = "id"
+TAG_NAME = "name"
+TAG_DEFAULT_NAME = "tags"
+TAG_DELETE_SUCCESS_MESSAGE = "Tag deleted successfully"
+
+"""
+====================================
+ Tag Routes (prefixed with "/tag")
+====================================
+
+GET     /tag/all                → Retrieve all tags
+GET     /tag/one/<int:tag_id>   → Retrieve a specific tag by ID
+POST    /tag/create             → Create a new tag
+PUT     /tag/update/<int:tag_id>→ Update an existing tag
+DELETE  /tag/delete/<int:tag_id>→ Delete a tag by ID
+"""
+
+TAG_ALL_ROUTE = "/all"
+TAG_GET_ONE_ROUTE = "/one/<int:tag_id>"
+TAG_CREATE_ROUTE = "/create"
+TAG_UPDATE_ROUTE = "/update/<int:tag_id>"
+TAG_DELETE_ROUTE = "/delete/<int:tag_id>"
 
 # Template constants
 LOGIN_TEMPLATE = "login.html"
@@ -70,3 +101,6 @@ GOOGLE_USER_HD = "hd"
 
 # Session keys
 USER_KEY = "user"
+
+# JSON response keys
+MESSAGE_KEY = "message"
