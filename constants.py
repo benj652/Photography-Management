@@ -38,6 +38,7 @@ TAG_ID = "id"
 TAG_NAME = "name"
 TAG_DEFAULT_NAME = "tags"
 TAG_DELETE_SUCCESS_MESSAGE = "Tag deleted successfully"
+TAG_NAME_REQUIRED_MESSAGE = "Tag name is required."
 
 """
 ====================================
@@ -83,6 +84,8 @@ LOCATION_UPDATE_ROUTE = "/update/<int:location_id>"
 LOCATION_DELETE_ROUTE = "/delete/<int:location_id>"
 
 LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
+LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
+
 
 # Template constants
 LOGIN_TEMPLATE = "landing.html"
@@ -131,3 +134,8 @@ USER_KEY = "user"
 
 # JSON response keys
 MESSAGE_KEY = "message"
+
+# Status messages
+ERROR_NOT_FOUND = 404
+ERROR_NOT_AUTHORIZED = 403
+ERROR_BAD_REQUEST = 400

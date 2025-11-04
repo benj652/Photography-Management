@@ -12,6 +12,7 @@ DELETE  /location/delete/<int:location_id> → Delete a location by ID
 
 from constants import (
     DELETE,
+    ERROR_BAD_REQUEST,
     GET,
     LOCATION_ALL_ROUTE,
     LOCATION_CREATE_ROUTE,
@@ -20,6 +21,7 @@ from constants import (
     LOCATION_DELETE_SUCCESS_MESSAGE,
     LOCATION_GET_ONE_ROUTE,
     LOCATION_NAME,
+    LOCATION_NAME_NEEDED_MESSAGE,
     MESSAGE_KEY,
     POST,
     PUT,
@@ -50,6 +52,8 @@ def get_location(location_id):
 def create_location():
     data = request.get_json()
     name = data.get(LOCATION_NAME)
+    if not name:
+        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST 
     new_location = Location(name=name)
     db.session.add(new_location)
     db.session.commit()
@@ -60,8 +64,11 @@ def create_location():
 @login_required
 def update_location(location_id):
     data = request.get_json()
+    name = data.get(LOCATION_NAME)
+    if not name:
+        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST 
     location = Location.query.get_or_404(location_id)
-    location.name = data.get(LOCATION_NAME)
+    location.name = name
     db.session.commit()
     return location.to_dict()
 
