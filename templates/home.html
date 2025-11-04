@@ -3,7 +3,7 @@
 {% extends "index.html" %}
 
 {% block content %}
-<div class="container py-4">
+<div class="coinntainer py-4">
 	<div class="d-flex align-items-center mb-4">
 		<div>
 			<h1 class="display-6">Photography Inventory</h1>
@@ -31,29 +31,15 @@
 								<th scope="col">Updated by</th>
 							</tr>
 						</thead>
-						<tbody>
-							{% for it in items %}
-								<tr>
-									<td>{{ it.id }}</td>
-									<td>{{ it.name }}</td>
-									<td>{{ it.quantity }}</td>
-									<td>{{ it.tags }}</td>
-									<td>{{ it.location }}</td>
-									<td>{{ it.expires }}</td>
-									<td>{{ it.last_updated }}</td>
-									<td>{{ it.updated_by }}</td>
-								</tr>
-							{% endfor %}
-						</tbody>
+							<tbody id="items-table-body">
+							</tbody>
 					</table>
 				</div>
 			</div>
 		</div>
-
 	</div>
-
 </div>
 
 {% include 'add_item_modal.html' %}
-
+<script src="/static/js/home.js"></script>
 {% endblock %}

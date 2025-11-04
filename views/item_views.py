@@ -1,155 +1,190 @@
-"""Item views: provide API endpoints to list and create items.
+`"""
+=========================================
+ Item Routes (prefixed with "/item")
+=========================================
 
-This blueprint exposes:
-- GET /items/      -> list items (JSON)
-- POST /items/     -> create an item (JSON or form)
-
-When the app is running without a database configured, the endpoints
-will return an empty list or redirect appropriately to avoid 500s.
+GET     /items/all                   → Retrieve all items
+GET     /items/one/<int:item_id>     → Retrieve a specific item by ID
+POST    /items/create                → Create a new item
+PUT     /items/update/<int:item_id>  → Update an existing item
+DELETE  /items/delete/<int:item_id>  → Delete an item by ID
 """
 
-from flask import Blueprint, jsonify, request, current_app, redirect, url_for
-from flask_login import current_user
-from models import db, Item, Tag, Location, User
+from flask import Blueprint, jsonify, request
+from flask_login import login_required, current_user
+from models import db, Item, Tag, Location
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 from constants import (
-	ITEM_FIELD_NAME,
-	ITEM_FIELD_QUANTITY,
-	ITEM_FIELD_TAGS,
-	ITEM_FIELD_LOCATION_ID,
-	ITEM_FIELD_EXPIRES,
-	ITEM_FIELD_UPDATED_BY,
+    DELETE,
+    ERROR_BAD_REQUEST,
+    GET,
+    ITEM_PREFIX,
+    ITEM_ALL_ROUTE,
+    ITEM_CREATE_ROUTE,
+    ITEM_DELETE_ROUTE,
+    ITEM_FIELD_EXPIRES,
+    ITEM_FIELD_LOCATION_ID,
+    ITEM_FIELD_NAME,
+    ITEM_FIELD_QUANTITY,
+    ITEM_FIELD_TAGS,
+    ITEM_FIELD_UPDATED_BY,
+    ITEM_GET_ONE_ROUTE,
+    ITEM_NAME_NEEDED_MESSAGE,
+    ITEM_UPDATE_ROUTE,
+    MESSAGE_KEY,
+    POST,
+    PUT,
 )
-from flask_login import login_required
+
+item_blueprint = Blueprint(ITEM_PREFIX, __name__)
 
 
-item_blueprint = Blueprint('item', __name__)
-
-
-def item_to_dict(item: Item) -> dict:
-	"""Use the model's to_dict (which uses constants) as the canonical JSON shape."""
-	try:
-		return item.to_dict()
-	except Exception:
-		# fallback to a simple dict if something unexpected is present
-		tags = [t.name for t in item.tags] if getattr(item, 'tags', None) else []
-		location_name = None
-		try:
-			location_name = item.location.name if getattr(item, 'location', None) else None
-		except Exception:
-			location_name = None
-		updater_email = None
-		try:
-			if item.updated_by:
-				user = User.query.get(item.updated_by)
-				if user:
-					updater_email = user.email
-		except Exception:
-			updater_email = None
-
-		return {
-			'id': item.id,
-			ITEM_FIELD_NAME: item.name,
-			ITEM_FIELD_QUANTITY: item.quantity,
-			ITEM_FIELD_TAGS: tags,
-			'location': location_name,
-			ITEM_FIELD_EXPIRES: item.expires.isoformat() if item.expires else None,
-			'last_updated': item.last_updated.isoformat() if item.last_updated else None,
-			ITEM_FIELD_UPDATED_BY: updater_email or item.updated_by,
-		}
-
-
-@item_blueprint.route('/', methods=['GET'])
+@item_blueprint.route(ITEM_ALL_ROUTE, methods=[GET])
 @login_required
-def get_items():
-	"""Return JSON array of items."""
-	if 'sqlalchemy' not in current_app.extensions:
-		return jsonify([])
+def get_all_items():
+    items = Item.query.options(
+        joinedload(Item.tags),
+        joinedload(Item.location),
+        joinedload(Item.updated_by_user),
+    ).all()
 
-	items = Item.query.options(joinedload(Item.tags)).all()
-	return jsonify([item_to_dict(i) for i in items])
+    items_list = [
+        {
+            ITEM_FIELD_NAME: item.name,
+            ITEM_FIELD_QUANTITY: item.quantity,
+            ITEM_FIELD_TAGS: [tag.name for tag in item.tags],
+            ITEM_FIELD_LOCATION_ID: item.location.name if item.location else None,
+            ITEM_FIELD_EXPIRES: item.expires.isoformat() if item.expires else None,
+            ITEM_FIELD_UPDATED_BY: (
+                item.updated_by_user.email if item.updated_by_user else None
+            ),
+        }
+        for item in items
+    ]
+
+    return jsonify(items_list)
 
 
-@item_blueprint.route('/', methods=['POST'])
+@item_blueprint.route(ITEM_GET_ONE_ROUTE, methods=[GET])
+@login_required
+def get_item(item_id):
+    item = Item.query.options(
+        joinedload(Item.tags),
+        joinedload(Item.location),
+        joinedload(Item.updated_by_user),
+    ).get_or_404(item_id)
+
+    item_dict = {
+        ITEM_FIELD_NAME: item.name,
+        ITEM_FIELD_QUANTITY: item.quantity,
+        ITEM_FIELD_TAGS: [tag.name for tag in item.tags],
+        ITEM_FIELD_LOCATION_ID: item.location.name if item.location else None,
+        ITEM_FIELD_EXPIRES: item.expires.isoformat() if item.expires else None,
+        ITEM_FIELD_UPDATED_BY: (
+            item.updated_by_user.email if item.updated_by_user else None
+        ),
+    }
+
+    return jsonify(item_dict)
+
+
+@item_blueprint.route(ITEM_CREATE_ROUTE, methods=[POST])
 @login_required
 def create_item():
-	"""Create an Item from JSON or form data. Returns the created item as JSON.
+    data = request.get_json()
+    name = data.get(ITEM_FIELD_NAME)
+    quantity = data.get(ITEM_FIELD_QUANTITY, 1)
+    tag_names = data.get(ITEM_FIELD_TAGS, [])
+    location_id = data.get(ITEM_FIELD_LOCATION_ID)
+    expires_str = data.get(ITEM_FIELD_EXPIRES)
 
-	Expected fields (JSON or form): name (required), quantity, tags (comma-separated),
-	location_id, expires (YYYY-MM-DD), updated_by (user id)
-	"""
-	if 'sqlalchemy' not in current_app.extensions:
-		return jsonify({'error': 'database not configured'}), 503
+    if not name:
+        return {MESSAGE_KEY: ITEM_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST
 
-	data = request.get_json(silent=True) or request.form
-	name = data.get(ITEM_FIELD_NAME)
-	if not name:
-		return jsonify({'error': 'name is required'}), 400
+    expires = None
+    if expires_str:
+        try:
+            expires = datetime.fromisoformat(expires_str)
+        except ValueError:
+            return "Invalid expiration date format", 400
 
-	try:
-		quantity = int(data.get(ITEM_FIELD_QUANTITY) or 1)
-	except Exception:
-		quantity = 1
+    tags = []
+    for tag_name in tag_names:
+        tag = Tag.query.filter_by(name=tag_name).first()
+        if not tag:
+            tag = Tag(name=tag_name)
+            db.session.add(tag)
+        tags.append(tag)
 
-	expires = None
-	expires_raw = data.get(ITEM_FIELD_EXPIRES)
-	if expires_raw:
-		try:
-			expires = datetime.strptime(expires_raw, '%Y-%m-%d').date()
-		except Exception:
-			expires = None
+    location = None
+    if location_id:
+        location = Location.query.get(location_id)
+        if not location:
+            return "Location not found", 400
 
-	location = None
-	location_id = data.get(ITEM_FIELD_LOCATION_ID) or data.get('location')
-	if location_id:
-		try:
-			location = Location.query.get(int(location_id))
-		except Exception:
-			location = None
+    new_item = Item(
+        name=name,
+        quantity=quantity,
+        tags=tags,
+        location=location,
+        expires=expires,
+        last_updated=datetime.now(),  # Fix: Set the current datetime
+        updated_by=current_user.id,  # Fix: Set the user ID instead of user object
+    )
 
-	updated_by = None
-	if getattr(current_user, 'is_authenticated', False):
-		try:
-			updated_by = int(current_user.id)
-		except Exception:
-			updated_by = None
+    db.session.add(new_item)
+    db.session.commit()
 
-	item = Item(
-		name=name,
-		quantity=quantity,
-		location_id=location.id if location else None,
-		expires=expires,
-		last_updated=datetime.now(),
-		updated_by=updated_by,
-	)
+    return new_item.to_dict(), 201
 
-	# tags handling
-	tags_raw = data.get(ITEM_FIELD_TAGS)
-	if tags_raw:
-		if isinstance(tags_raw, str):
-			tag_names = [t.strip() for t in tags_raw.split(',') if t.strip()]
-		elif isinstance(tags_raw, (list, tuple)):
-			tag_names = [str(t).strip() for t in tags_raw if str(t).strip()]
-		else:
-			tag_names = []
 
-		# Fetch all existing tags in a single query
-		existing_tags = {t.name: t for t in Tag.query.filter(Tag.name.in_(tag_names)).all()}
-		for tn in tag_names:
-			tag = existing_tags.get(tn)
-			if not tag:
-				tag = Tag(name=tn)
-				db.session.add(tag)
-				existing_tags[tn] = tag
-			item.tags.append(tag)
-	db.session.add(item)
-	db.session.commit()
+@item_blueprint.route(ITEM_UPDATE_ROUTE, methods=[PUT])
+@login_required
+def update_item(item_id):
+    data = request.get_json()
+    name = data.get(ITEM_FIELD_NAME)
+    quantity = data.get(ITEM_FIELD_QUANTITY)
+    tag_names = data.get(ITEM_FIELD_TAGS, [])
+    location_id = data.get(ITEM_FIELD_LOCATION_ID)
+    expires_str = data.get(ITEM_FIELD_EXPIRES)
 
-	# If the request was a regular form POST (not JSON), redirect back to
-	# the home page so the browser doesn't show raw JSON.
-	if not request.is_json:
-		return redirect(url_for('home.home'))
+    item = Item.query.get_or_404(item_id)
 
-	return jsonify(item_to_dict(item)), 201
+    if name:
+        item.name = name
+    if quantity:
+        item.quantity = quantity
+    if expires_str:
+        try:
+            item.expires = datetime.fromisoformat(expires_str)
+        except ValueError:
+            return "Invalid expiration date format", 400
 
+    if tag_names:
+        tags = []
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            tags.append(tag)
+        item.tags = tags
+
+    if location_id:
+        location = Location.query.get(location_id)
+        if not location:
+            return "Location not found", 400
+        item.location = location
+
+    db.session.commit()
+    return item.to_dict()
+
+
+@item_blueprint.route(ITEM_DELETE_ROUTE, methods=[DELETE])
+@login_required
+def delete_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return {MESSAGE_KEY: "Item deleted successfully"}
