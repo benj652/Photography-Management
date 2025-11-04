@@ -8,6 +8,7 @@ DELETE = "DELETE"
 
 # Blueprint names
 AUTH_BLUEPRINT_NAME = "auth"
+HOME_BLUEPRINT_NAME = "home"
 
 # Auth routes
 AUTH_PREFIX = "/auth"
@@ -25,11 +26,13 @@ NOT_FOUND_ROUTE = "home.home"
 ITEM_PREFIX = "/items"
 
 # item fields
+ITEM_FIELD_ID = "id"
 ITEM_FIELD_NAME = "name"
 ITEM_FIELD_QUANTITY = "quantity"
 ITEM_FIELD_TAGS = "tags"
 ITEM_FIELD_LOCATION_ID = "location_id"
 ITEM_FIELD_EXPIRES = "expires"
+ITEM_FIELD_LAST_UPDATED = "last_updated"
 ITEM_FIELD_UPDATED_BY = "updated_by"
 
 # tags fields
@@ -38,6 +41,7 @@ TAG_ID = "id"
 TAG_NAME = "name"
 TAG_DEFAULT_NAME = "tags"
 TAG_DELETE_SUCCESS_MESSAGE = "Tag deleted successfully"
+TAG_NAME_REQUIRED_MESSAGE = "Tag name is required."
 
 """
 ====================================
@@ -56,6 +60,35 @@ TAG_GET_ONE_ROUTE = "/one/<int:tag_id>"
 TAG_CREATE_ROUTE = "/create"
 TAG_UPDATE_ROUTE = "/update/<int:tag_id>"
 TAG_DELETE_ROUTE = "/delete/<int:tag_id>"
+
+# location fields
+LOCATION_PREFIX = "/location"
+LOCATION_ID = "id"
+LOCATION_NAME = "name"
+LOCATION_DEFAULT_NAME = "locations"
+
+"""
+=========================================
+ Location Routes (prefixed with "/location")
+=========================================
+
+GET     /location/all                   → Retrieve all locations
+GET     /location/one/<int:location_id> → Retrieve a specific location by ID
+POST    /location/create                → Create a new location
+PUT     /location/update/<int:location_id> → Update an existing location
+DELETE  /location/delete/<int:location_id> → Delete a location by ID
+"""
+
+
+LOCATION_ALL_ROUTE = "/all"
+LOCATION_GET_ONE_ROUTE = "/one/<int:location_id>"
+LOCATION_CREATE_ROUTE = "/create"
+LOCATION_UPDATE_ROUTE = "/update/<int:location_id>"
+LOCATION_DELETE_ROUTE = "/delete/<int:location_id>"
+
+LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
+LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
+
 
 # Template constants
 LOGIN_TEMPLATE = "landing.html"
@@ -104,3 +137,8 @@ USER_KEY = "user"
 
 # JSON response keys
 MESSAGE_KEY = "message"
+
+# Status messages
+ERROR_NOT_FOUND = 404
+ERROR_NOT_AUTHORIZED = 403
+ERROR_BAD_REQUEST = 400

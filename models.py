@@ -7,6 +7,8 @@ from constants import (
     ITEM_FIELD_LOCATION_ID,
     ITEM_FIELD_EXPIRES,
     ITEM_FIELD_UPDATED_BY,
+    LOCATION_ID,
+    LOCATION_NAME,
     TAG_ID,
     TAG_NAME,
 )
@@ -95,6 +97,11 @@ class Location(db.Model):
     name = db.Column(db.String(200), nullable=False)
     def __repr__(self):
         return f'<Location {self.name}>'
+    def to_dict(self):
+        return {
+            LOCATION_ID: self.id,
+            LOCATION_NAME: self.name,
+        }
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
