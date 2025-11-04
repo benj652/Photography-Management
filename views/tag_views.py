@@ -25,7 +25,9 @@ from constants import (
     TAG_DELETE_SUCCESS_MESSAGE,
     TAG_GET_ONE_ROUTE,
     TAG_NAME,
+    TAG_NAME_REQUIRED_MESSAGE,
     TAG_UPDATE_ROUTE,
+    ERROR_BAD_REQUEST
 )
 from models import Tag, db
 
@@ -51,6 +53,8 @@ def get_tag(tag_id):
 def create_tag():
     data = request.get_json()
     name = data.get(TAG_NAME)
+    if not name:
+        return {MESSAGE_KEY: TAG_NAME_REQUIRED_MESSAGE}, ERROR_BAD_REQUEST 
     new_tag = Tag(name=name)
     db.session.add(new_tag)
     db.session.commit()
@@ -61,8 +65,11 @@ def create_tag():
 @login_required
 def update_tag(tag_id):
     data = request.get_json()
+    name = data.get(TAG_NAME)
+    if not name:
+        return {MESSAGE_KEY: TAG_NAME_REQUIRED_MESSAGE}, ERROR_BAD_REQUEST
     tag_to_update = Tag.query.get_or_404(tag_id)
-    tag_to_update.name = data.get(TAG_NAME)
+    tag_to_update.name = name
     db.session.commit()
     return tag_to_update.to_dict()
 
