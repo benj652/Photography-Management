@@ -1,4 +1,4 @@
-`"""
+"""
 =========================================
  Item Routes (prefixed with "/item")
 =========================================
@@ -43,27 +43,9 @@ item_blueprint = Blueprint(ITEM_PREFIX, __name__)
 @item_blueprint.route(ITEM_ALL_ROUTE, methods=[GET])
 @login_required
 def get_all_items():
-    items = Item.query.options(
-        joinedload(Item.tags),
-        joinedload(Item.location),
-        joinedload(Item.updated_by_user),
-    ).all()
+    items = Item.query.all()
 
-    items_list = [
-        {
-            ITEM_FIELD_NAME: item.name,
-            ITEM_FIELD_QUANTITY: item.quantity,
-            ITEM_FIELD_TAGS: [tag.name for tag in item.tags],
-            ITEM_FIELD_LOCATION_ID: item.location.name if item.location else None,
-            ITEM_FIELD_EXPIRES: item.expires.isoformat() if item.expires else None,
-            ITEM_FIELD_UPDATED_BY: (
-                item.updated_by_user.email if item.updated_by_user else None
-            ),
-        }
-        for item in items
-    ]
-
-    return jsonify(items_list)
+    return jsonify(items=[item.to_dict() for item in items])
 
 
 @item_blueprint.route(ITEM_GET_ONE_ROUTE, methods=[GET])

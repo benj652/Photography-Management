@@ -19,7 +19,7 @@ async function fetchItems() {
 function populateTable(items) {
 	const tableBody = document.getElementById("items-table-body");
 	tableBody.innerHTML = ""; // Clear existing rows
-
+    items = items.items
 	if (items && items.length > 0) {
 		items.forEach(item => {
 			const row = document.createElement("tr");
@@ -94,20 +94,67 @@ window.addItemToTable = function(item) {
 		<td>${item.updated_by || ''}</td>
 	`;
 	
-	// Add to beginning of table
 	tableBody.insertBefore(row, tableBody.firstChild);
 	
-	// Add highlight effect
 	row.classList.add('table-success');
 	setTimeout(() => {
 		row.classList.remove('table-success');
-	}, 2000);
+	}, 1000);
 	
 	console.log('Item added to table successfully');
 };
+
+function filterTable() {
+    const nameFilter = document.getElementById('filter-name').value.toLowerCase();
+    const tagsFilter = document.getElementById('filter-tags').value.toLowerCase();
+    const locationFilter = document.getElementById('filter-location').value.toLowerCase();
+
+    const rows = document.querySelectorAll('#items-table-body tr');
+
+    rows.forEach(row => {
+        // Skip the "no items" row
+        if (row.querySelector('td[colspan="8"]')) {
+            return;
+        }
+
+        const cells = row.cells;
+        const itemName = cells[1].textContent.toLowerCase();
+        const itemTags = cells[3].textContent.toLowerCase();
+        const itemLocation = cells[4].textContent.toLowerCase();
+
+        const nameMatch = !nameFilter || itemName.includes(nameFilter);
+        const tagsMatch = !tagsFilter || itemTags.includes(tagsFilter);
+        const locationMatch = !locationFilter || itemLocation.includes(locationFilter);
+
+        if (nameMatch && tagsMatch && locationMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function clearFilters() {
+    document.getElementById('filter-name').value = '';
+    document.getElementById('filter-tags').value = '';
+    document.getElementById('filter-location').value = '';
+    
+    // Show all rows
+    const rows = document.querySelectorAll('#items-table-body tr');
+    rows.forEach(row => {
+        row.style.display = '';
+    });
+}
+
+// Make functions global for HTML onclick handlers
+window.filterTable = filterTable;
+window.clearFilters = clearFilters;
+
 
 // Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log('Home.js loaded');
 	fetchItems();
+    filterTable();
 });
+

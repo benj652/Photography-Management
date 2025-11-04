@@ -7,7 +7,6 @@
 	<div class="d-flex align-items-center mb-4">
 		<div>
 			<h1 class="display-6">Photography Inventory</h1>
-			<p class="text-muted">Yippee!!!</p>
 		</div>
 		<div class="ms-auto">
 			<button id="openAddItemBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
@@ -17,6 +16,24 @@
 	<div class="row g-3">
 		<div class="col-sm-12 col-lg-12">
 			<div class="card h-100">
+				<div class="row mb-4">
+					<div class="col-md-3">
+						<input type="text" id="filter-name" class="form-control"
+							   placeholder="Filter by name" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<input type="text" id="filter-tags" class="form-control"
+							   placeholder="Tags (comma-separated)" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<input type="text" id="filter-location" class="form-control"
+							   placeholder="Location" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<button type="button" class="btn btn-outline-secondary"
+								onclick="clearFilters()">Clear</button>
+					</div>
+				</div>
 				<div class="table-responsive">
 					<table class="table table-striped table-hover align-middle">
 						<thead class="table-light">
