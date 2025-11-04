@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 
 {% extends "index.html" %}
-
+{% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
+{% endblock %} 
 {% block content %}
-<div class="container py-4">
+<div class="coinntainer py-4">
 	<div class="d-flex align-items-center mb-4">
 		<div>
 			<h1 class="display-6">Photography Inventory</h1>
-			<p class="text-muted">Yippee!!!</p>
+			<p class="text-muted">Click on an item to edit</p>
 		</div>
 		<div class="ms-auto">
 			<button id="openAddItemBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
@@ -17,6 +22,24 @@
 	<div class="row g-3">
 		<div class="col-sm-12 col-lg-12">
 			<div class="card h-100">
+				<div class="row mb-4">
+					<div class="col-md-3">
+						<input type="text" id="filter-name" class="form-control"
+							   placeholder="Filter by name" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<input type="text" id="filter-tags" class="form-control"
+							   placeholder="Tags (comma-separated)" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<input type="text" id="filter-location" class="form-control"
+							   placeholder="Location" oninput="filterTable()">
+					</div>
+					<div class="col-md-3">
+						<button type="button" class="btn btn-outline-secondary"
+								onclick="clearFilters()">Clear</button>
+					</div>
+				</div>
 				<div class="table-responsive">
 					<table class="table table-striped table-hover align-middle">
 						<thead class="table-light">
@@ -31,29 +54,15 @@
 								<th scope="col">Updated by</th>
 							</tr>
 						</thead>
-						<tbody>
-							{% for it in items %}
-								<tr>
-									<td>{{ it.id }}</td>
-									<td>{{ it.name }}</td>
-									<td>{{ it.quantity }}</td>
-									<td>{{ it.tags }}</td>
-									<td>{{ it.location }}</td>
-									<td>{{ it.expires }}</td>
-									<td>{{ it.last_updated }}</td>
-									<td>{{ it.updated_by }}</td>
-								</tr>
-							{% endfor %}
-						</tbody>
+							<tbody id="items-table-body">
+							</tbody>
 					</table>
 				</div>
 			</div>
 		</div>
-
 	</div>
-
 </div>
 
 {% include 'add_item_modal.html' %}
-
+<script src="/static/js/home.js"></script>
 {% endblock %}

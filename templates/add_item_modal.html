@@ -1,12 +1,15 @@
 <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" action="{{ url_for('item.create_item') }}">
+            <form id="addItemForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Alert container for messages -->
+                    <div id="modalAlert" class="alert d-none" role="alert"></div>
+                    
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
                         <input id="name" name="name" class="form-control" required />
@@ -27,15 +30,17 @@
                         <label for="expires" class="form-label">Expires</label>
                         <input id="expires" name="expires" type="date" class="form-control" />
                     </div>
-                    {# updated_by is set server-side from the logged-in user; do not allow clients to supply it #}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary" id="createItemBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        Create
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/add_item_modal.js') }}"></script>
+<script src="/static/js/add_item_modal.js"></script>

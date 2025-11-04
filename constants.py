@@ -24,6 +24,25 @@ NOT_FOUND_ROUTE = "home.home"
 
 # item routes
 ITEM_PREFIX = "/items"
+"""
+=========================================
+ Item Routes (prefixed with "/item")
+=========================================
+
+GET     /items/all                   → Retrieve all items
+GET     /items/one/<int:item_id>     → Retrieve a specific item by ID
+POST    /items/create                → Create a new item
+PUT     /items/update/<int:item_id>  → Update an existing item
+DELETE  /items/delete/<int:item_id>  → Delete an item by ID
+"""
+
+ITEM_ALL_ROUTE = "/all"
+ITEM_GET_ONE_ROUTE = "/one/<int:item_id>"
+ITEM_CREATE_ROUTE = "/create"
+ITEM_UPDATE_ROUTE = "/update/<int:item_id>"
+ITEM_DELETE_ROUTE = "/delete/<int:item_id>"
+
+ITEM_NAME_NEEDED_MESSAGE = "Item name is required."
 
 # item fields
 ITEM_FIELD_ID = "id"
