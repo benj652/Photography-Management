@@ -13,6 +13,7 @@ from constants import (
 
 db = SQLAlchemy()
 
+# clean this up later
 item_tags = db.Table(
     'item_tags',
     db.Column('item_id', db.Integer, db.ForeignKey('item.id'), primary_key=True),
