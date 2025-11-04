@@ -31,16 +31,17 @@ function populateTable(items) {
 			const expires = item.expires ? new Date(item.expires).toLocaleDateString() : '';
 			const lastUpdated = item.last_updated ? new Date(item.last_updated).toLocaleString() : '';
 
-			row.innerHTML = `
-				<td>${item.id || ''}</td>
-				<td>${item.name || ''}</td>
-				<td>${item.quantity || ''}</td>
-				<td>${tags}</td>
-				<td>${item.location || ''}</td>
-				<td>${expires}</td>
-				<td>${lastUpdated}</td>
-				<td>${item.updated_by || ''}</td>
-			`;
+            row.innerHTML = `
+                <td>${item.id || ''}</td>
+                <td>${item.name || ''}</td>
+                <td>${item.quantity || ''}</td>
+                <td>${tags}</td>
+                <td>${item.location || ''}</td>
+                <td>${expires}</td>
+                <td>${lastUpdated}</td>
+                <td>${item.updated_by || ''}</td>
+            `;
+            row.classList.add('item-row');
 
 			tableBody.appendChild(row);
 		});

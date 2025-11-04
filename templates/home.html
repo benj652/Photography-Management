@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 
 {% extends "index.html" %}
-
+{% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
+{% endblock %} 
 {% block content %}
 <div class="coinntainer py-4">
 	<div class="d-flex align-items-center mb-4">
