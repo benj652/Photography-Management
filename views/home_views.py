@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
-from models import db, Item, User, Tag, Location, item_tags
+from models import Item, User
 from sqlalchemy.orm import joinedload
 from constants import(
     ITEM_FIELD_ID,
@@ -19,7 +19,7 @@ from constants import(
 home_blueprint = Blueprint(HOME_BLUEPRINT_NAME, __name__)
 
 
-@home_blueprint.route('/', methods=['GET'])
+@home_blueprint.route('/')
 @login_required
 def home():
     """Render the home page.
