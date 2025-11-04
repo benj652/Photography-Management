@@ -94,6 +94,8 @@ window.addItemToTable = function(item) {
 		<td>${last_updated}</td>
 		<td>${item.updated_by || ''}</td>
 	`;
+    row.classList.add('item-row');
+    
 	
 	tableBody.insertBefore(row, tableBody.firstChild);
 	
