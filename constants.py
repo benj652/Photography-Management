@@ -8,6 +8,7 @@ DELETE = "DELETE"
 
 # Blueprint names
 AUTH_BLUEPRINT_NAME = "auth"
+HOME_BLUEPRINT_NAME = "home"
 
 # Auth routes
 AUTH_PREFIX = "/auth"
@@ -25,11 +26,13 @@ NOT_FOUND_ROUTE = "home.home"
 ITEM_PREFIX = "/items"
 
 # item fields
+ITEM_FIELD_ID = "id"
 ITEM_FIELD_NAME = "name"
 ITEM_FIELD_QUANTITY = "quantity"
 ITEM_FIELD_TAGS = "tags"
 ITEM_FIELD_LOCATION_ID = "location_id"
 ITEM_FIELD_EXPIRES = "expires"
+ITEM_FIELD_LAST_UPDATED = "last_updated"
 ITEM_FIELD_UPDATED_BY = "updated_by"
 
 # tags fields
