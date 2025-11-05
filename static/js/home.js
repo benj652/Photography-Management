@@ -161,3 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     filterTable();
 });
 
+
+document.getElementById('logoutButton').addEventListener('click', () => {
+  window.location.href = '/auth/logout';
+});
