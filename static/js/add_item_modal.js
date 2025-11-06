@@ -30,16 +30,25 @@ document.addEventListener("DOMContentLoaded", function () {
   // Tags functionality
   const tagsInput = document.getElementById("tags-input");
   const tagsDropdown = document.getElementById("tags-dropdown");
-  const createTagBtnContainer = document.getElementById(
-    "create-tag-btn-container"
-  );
+  const createTagBtnContainer = document.getElementById("create-tag-btn-container");
   const createTagBtn = document.getElementById("createTagBtn");
   const newTagNameSpan = document.getElementById("new-tag-name");
   const selectedTagsContainer = document.getElementById("selected-tags");
   const hiddenTagsInput = document.getElementById("tags");
 
+  // Location functionality - exact mirror of tags
+  const locationInput = document.getElementById("location-input");
+  const locationDropdown = document.getElementById("location-dropdown");
+  const createLocationBtnContainer = document.getElementById("create-location-btn-container");
+  const createLocationBtn = document.getElementById("createLocationBtn");
+  const newLocationNameSpan = document.getElementById("new-location-name");
+  const selectedLocationContainer = document.getElementById("selected-location");
+  const hiddenLocationInput = document.getElementById("location_id");
+
   let allTags = [];
+  let allLocations = [];
   let selectedTag = null;
+  let selectedLocation = null;
 
   // Fetch all tags from the database
   async function fetchTags() {
@@ -57,10 +66,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Initialize tags on modal open
+  // Fetch all locations from the database - exact mirror of fetchTags
+  async function fetchLocations() {
+    try {
+      const response = await fetch("/location/all");
+      if (!response.ok) {
+        throw new Error("Failed to fetch locations");
+      }
+      const data = await response.json();
+      allLocations = data.locations || [];
+      return allLocations;
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      return [];
+    }
+  }
+
+  // Initialize tags and locations on modal open
   document
     .getElementById("addItemModal")
     .addEventListener("shown.bs.modal", async function () {
+      // Initialize tags
       await fetchTags();
       selectedTag = null;
       updateSelectedTagDisplay();
@@ -68,6 +94,15 @@ document.addEventListener("DOMContentLoaded", function () {
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
       tagsInput.disabled = false;
+
+      // Initialize locations - exact mirror
+      await fetchLocations();
+      selectedLocation = null;
+      updateSelectedLocationDisplay();
+      locationInput.value = "";
+      locationDropdown.innerHTML = "";
+      createLocationBtnContainer.classList.add("d-none");
+      locationInput.disabled = false;
     });
 
   // Handle tags input
@@ -123,6 +158,59 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Handle location input - exact mirror of tags input
+  locationInput.addEventListener("input", function (e) {
+    // If a location is already selected, don't show dropdown
+    if (selectedLocation) {
+      locationDropdown.innerHTML = "";
+      createLocationBtnContainer.classList.add("d-none");
+      return;
+    }
+
+    const query = e.target.value.trim().toLowerCase();
+
+    if (query === "") {
+      locationDropdown.innerHTML = "";
+      createLocationBtnContainer.classList.add("d-none");
+      return;
+    }
+
+    // Filter locations that match the query
+    const matchingLocations = allLocations.filter((location) =>
+      location.name.toLowerCase().includes(query)
+    );
+
+    // Check if the query exactly matches an existing location
+    const exactMatch = allLocations.find((location) => location.name.toLowerCase() === query);
+
+    if (exactMatch) {
+      // Exact match found, show only that location
+      locationDropdown.innerHTML = `
+                <div class="tags-dropdown-item" onclick="selectLocation('${exactMatch.name}')">
+                    ${exactMatch.name}
+                </div>
+            `;
+      createLocationBtnContainer.classList.add("d-none");
+    } else if (matchingLocations.length > 0) {
+      // Show matching locations
+      locationDropdown.innerHTML = matchingLocations
+        .map(
+          (location) => `
+                <div class="tags-dropdown-item" onclick="selectLocation('${location.name}')">
+                    ${location.name}
+                </div>
+            `
+        )
+        .join("");
+      createLocationBtnContainer.classList.add("d-none");
+    } else {
+      // No matches, show create location button
+      locationDropdown.innerHTML = "";
+      newLocationNameSpan.textContent = query;
+      createLocationBtnContainer.classList.remove("d-none");
+    }
+  });
+
   // Handle tag selection
   window.selectTag = function (tagName) {
     selectedTag = tagName;
@@ -133,12 +221,30 @@ document.addEventListener("DOMContentLoaded", function () {
     tagsInput.disabled = true;
   };
 
+  // Handle location selection - exact mirror of tag selection
+  window.selectLocation = function (locationName) {
+    selectedLocation = locationName;
+    updateSelectedLocationDisplay();
+    locationInput.value = "";
+    locationDropdown.innerHTML = "";
+    createLocationBtnContainer.classList.add("d-none");
+    locationInput.disabled = true;
+  };
+
   // Handle tag removal
   window.removeTag = function () {
     selectedTag = null;
     updateSelectedTagDisplay();
     tagsInput.disabled = false;
     tagsInput.focus();
+  };
+
+  // Handle location removal - exact mirror of tag removal
+  window.removeLocation = function () {
+    selectedLocation = null;
+    updateSelectedLocationDisplay();
+    locationInput.disabled = false;
+    locationInput.focus();
   };
 
   // Update selected tag display
@@ -154,6 +260,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 </span>
             `;
       hiddenTagsInput.value = selectedTag;
+    }
+  }
+
+  // Update selected location display - exact mirror of tag display
+  function updateSelectedLocationDisplay() {
+    if (!selectedLocation) {
+      selectedLocationContainer.innerHTML = "";
+      hiddenLocationInput.value = "";
+    } else {
+      selectedLocationContainer.innerHTML = `
+                <span class="badge bg-secondary me-1 mb-1" style="font-size: 0.875rem;">
+                    ${selectedLocation}
+                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeLocation()" aria-label="Remove"></button>
+                </span>
+            `;
+      // Find the location ID and set it in the hidden input
+      const locationObj = allLocations.find(loc => loc.name === selectedLocation);
+      hiddenLocationInput.value = locationObj ? locationObj.id : "";
     }
   }
 
@@ -192,10 +316,48 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Handle create location button - exact mirror of create tag button
+  createLocationBtn.addEventListener("click", async function () {
+    const newLocationName = locationInput.value.trim();
+    if (!newLocationName) return;
+
+    try {
+      const response = await fetch("/location/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newLocationName }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create location");
+      }
+
+      const newLocation = await response.json();
+
+      allLocations.push(newLocation);
+      selectedLocation = newLocation.name;
+      updateSelectedLocationDisplay();
+
+      // Clear input
+      locationInput.value = "";
+      locationDropdown.innerHTML = "";
+      createLocationBtnContainer.classList.add("d-none");
+      locationInput.disabled = true;
+    } catch (error) {
+      console.error("Error creating location:", error);
+      showAlert("Failed to create location. Please try again.", "danger");
+    }
+  });
+
   // Close dropdown when clicking outside
   document.addEventListener("click", function (e) {
     if (!tagsInput.contains(e.target) && !tagsDropdown.contains(e.target)) {
       tagsDropdown.innerHTML = "";
+    }
+    if (!locationInput.contains(e.target) && !locationDropdown.contains(e.target)) {
+      locationDropdown.innerHTML = "";
     }
   });
 

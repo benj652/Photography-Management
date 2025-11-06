@@ -37,7 +37,7 @@
             />
           </div>
           <div class="mb-3">
-            <label for="tags" class="form-label">Tag</label>
+            <label for="tags" class="form-label">Tags</label>
             <div class="tags-input-container">
               <div class="tags-input-wrapper">
                 <input
@@ -70,10 +70,33 @@
             </div>
           </div>
           <div class="mb-3">
-            <label for="location_id" class="form-label"
-              >Location ID (optional)</label
+            <label for="location-input" class="form-label"
+              >Location (optional)</label
             >
-            <input id="location_id" name="location_id" class="form-control" />
+            <div class="tags-input-container">
+              <div class="tags-input-wrapper">
+                <input id="location-input" name="location-input" class="form-control" autocomplete="off" placeholder="Search for or type to create a new location" />
+                <div id="location-dropdown" class="tags-dropdown"></div>
+              </div>
+              <div
+                id="create-location-btn-container"
+                class="create-tag-btn-container d-none"
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  id="createLocationBtn"
+                >
+                  <i class="fas fa-plus me-1"></i>Create Location: "<span
+                    id="new-location-name"
+                  ></span
+                  >"
+                </button>
+              </div>
+              <div id="selected-location" class="selected-tags mt-2"></div>
+              <!-- Hidden input to store selected location ID for form submission -->
+              <input type="hidden" id="location_id" name="location_id" />
+            </div>
           </div>
           <div class="mb-3">
             <label for="expires" class="form-label">Expires</label>
