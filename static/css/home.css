@@ -1,18 +1,18 @@
 .navbar-brand .landing-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
 }
 
 .navbar-brand .logo-icon {
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
 }
 
 .navbar-brand .logo-text {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #333;
   transition: color 0.2s ease;
@@ -181,6 +181,22 @@
 .filter-panel .form-label {
   color: #495057;
   margin-bottom: 0.5rem;
+}
+
+.delete-btn {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem !important;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  color: #dc3545 !important;
+}
+
+.delete-btn:focus {
+  box-shadow: none;
 }
 
 @media (max-width: 768px) {

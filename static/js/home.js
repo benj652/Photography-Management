@@ -46,6 +46,15 @@ function populateTable(items) {
                 <td>${expires}</td>
                 <td>${lastUpdated}</td>
                 <td>${item.updated_by || ""}</td>
+                <td class="text-end">
+                  <button 
+                    class="btn btn-sm btn-link text-danger delete-btn p-0" 
+                    onclick="deleteItem(${item.id})"
+                    title="Delete item"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
             `;
       row.classList.add("item-row");
 
@@ -61,7 +70,7 @@ function showEmptyState(message) {
   const tableBody = document.getElementById("items-table-body");
   const row = document.createElement("tr");
   row.innerHTML = `
-		<td colspan="8" class="text-center text-muted py-4">
+		<td colspan="9" class="text-center text-muted py-4">
 			${message}
 		</td>
 	`;
@@ -134,7 +143,7 @@ window.addItemToTable = function (item) {
   }
 
   // Remove "no items" message if it exists
-  const noItemsRow = tableBody.querySelector('td[colspan="8"]');
+  const noItemsRow = tableBody.querySelector('td[colspan="9"]');
   if (noItemsRow) {
     noItemsRow.parentElement.remove();
   }
@@ -160,6 +169,15 @@ window.addItemToTable = function (item) {
 		<td>${expires}</td>
 		<td>${last_updated}</td>
 		<td>${item.updated_by || ""}</td>
+		<td class="text-end">
+      <button 
+        class="btn btn-sm btn-link text-danger delete-btn p-0" 
+        onclick="deleteItem(${item.id})"
+        title="Delete item"
+      >
+        <i class="fas fa-trash"></i>
+      </button>
+    </td>
 	`;
   row.classList.add("item-row");
 
@@ -193,7 +211,7 @@ function filterTable() {
 
   rows.forEach((row) => {
     // Skip the "no items" row
-    if (row.querySelector('td[colspan="8"]')) {
+    if (row.querySelector('td[colspan="9"]')) {
       return;
     }
 
@@ -259,11 +277,85 @@ window.clearFilters = clearFilters;
 // Make updateStats globally accessible
 window.updateStats = updateStats;
 
-// Initialize when DOM is loaded
+// Function to delete an item
+async function deleteItem(itemId) {
+  // Store the item ID in a data attribute on the confirm button
+  const confirmBtn = document.getElementById("confirmDeleteBtn");
+  confirmBtn.setAttribute("data-item-id", itemId);
+
+  // Show the modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("deleteConfirmModal")
+  );
+  modal.show();
+}
+
+// Handle the actual deletion when confirmed
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Home.js loaded");
   fetchItems();
   filterTable();
+
+  // Set up delete confirmation button handler
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async function () {
+      const itemId = this.getAttribute("data-item-id");
+
+      if (!itemId) {
+        console.error("No item ID found");
+        return;
+      }
+
+      // Disable button during deletion
+      this.disabled = true;
+      // this.innerHTML =
+      //   '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+
+      try {
+        const response = await fetch(`/items/delete/${itemId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("deleteConfirmModal")
+        );
+        modal.hide();
+
+        // Remove the row from the table
+        const rows = document.querySelectorAll("#items-table-body tr");
+        rows.forEach((row) => {
+          const deleteBtn = row.querySelector(
+            `button[onclick="deleteItem(${itemId})"]`
+          );
+          if (deleteBtn) {
+            row.classList.add("table-danger");
+            setTimeout(() => {
+              row.remove();
+              // Refresh table and stats
+              fetchItems();
+              updateStats();
+            }, 500);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to delete item:", error);
+        alert("Failed to delete item. Please try again.");
+      } finally {
+        // Re-enable button
+        this.disabled = false;
+        this.innerHTML = "Delete Item";
+      }
+    });
+  }
 });
 
 document.getElementById("logoutButton").addEventListener("click", () => {
