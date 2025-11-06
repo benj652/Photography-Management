@@ -1,46 +1,114 @@
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addItemForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Alert container for messages -->
-                    <div id="modalAlert" class="alert d-none" role="alert"></div>
-                    
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input id="name" name="name" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Quantity</label>
-                        <input id="quantity" name="quantity" type="number" min="0" class="form-control" value="1" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="tags" class="form-label">Tags (comma-separated)</label>
-                        <input id="tags" name="tags" class="form-control" placeholder="camera, lens" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="location_id" class="form-label">Location ID (optional)</label>
-                        <input id="location_id" name="location_id" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="expires" class="form-label">Expires</label>
-                        <input id="expires" name="expires" type="date" class="form-control" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" id="createItemBtn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        Create
-                    </button>
-                </div>
-            </form>
+<div
+  class="modal fade"
+  id="addItemModal"
+  tabindex="-1"
+  aria-labelledby="addItemModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addItemForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
+        <div class="modal-body">
+          <!-- Alert container for messages -->
+          <div id="modalAlert" class="alert d-none" role="alert"></div>
+
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input id="name" name="name" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="quantity" class="form-label">Quantity</label>
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min="0"
+              class="form-control"
+              value="1"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="tags" class="form-label">Tag</label>
+            <div class="tags-input-container">
+              <div class="tags-input-wrapper">
+                <input
+                  type="text"
+                  id="tags-input"
+                  class="form-control"
+                  placeholder="Search or type to create a new tag..."
+                  autocomplete="off"
+                />
+                <div id="tags-dropdown" class="tags-dropdown"></div>
+              </div>
+              <div
+                id="create-tag-btn-container"
+                class="create-tag-btn-container d-none"
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  id="createTagBtn"
+                >
+                  <i class="fas fa-plus me-1"></i>Create Tag: "<span
+                    id="new-tag-name"
+                  ></span
+                  >"
+                </button>
+              </div>
+              <div id="selected-tags" class="selected-tags mt-2"></div>
+              <!-- Hidden input to store selected tag names for form submission -->
+              <input type="hidden" id="tags" name="tags" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="location_id" class="form-label"
+              >Location ID (optional)</label
+            >
+            <input id="location_id" name="location_id" class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label for="expires" class="form-label">Expires</label>
+            <input
+              id="expires"
+              name="expires"
+              type="date"
+              class="form-control"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary" id="createItemBtn">
+            <span
+              class="spinner-border spinner-border-sm d-none"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            Create
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script src="/static/js/add_item_modal.js"></script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/add_item.css') }}"
+/>

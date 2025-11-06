@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from models import Item, User
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
+from datetime import date
 from constants import(
     ITEM_FIELD_ID,
     ITEM_FIELD_NAME,
@@ -35,6 +37,20 @@ def home():
                             joinedload(Item.updated_by_user))
     items = q.all()
     
+    # Calculate statistics
+    total_items = len(items)
+    today = date.today()
+    in_stock_count = sum(1 for item in items 
+                         if item.quantity > 0 
+                         and (not item.expires or item.expires >= today))
+    
+    out_of_stock_count = sum(1 for item in items 
+                             if item.quantity == 0 
+                             and (not item.expires or item.expires >= today))
+    
+    expired_count = sum(1 for item in items 
+                        if item.expires and item.expires < today)
+    
     for it in items:
         tags = ', '.join([t.name for t in getattr(it, ITEM_FIELD_TAGS, [])])
         loc = getattr(it, 'location', None)
@@ -57,4 +73,9 @@ def home():
         })
 
     current_app.logger.debug(f'Current user: {current_user}')
-    return render_template(HOME_TEMPLATE, items=items_list)
+    return render_template(HOME_TEMPLATE, 
+                         items=items_list,
+                         total_items=total_items,
+                         in_stock_count=in_stock_count,
+                         out_of_stock_count=out_of_stock_count,
+                         expired_count=expired_count)
