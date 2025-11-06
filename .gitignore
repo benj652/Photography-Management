@@ -201,6 +201,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 .config.swp
+.status.swp
 
 # Marimo
 marimo/_static/
