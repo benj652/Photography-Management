@@ -156,9 +156,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Location - prefer name, otherwise leave id
-        if (item.location) {
+        if (item.location_id) {
           if (typeof window.selectLocation === "function") {
-            window.selectLocation(item.location);
+            window.selectLocation(item.location_id);
           } else {
             document.getElementById("location_id").value = item.location_id || "";
           }
