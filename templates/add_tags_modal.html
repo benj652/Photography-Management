@@ -1,0 +1,20 @@
+<div class="modal fade" id="addTagsModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form method="post" action="{{ url_for('item.add_tags') }}">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5>Add Tags to Selected</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="item_ids" id="selected-item-ids">
+            <input type="text" name="tags" class="form-control" placeholder="lens, backup" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Add Tags</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
