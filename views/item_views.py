@@ -127,6 +127,8 @@ def update_item(item_id):
     data = request.get_json()
     name = data.get(ITEM_FIELD_NAME)
     quantity = data.get(ITEM_FIELD_QUANTITY)
+    print( data.get(ITEM_FIELD_QUANTITY))
+    print(quantity)
     tag_names = data.get(ITEM_FIELD_TAGS, [])
     location_id = data.get(ITEM_FIELD_LOCATION_ID)
     expires_str = data.get(ITEM_FIELD_EXPIRES)
@@ -135,14 +137,13 @@ def update_item(item_id):
 
     if name:
         item.name = name
-    if quantity:
+    if quantity is not None:
         item.quantity = quantity
     if expires_str:
         try:
             item.expires = datetime.fromisoformat(expires_str)
         except ValueError:
             return "Invalid expiration date format", 400
-
     if tag_names:
         tags = []
         for tag_name in tag_names:

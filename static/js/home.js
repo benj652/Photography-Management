@@ -48,7 +48,7 @@ window.updateItemInTable = function (data) {
     targetRow.innerHTML = `
       <td class="item-id-${id}">${id}</td>
       <td>${data.name || ""}</td>
-      <td>${data.quantity || ""}</td>
+      <td>${data.quantity}</td>
       <td>${tags}</td>
       <td>${data.location || data.location_id || ""}</td>
       <td>${expires}</td>
@@ -95,7 +95,7 @@ function populateTable(items) {
       row.innerHTML = `
                 <td class="item-id-${item.id}">${item.id || ""}</td>
                 <td>${item.name || ""}</td>
-                <td>${item.quantity || ""}</td>
+                <td>${item.quantity}</td>
                 <td>${tags}</td>
                 <td>${item.location || ""}</td>
                 <td>${expires}</td>
@@ -253,7 +253,7 @@ window.addItemToTable = function (item) {
   row.innerHTML = `
 		<td>${item.id || ""}</td>
 		<td>${item.name || ""}</td>
-		<td>${item.quantity || ""}</td>
+		<td>${item.quantity}</td>
 		<td>${tags}</td>
 		<td>${item.location || item.location_id || ""}</td>
 		<td>${expires}</td>

@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Prefilling form for editing:", item.id);
         // Name, quantity, expires
         document.getElementById("name").value = item.name || "";
-        document.getElementById("quantity").value = item.quantity || 1;
+        document.getElementById("quantity").value = item.quantity;
         document.getElementById("expires").value = item.expires ? item.expires.split("T")[0] : "";
 
         // Tags - select the first tag if present
@@ -467,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const formData = new FormData(form);
     const data = {
       name: formData.get("name"),
-      quantity: parseInt(formData.get("quantity")) || 1,
+      quantity: parseInt(formData.get("quantity")),
       tags: selectedTag ? [selectedTag] : [],
       location_id: formData.get("location_id")
         ? parseInt(formData.get("location_id"))
