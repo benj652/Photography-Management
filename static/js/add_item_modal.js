@@ -19,6 +19,7 @@
 //     });
 // });
 
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Modal script loaded");
 
@@ -26,6 +27,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const submitBtn = document.getElementById("createItemBtn");
   const spinner = submitBtn.querySelector(".spinner-border");
   const modalAlert = document.getElementById("modalAlert");
+
+  // Helper to update the button label while preserving the spinner element
+  function setButtonLabel(btn, text) {
+    if (!btn) return;
+    for (const node of Array.from(btn.childNodes)) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.nodeValue = ' ' + text;
+        return;
+      }
+    }
+    btn.appendChild(document.createTextNode(' ' + text));
+  }
 
   // Tags functionality
   const tagsInput = document.getElementById("tags-input");
@@ -50,6 +63,25 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedTag = null;
   let selectedLocation = null;
 
+  function updateItem(itemId, updatedData) {
+  // Simple helper that updates an item via API and then refreshes the row using updateItemInTable
+  fetch(`/items/update/${itemId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(updatedData),
+  })
+    .then((resp) => {
+      if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+      return resp.json();
+    })
+    .then((data) => {
+      if (typeof window.updateItemInTable === "function") window.updateItemInTable(data);
+    })
+    .catch((err) => console.error("Failed to update item:", err));
+}
   // Fetch all tags from the database
   async function fetchTags() {
     try {
@@ -103,6 +135,61 @@ document.addEventListener("DOMContentLoaded", function () {
       locationDropdown.innerHTML = "";
       createLocationBtnContainer.classList.add("d-none");
       locationInput.disabled = false;
+      
+      // If editing data was placed on the window, prefill fields now
+      if (window.editingItemData) {
+        const item = window.editingItemData;
+        console.log("Prefilling form for editing:", item.id);
+        // Name, quantity, expires
+        document.getElementById("name").value = item.name || "";
+        document.getElementById("quantity").value = item.quantity;
+        document.getElementById("expires").value = item.expires ? item.expires.split("T")[0] : "";
+
+        // Tags - select the first tag if present
+        if (Array.isArray(item.tags) && item.tags.length > 0) {
+          // Use selectTag if available
+          if (typeof window.selectTag === "function") {
+            window.selectTag(item.tags[0]);
+          } else {
+            document.getElementById("tags").value = item.tags.join(", ");
+          }
+        }
+
+        // Location - prefer name, otherwise leave id
+        if (item.location_id) {
+          if (typeof window.selectLocation === "function") {
+            window.selectLocation(item.location_id);
+          } else {
+            document.getElementById("location_id").value = item.location_id || "";
+          }
+        } else if (item.location_id) {
+          document.getElementById("location_id").value = item.location_id;
+        }
+
+        // Mark form as editing
+        const formEl = document.getElementById("addItemForm");
+        if (formEl) formEl.dataset.editingId = item.id;
+
+        // Also show the Item ID in the modal if the container exists
+        const idContainer = document.getElementById("modalItemIdContainer");
+        const idValue = document.getElementById("modalItemIdValue");
+        const idToShow = window.editingItemId || (window.editingItemData && window.editingItemData.id) || item.id;
+        if (idContainer && idValue) {
+          idValue.textContent = idToShow || "";
+          if (idToShow) idContainer.classList.remove("d-none");
+          else idContainer.classList.add("d-none");
+        }
+      } else {
+        // Ensure not in editing state
+        const formEl = document.getElementById("addItemForm");
+        if (formEl && formEl.dataset.editingId) delete formEl.dataset.editingId;
+        const idContainer = document.getElementById("modalItemIdContainer");
+        const idValue = document.getElementById("modalItemIdValue");
+        if (idContainer && idValue) {
+          idValue.textContent = "";
+          idContainer.classList.add("d-none");
+        }
+      }
     });
 
   // Handle tags input
@@ -380,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const formData = new FormData(form);
     const data = {
       name: formData.get("name"),
-      quantity: parseInt(formData.get("quantity")) || 1,
+      quantity: parseInt(formData.get("quantity")),
       tags: selectedTag ? [selectedTag] : [],
       location_id: formData.get("location_id")
         ? parseInt(formData.get("location_id"))
@@ -390,58 +477,71 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log("Sending data:", data);
 
-    // Send request
-    fetch("/items/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        console.log("Response status:", response.status);
-        console.log("Response headers:", response.headers);
+    // Determine if editing or creating
+    const editingId = window.editingItemId;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Success response:", data);
-        showAlert("Item created successfully!", "success");
-
-        // Try to add to table
-        if (typeof window.addItemToTable === "function") {
-          console.log("Adding item to table");
-          window.addItemToTable(data);
-        } else {
-          console.log("addItemToTable function not found, reloading page");
-          setTimeout(() => window.location.reload(), 100);
-        }
-
-        // Close modal after delay
+    if (editingId) {
+    console.log("Editing item with ID:", editingId);
+        updateItem(editingId, data)
+        showAlert("Item updated successfully!", "success");
         setTimeout(() => {
-          const modal = bootstrap.Modal.getInstance(
+        const modal = bootstrap.Modal.getInstance(
             document.getElementById("addItemModal")
-          );
-          if (modal) {
-            modal.hide();
-          }
-          form.reset();
-          hideAlert();
-        }, 1500);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        showAlert("Error: " + error.message, "danger");
-      })
-      .finally(() => {
-        // Reset button state
+        );
+        if (modal) modal.hide();
+        form.reset();
+        hideAlert();
+        }, 3);
         submitBtn.disabled = false;
         spinner.classList.add("d-none");
-      });
+    } else {
+      // Create new item (existing flow)
+      fetch("/items/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => {
+          console.log("Response status:", response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((createdData) => {
+          console.log("Success response:", createdData);
+          showAlert("Item created successfully!", "success");
+
+          // Try to add to table
+          if (typeof window.addItemToTable === "function") {
+            window.addItemToTable(createdData);
+          } else {
+            setTimeout(() => window.location.reload(), 100);
+          }
+
+          // Close modal after delay
+          setTimeout(() => {
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("addItemModal")
+            );
+            if (modal) modal.hide();
+            form.reset();
+            hideAlert();
+          }, 3);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          showAlert("Error: " + error.message, "danger");
+        })
+        .finally(() => {
+          // Reset button state
+          submitBtn.disabled = false;
+          spinner.classList.add("d-none");
+        });
+    }
 
     return false; // Extra prevention of form submission
   });
@@ -462,5 +562,19 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("hidden.bs.modal", function () {
       form.reset();
       hideAlert();
+      // Clear edit state if any
+      if (form.dataset.editingId) delete form.dataset.editingId;
+      if (window.editingItemData) delete window.editingItemData;
+      if (window.editingItemId) delete window.editingItemId;
+      const idContainer = document.getElementById("modalItemIdContainer");
+      const idValue = document.getElementById("modalItemIdValue");
+      if (idContainer && idValue) {
+        idValue.textContent = "";
+        idContainer.classList.add("d-none");
+      }
+      const titleEl = document.getElementById("addItemModalLabel");
+      const submitBtn = document.getElementById("createItemBtn");
+      if (titleEl) titleEl.textContent = "Add Item";
+      if (submitBtn) setButtonLabel(submitBtn, "Create");
     });
 });

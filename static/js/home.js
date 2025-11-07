@@ -15,6 +15,61 @@ async function fetchItems() {
   }
 }
 
+// Update an existing row in the table with new data (used after edit)
+window.updateItemInTable = function (data) {
+  try {
+    const tableBody = document.getElementById("items-table-body");
+    if (!tableBody) return;
+    const id = data.id || data.item_id || (data.item && data.item.id);
+    if (!id) return;
+
+    // Find row that contains the id in the first column (or the cell with class item-id-<id>)
+    let targetRow = null;
+    const rows = tableBody.querySelectorAll("tr");
+    rows.forEach((r) => {
+      const cell = r.querySelector(`.item-id-${id}`) || r.cells[0];
+      if (!cell) return;
+      const text = cell.textContent.trim();
+      if (text === String(id)) targetRow = r;
+    });
+
+    if (!targetRow) {
+      // If not found, add as new
+      if (typeof window.addItemToTable === "function") {
+        window.addItemToTable(data);
+      }
+      return;
+    }
+
+    const tags = Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "";
+    const expires = data.expires ? new Date(data.expires).toLocaleDateString() : "";
+    const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "";
+
+    targetRow.innerHTML = `
+      <td class="item-id-${id}">${id}</td>
+      <td>${data.name || ""}</td>
+      <td>${data.quantity}</td>
+      <td>${tags}</td>
+      <td>${data.location || data.location_id || ""}</td>
+      <td>${expires}</td>
+      <td>${lastUpdated}</td>
+      <td>${data.updated_by || ""}</td>
+      <td class="text-end">
+        <div class="d-inline-flex gap-2 align-items-center">
+          <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    `;
+
+    targetRow.classList.add("table-warning");
+    setTimeout(() => targetRow.classList.remove("table-warning"), 1200);
+    updateStats();
+  } catch (err) {
+    console.error("Failed to update table row:", err);
+  }
+};
+
 // Function to populate the table
 function populateTable(items) {
   const tableBody = document.getElementById("items-table-body");
@@ -38,22 +93,23 @@ function populateTable(items) {
         : "";
 
       row.innerHTML = `
-                <td>${item.id || ""}</td>
+                <td class="item-id-${item.id}">${item.id || ""}</td>
                 <td>${item.name || ""}</td>
-                <td>${item.quantity || ""}</td>
+                <td>${item.quantity}</td>
                 <td>${tags}</td>
                 <td>${item.location || ""}</td>
                 <td>${expires}</td>
                 <td>${lastUpdated}</td>
                 <td>${item.updated_by || ""}</td>
                 <td class="text-end">
-                  <button 
-                    class="btn btn-sm btn-link text-danger delete-btn p-0" 
-                    onclick="deleteItem(${item.id})"
-                    title="Delete item"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  <div class="d-inline-flex gap-3 align-items-center">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${item.id})" title="Delete item">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </td>
             `;
       row.classList.add("item-row");
@@ -62,6 +118,40 @@ function populateTable(items) {
     });
   } else {
     showEmptyState("No items found. Click 'Add Item' to get started.");
+  }
+}
+
+async function openEditModal(itemId) {
+  try {
+    const resp = await fetch(`/items/one/${itemId}`);
+    if (!resp.ok) throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
+    const data = await resp.json();
+
+    // Make the fetched item available for the modal initializer
+    window.editingItemData = data;
+  	// Also expose the numeric id explicitly so the modal script can read it directly
+  	window.editingItemId = itemId;
+
+    // Update modal UI elements immediately (preserve spinner span if present)
+    const titleEl = document.getElementById("addItemModalLabel");
+    const submitBtn = document.getElementById("createItemBtn");
+    if (titleEl) titleEl.textContent = "Edit Item";
+    if (submitBtn) {
+      for (const node of Array.from(submitBtn.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          node.nodeValue = ' ' + 'Save Changes';
+          break;
+        }
+      }
+    }
+
+    // Show modal - the modal's shown handler will read window.editingItemData and prefill after tags/locations are loaded
+    const modalEl = document.getElementById("addItemModal");
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  } catch (err) {
+    console.error("Failed to open edit modal:", err);
+    alert("Failed to load item for editing. Please refresh and try again.");
   }
 }
 
@@ -163,18 +253,25 @@ window.addItemToTable = function (item) {
   row.innerHTML = `
 		<td>${item.id || ""}</td>
 		<td>${item.name || ""}</td>
-		<td>${item.quantity || ""}</td>
+		<td>${item.quantity}</td>
 		<td>${tags}</td>
 		<td>${item.location || item.location_id || ""}</td>
 		<td>${expires}</td>
 		<td>${last_updated}</td>
 		<td>${item.updated_by || ""}</td>
 		<td class="text-end">
-      <button 
-        class="btn btn-sm btn-link text-danger delete-btn p-0" 
-        onclick="deleteItem(${item.id})"
-        title="Delete item"
-      >
+		<button 
+			class="btn btn-sm btn-link text-primary edit-btn p-0 me-2 display-inline" 
+			onclick="openEditModal(${item.id})"
+			title="Edit item"
+		>
+		<i class="fas fa-edit"></i>
+		</button>
+		<button 
+			class="btn btn-sm btn-link text-danger delete-btn p-0 display-inline" 
+			onclick="deleteItem(${item.id})"
+			title="Delete item"
+		>
         <i class="fas fa-trash"></i>
       </button>
     </td>
