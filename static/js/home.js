@@ -458,3 +458,35 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("logoutButton").addEventListener("click", () => {
   window.location.href = "/auth/logout";
 });
+
+
+document.getElementById('add-tags-to-filtered')?.addEventListener('click', () => {
+  const tags = document.getElementById('bulk-tags-input').value.trim();
+  if (!tags) {
+    alert('Enter at least one tag');
+    return;
+  }
+
+  // Get current filter values
+  const filters = {
+    name: document.getElementById('filter-name')?.value || '',
+    tags: document.getElementById('filter-tags')?.value || '',
+    location: document.getElementById('filter-location')?.value || ''
+  };
+
+  fetch('/add_tags_to_filtered', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tags, filters })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+    } else {
+      alert(data.message);
+      location.reload(); // refresh to show new tags
+    }
+  });
+});
+
