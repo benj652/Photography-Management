@@ -1,5 +1,10 @@
 # Flask route constants
 
+# API version
+API_BASE = "/api/"
+API_VERSION = "v1"
+API_PREFIX = API_BASE + API_VERSION
+
 # CRUD operation routes
 GET = "GET"
 POST = "POST"
@@ -38,9 +43,9 @@ DELETE  /items/delete/<int:item_id>  → Delete an item by ID
 
 ITEM_ALL_ROUTE = "/all"
 ITEM_GET_ONE_ROUTE = "/one/<int:item_id>"
-ITEM_CREATE_ROUTE = "/create"
-ITEM_UPDATE_ROUTE = "/update/<int:item_id>"
-ITEM_DELETE_ROUTE = "/delete/<int:item_id>"
+ITEM_CREATE_ROUTE = "/"
+ITEM_UPDATE_ROUTE = "/<int:item_id>"
+ITEM_DELETE_ROUTE = "/<int:item_id>"
 
 ITEM_NAME_NEEDED_MESSAGE = "Item name is required."
 
@@ -76,9 +81,9 @@ DELETE  /tag/delete/<int:tag_id>→ Delete a tag by ID
 
 TAG_ALL_ROUTE = "/all"
 TAG_GET_ONE_ROUTE = "/one/<int:tag_id>"
-TAG_CREATE_ROUTE = "/create"
-TAG_UPDATE_ROUTE = "/update/<int:tag_id>"
-TAG_DELETE_ROUTE = "/delete/<int:tag_id>"
+TAG_CREATE_ROUTE = "/"
+TAG_UPDATE_ROUTE = "/<int:tag_id>"
+TAG_DELETE_ROUTE = "/<int:tag_id>"
 
 # location fields
 LOCATION_PREFIX = "/location"
@@ -101,9 +106,9 @@ DELETE  /location/delete/<int:location_id> → Delete a location by ID
 
 LOCATION_ALL_ROUTE = "/all"
 LOCATION_GET_ONE_ROUTE = "/one/<int:location_id>"
-LOCATION_CREATE_ROUTE = "/create"
-LOCATION_UPDATE_ROUTE = "/update/<int:location_id>"
-LOCATION_DELETE_ROUTE = "/delete/<int:location_id>"
+LOCATION_CREATE_ROUTE = "/"
+LOCATION_UPDATE_ROUTE = "/<int:location_id>"
+LOCATION_DELETE_ROUTE = "/<int:location_id>"
 
 LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
 LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
