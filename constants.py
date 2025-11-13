@@ -34,11 +34,11 @@ ITEM_PREFIX = "/items"
  Item Routes (prefixed with "/item")
 =========================================
 
-GET     /items/all                   → Retrieve all items
-GET     /items/one/<int:item_id>     → Retrieve a specific item by ID
-POST    /items/create                → Create a new item
-PUT     /items/update/<int:item_id>  → Update an existing item
-DELETE  /items/delete/<int:item_id>  → Delete an item by ID
+GET     /api/v1/items/all                   → Retrieve all items
+GET     /api/v1/items/one/<int:item_id>     → Retrieve a specific item by ID
+POST    /api/v1/items/                      → Create a new item
+PUT     /api/v1/items/<int:item_id>         → Update an existing item
+DELETE  /api/v1/items/<int:item_id>         → Delete an item by ID
 """
 
 ITEM_ALL_ROUTE = "/all"
@@ -72,11 +72,11 @@ TAG_NAME_REQUIRED_MESSAGE = "Tag name is required."
  Tag Routes (prefixed with "/tag")
 ====================================
 
-GET     /tag/all                → Retrieve all tags
-GET     /tag/one/<int:tag_id>   → Retrieve a specific tag by ID
-POST    /tag/create             → Create a new tag
-PUT     /tag/update/<int:tag_id>→ Update an existing tag
-DELETE  /tag/delete/<int:tag_id>→ Delete a tag by ID
+GET     /api/v1/tag/all                → Retrieve all tags
+GET     /api/v1/tag/one/<int:tag_id>   → Retrieve a specific tag by ID
+POST    /api/v1/tag/                   → Create a new tag
+PUT     /api/v1/tag/<int:tag_id>       → Update an existing tag
+DELETE  /api/v1/tag/<int:tag_id>       → Delete a tag by ID
 """
 
 TAG_ALL_ROUTE = "/all"
@@ -96,11 +96,11 @@ LOCATION_DEFAULT_NAME = "locations"
  Location Routes (prefixed with "/location")
 =========================================
 
-GET     /location/all                   → Retrieve all locations
-GET     /location/one/<int:location_id> → Retrieve a specific location by ID
-POST    /location/create                → Create a new location
-PUT     /location/update/<int:location_id> → Update an existing location
-DELETE  /location/delete/<int:location_id> → Delete a location by ID
+GET     /api/v1/location/all                   → Retrieve all locations
+GET     /api/v1/location/one/<int:location_id> → Retrieve a specific location by ID
+POST    /api/v1/location/                      → Create a new location
+PUT     /api/v1/location/<int:location_id>     → Update an existing location
+DELETE  /api/v1/location/<int:location_id>     → Delete a location by ID
 """
 
 
