@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager
 
 from models import db, User
@@ -12,6 +12,8 @@ from views import (
 )
 from constants import (
     AUTH_PREFIX,
+    ERROR_NOT_AUTHORIZED,
+    ERROR_NOT_FOUND,
     HOME_PREFIX,
     ITEM_PREFIX,
     LOCATION_PREFIX,
@@ -20,6 +22,7 @@ from constants import (
     SQLALCHEMY_DATABASE_URI,
     SQLALCHEMY_TRACK_MODIFICATIONS,
     TAG_PREFIX,
+    UNAUTHORIZED_TEMPLATE,
 )
 
 import os
@@ -55,10 +58,12 @@ app.register_blueprint(item_blueprint, url_prefix=ITEM_PREFIX)
 app.register_blueprint(tags_blueprint, url_prefix=TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=LOCATION_PREFIX)
 
-@app.errorhandler(404)
+@app.errorhandler(ERROR_NOT_FOUND)
 def page_not_found(e):
     return redirect(url_for(NOT_FOUND_ROUTE))
-
+@app.errorhandler(ERROR_NOT_AUTHORIZED)
+def not_authorized(e):
+    return render_template(UNAUTHORIZED_TEMPLATE) 
 
 if __name__ == "__main__":
     with app.app_context():

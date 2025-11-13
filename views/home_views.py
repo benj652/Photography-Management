@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from datetime import date
 from constants import(
+    HOME_ROUTE,
     ITEM_FIELD_ID,
     ITEM_FIELD_NAME,
     ITEM_FIELD_QUANTITY,
@@ -14,15 +15,19 @@ from constants import(
     ITEM_FIELD_LAST_UPDATED,
     ITEM_FIELD_UPDATED_BY,
     HOME_TEMPLATE,
-    HOME_BLUEPRINT_NAME
+    HOME_BLUEPRINT_NAME,
+    UNAUTHORIZED_ROUTE,
+    UNAUTHORIZED_TEMPLATE
     )
+from utils import require_approved
 
 
 home_blueprint = Blueprint(HOME_BLUEPRINT_NAME, __name__)
 
 
-@home_blueprint.route('/')
+@home_blueprint.route(HOME_ROUTE)
 @login_required
+@require_approved
 def home():
     """Render the home page.
 
@@ -79,3 +84,5 @@ def home():
                          in_stock_count=in_stock_count,
                          out_of_stock_count=out_of_stock_count,
                          expired_count=expired_count)
+
+

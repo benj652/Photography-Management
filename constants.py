@@ -39,7 +39,9 @@ AUTH_REDIRECT_URI = "auth.authorize"
 
 # home routes
 HOME_PREFIX = "/home"
+HOME_ROUTE = "/"
 NOT_FOUND_ROUTE = "home.home"
+UNAUTHORIZED_ROUTE = "/unauthorized"
 
 # item routes
 ITEM_PREFIX = "/items"
@@ -131,6 +133,7 @@ LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
 # Template constants
 LOGIN_TEMPLATE = "landing.html"
 HOME_TEMPLATE = "home.html"
+UNAUTHORIZED_TEMPLATE = "unauthorized.html"
 
 # environment variable names
 GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID"
