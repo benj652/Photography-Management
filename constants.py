@@ -1,3 +1,22 @@
+import enum
+
+"""
+=========================================
+Standard user enum for roles.
+=========================================
+
+ADMIN: Below permissions and Has full access to all resources and can manage other users.
+TA: Below permissions Can view and modify resources but cannot manage users.
+STUDENT: Below permissions can only view resources and check out equipment.
+INVALID: Student not in Photography who can not see or edit the database at all.
+"""
+
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    TA = "ta"
+    STUDENT = "student"
+    INVALID = "invalid"
+
 # Flask route constants
 
 # CRUD operation routes
@@ -119,6 +138,7 @@ GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET"
 SECRET_KEY = "SECERET_KEY"
 SQLALCHEMY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
 SQLALCHEMY_TRACK_MODIFICATIONS = "SQLALCHEMY_TRACK_MODIFICATIONS"
+DEFAULT_ADMIN_EMAIL = "DEFAULT_ADMIN_EMAIL"
 
 # Google constant variables
 OAUTH_NAME = "google"

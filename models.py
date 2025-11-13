@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy import Enum
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_QUANTITY,
@@ -11,6 +12,7 @@ from constants import (
     LOCATION_NAME,
     TAG_ID,
     TAG_NAME,
+    UserRole,
 )
 
 db = SQLAlchemy()
@@ -28,8 +30,9 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     profile_picture = db.Column(db.String(200))
+    role = db.Column(Enum(UserRole), nullable=False)
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f'<User {self.email} Role {self.role}>'
     def to_dict(self):
         return {
             "id": self.id,
