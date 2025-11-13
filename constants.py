@@ -15,7 +15,17 @@ DELETE = "DELETE"
 AUTH_BLUEPRINT_NAME = "auth"
 HOME_BLUEPRINT_NAME = "home"
 
-# Auth routes
+"""
+=========================================================
+ Authentication Routes (prefixed with "/auth")
+=========================================================
+
+GET     /auth/                     → Login page
+POST    /auth/login                → Handle login submission
+GET     /auth/logout               → Log the user out
+GET     /auth/authorize            → OAuth2 / SSO authorization endpoint
+REDIRECT auth.authorize            → Internal redirect URI name
+"""
 AUTH_PREFIX = "/auth"
 LOGIN_PAGE_ROUTE = "/"
 LOGIN_ROUTE = "/login"
