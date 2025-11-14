@@ -1,13 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Sebastion Page</title>
-  </head>
 
-  <body>
-        Sebastion like foot
- <div id="users-container"></div>
-  </body>
-<script src="/static/js/admin.js"></script>
-</html>
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-4">
+    <div>
+      <h1 class="display-6">Admin Dashboard</h1>
+      <p class="text-muted">Manage user roles and permissions</p>
+    </div>
+  </div>
+
+  <!-- Message container will be inserted here by JavaScript -->
+  
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">User Management</h5>
+        </div>
+        <div class="card-body">
+          <div id="users-container">
+            <!-- Users will be populated by JavaScript -->
+            <div class="text-center py-4">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Loading users...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
