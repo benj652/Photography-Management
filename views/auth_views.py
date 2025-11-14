@@ -110,11 +110,10 @@ def create_new_user(user):
     """
     # print(user[GOOGLE_USER_EMAIL])
     # print(os.getenv(DEFAULT_ADMIN_EMAIL))
-    starting_role = (
-        UserRole.ADMIN
-        if user[GOOGLE_USER_EMAIL] == os.getenv(DEFAULT_ADMIN_EMAIL)
-        else UserRole.INVALID
-    )
+    starting_role = UserRole.INVALID
+
+    if user[GOOGLE_USER_EMAIL] == os.getenv(DEFAULT_ADMIN_EMAIL):
+        starting_role = UserRole.ADMIN
     # print(starting_role)
 
     new_user = User(
