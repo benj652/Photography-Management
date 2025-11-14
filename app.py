@@ -8,9 +8,12 @@ from views import (
     item_blueprint,
     init_oauth,
     tags_blueprint,
-    location_blueprint
+    location_blueprint,
+    admin_blueprint
 )
 from constants import (
+    ADMIN_PREFIX,
+    ADMIN_TEMPLATE,
     AUTH_PREFIX,
     ERROR_NOT_AUTHORIZED,
     ERROR_NOT_FOUND,
@@ -57,6 +60,7 @@ app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 app.register_blueprint(item_blueprint, url_prefix=ITEM_PREFIX)
 app.register_blueprint(tags_blueprint, url_prefix=TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=LOCATION_PREFIX)
+app.register_blueprint(admin_blueprint, url_prefix=ADMIN_PREFIX)
 
 @app.errorhandler(ERROR_NOT_FOUND)
 def page_not_found(e):

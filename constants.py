@@ -46,7 +46,7 @@ UNAUTHORIZED_ROUTE = "/unauthorized"
 # item routes
 ITEM_PREFIX = "/items"
 """
-=========================================
+=========================================constants
  Item Routes (prefixed with "/item")
 =========================================
 
@@ -129,11 +129,15 @@ LOCATION_DELETE_ROUTE = "/delete/<int:location_id>"
 LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
 LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
 
+# Admin routes
+ADMIN_PREFIX = "/admin"
+
 
 # Template constants
 LOGIN_TEMPLATE = "landing.html"
 HOME_TEMPLATE = "home.html"
 UNAUTHORIZED_TEMPLATE = "unauthorized.html"
+ADMIN_TEMPLATE = "admin.html"
 
 # environment variable names
 GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID"
