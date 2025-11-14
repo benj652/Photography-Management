@@ -1,5 +1,13 @@
 """
-Auth views
+=========================================================
+ Authentication Routes (prefixed with "/auth")
+=========================================================
+
+GET     /auth/                     → Login page
+POST    /auth/login                → Handle login submission
+GET     /auth/logout               → Log the user out
+GET     /auth/authorize            → OAuth2 / SSO authorization endpoint
+REDIRECT auth.authorize            → Internal redirect URI name
 """
 
 from flask import Blueprint, json, render_template, session, redirect, url_for

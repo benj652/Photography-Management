@@ -1,8 +1,10 @@
+const API_PREFIX = "/api/v1";
+
 // Function to fetch items from the server
 async function fetchItems() {
   try {
     console.log("Fetching items from /items/all");
-    const response = await fetch("/items/all");
+    const response = await fetch(API_PREFIX+"/items/all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -123,7 +125,7 @@ function populateTable(items) {
 
 async function openEditModal(itemId) {
   try {
-    const resp = await fetch(`/items/one/${itemId}`);
+    const resp = await fetch(`${API_PREFIX}/items/one/${itemId}`);
     if (!resp.ok) throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
     const data = await resp.json();
 
@@ -170,7 +172,7 @@ function showEmptyState(message) {
 // Function to calculate and update stats
 async function updateStats() {
   try {
-    const response = await fetch("/items/all");
+    const response = await fetch(API_PREFIX + "/items/all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -410,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
       try {
-        const response = await fetch(`/items/delete/${itemId}`, {
+        const response = await fetch(`${API_PREFIX}/items/${itemId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

@@ -1,13 +1,13 @@
 """
-====================================
- Tag Routes (prefixed with "/tag")
-====================================
+=========================================
+ Item Routes (prefixed with "/item")
+=========================================
 
-GET     /tag/all                → Retrieve all tags
-GET     /tag/one/<int:tag_id>   → Retrieve a specific tag by ID
-POST    /tag/create             → Create a new tag
-PUT     /tag/update/<int:tag_id>→ Update an existing tag
-DELETE  /tag/delete/<int:tag_id>→ Delete a tag by ID
+GET     /api/v1/items/all                   → Retrieve all items
+GET     /api/v1/items/one/<int:item_id>     → Retrieve a specific item by ID
+POST    /api/v1/items/                      → Create a new item
+PUT     /api/v1/items/<int:item_id>         → Update an existing item
+DELETE  /api/v1/items/<int:item_id>         → Delete an item by ID
 """
 
 from flask_login import login_required
