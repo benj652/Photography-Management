@@ -11,6 +11,7 @@ from views import (
     location_blueprint
 )
 from constants import (
+    API_PREFIX,
     AUTH_PREFIX,
     HOME_PREFIX,
     ITEM_PREFIX,
@@ -51,9 +52,9 @@ init_oauth(app)
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
-app.register_blueprint(item_blueprint, url_prefix=ITEM_PREFIX)
-app.register_blueprint(tags_blueprint, url_prefix=TAG_PREFIX)
-app.register_blueprint(location_blueprint, url_prefix=LOCATION_PREFIX)
+app.register_blueprint(item_blueprint, url_prefix=API_PREFIX+ITEM_PREFIX)
+app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX+TAG_PREFIX)
+app.register_blueprint(location_blueprint, url_prefix=API_PREFIX+LOCATION_PREFIX)
 
 @app.errorhandler(404)
 def page_not_found(e):

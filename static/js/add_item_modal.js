@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updateItem(itemId, updatedData) {
   // Simple helper that updates an item via API and then refreshes the row using updateItemInTable
-  fetch(`/items/update/${itemId}`, {
+  fetch(`${API_PREFIX}/items/${itemId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Fetch all tags from the database
   async function fetchTags() {
     try {
-      const response = await fetch("/tags/all");
+      const response = await fetch(API_PREFIX+"/tags/all");
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
       }
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Fetch all locations from the database - exact mirror of fetchTags
   async function fetchLocations() {
     try {
-      const response = await fetch("/location/all");
+      const response = await fetch(API_PREFIX+"/location/all");
       if (!response.ok) {
         throw new Error("Failed to fetch locations");
       }
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!newTagName) return;
 
     try {
-      const response = await fetch("/tags/create", {
+      const response = await fetch(API_PREFIX+"/tags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!newLocationName) return;
 
     try {
-      const response = await fetch("/location/create", {
+      const response = await fetch(API_PREFIX + "/location", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", function () {
         spinner.classList.add("d-none");
     } else {
       // Create new item (existing flow)
-      fetch("/items/create", {
+      fetch(API_PREFIX+"/items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
