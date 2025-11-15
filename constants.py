@@ -11,11 +11,13 @@ STUDENT: Below permissions can only view resources and check out equipment.
 INVALID: Student not in Photography who can not see or edit the database at all.
 """
 
+
 class UserRole(enum.Enum):
     ADMIN = "admin"
     TA = "ta"
     STUDENT = "student"
     INVALID = "invalid"
+
 
 """
 =========================================
@@ -177,18 +179,18 @@ LAB_EQUIPMENT_LAST_SERVICED_BY_USER_FIELD = "last_serviced_by_user"
 =====================================================
 
 GET     /api/v1/lab_equipment/all                → Retrieve all lab equipment
-GET     /api/v1/lab_equipment/one/<int:tag_id>   → Retrieve a specific lab equipment item by ID
+GET     /api/v1/lab_equipment/one/<int:equipment_id>   → Retrieve a specific lab equipment item by ID
 POST    /api/v1/lab_equipment/                   → Create a new lab equipment item
-PUT     /api/v1/lab_equipment/<int:tag_id>       → Update an existing lab equipment item
-DELETE  /api/v1/lab_equipment/<int:tag_id>       → Delete a lab equipment item by ID
+PUT     /api/v1/lab_equipment/<int:equipment_id>       → Update an existing lab equipment item
+DELETE  /api/v1/lab_equipment/<int:equipment_id>       → Delete a lab equipment item by ID
 """
 
 LAB_EQUIPMENT_PREFIX = "/lab_equipment"
 LAB_EQUIPMENT_ALL_ROUTE = "/all"
-LAB_EQUIPMENT_GET_ONE_ROUTE = "/one/<int:tag_id>"
+LAB_EQUIPMENT_GET_ONE_ROUTE = "/one/<int:equipment_id>"
 LAB_EQUIPMENT_CREATE_ROUTE = "/"
-LAB_EQUIPMENT_UPDATE_ROUTE = "/<int:tag_id>"
-LAB_EQUIPMENT_DELETE_ROUTE = "/<int:tag_id>"
+LAB_EQUIPMENT_UPDATE_ROUTE = "/<int:equipment_id>"
+LAB_EQUIPMENT_DELETE_ROUTE = "/<int:equipment_id>"
 
 # tags fields
 TAG_PREFIX = "/tags"

@@ -12,7 +12,7 @@ DELETE  /api/v1/lab_equipment/<int:tag_id>       → Delete a lab equipment item
 
 from flask import Blueprint, request
 from flask_login import current_user, login_required
-
+from datetime import datetime
 from constants import (
     DELETE,
     GET,
@@ -20,6 +20,7 @@ from constants import (
     LAB_EQUIPMENT_CREATE_ROUTE,
     LAB_EQUIPMENT_DEFAULT_NAME,
     LAB_EQUIPMENT_DELETE_ROUTE,
+    LAB_EQUIPMENT_GET_ONE_ROUTE,
     LAB_EQUIPMENT_NAME_FIELD,
     LAB_EQUIPMENT_SERVICE_FREQUENCY_FIELD,
     LAB_EQUIPMENT_TAGS_FIELD,
@@ -46,11 +47,11 @@ def get_all_lab_equipment():
     }
 
 
-@lab_equipment_blueprint.route(LAB_EQUIPMENT_DEFAULT_NAME, methods=[GET])
+@lab_equipment_blueprint.route(LAB_EQUIPMENT_GET_ONE_ROUTE, methods=[GET])
 @login_required
 @require_approved
-def get_lab_equipment(tag_id):
-    equipment_item = LabEquipment.query.get_or_404(tag_id)
+def get_lab_equipment(equipment_id):
+    equipment_item = LabEquipment.query.get_or_404(equipment_id)
     return equipment_item.to_dict()
 
 
@@ -89,35 +90,41 @@ def create_lab_equipment():
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_UPDATE_ROUTE, methods=[PUT])
 @login_required
 @require_approved
-def update_lab_equipment(lab_equipment_id):
-    target_equipment = LabEquipment.query.get_or_404(lab_equipment_id)
+def update_lab_equipment(equipment_id):
+    target_equipment = LabEquipment.query.get_or_404(equipment_id)
     data = request.get_json()
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
     tag_names = data.get(LAB_EQUIPMENT_TAGS_FIELD)
     service_freq = data.get(LAB_EQUIPMENT_SERVICE_FREQUENCY_FIELD)
+
     if name:
         target_equipment.name = name
-        if tag_names is not None:
-            tags = []
-            for tag_name in tag_names:
-                tag = Tag.query.filter_by(name=tag_name).first()
-                if not tag:
-                    tag = Tag(name=tag_name)
-                    db.session.add(tag)
-                tags.append(tag)
-            target_equipment.tags = tags
-            if service_freq is not None:
-                target_equipment.service_frequency = service_freq
+
+    if tag_names is not None:
+        tags = []
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            tags.append(tag)
+        target_equipment.tags = tags
+
+    if service_freq is not None:
+        target_equipment.service_frequency = service_freq
+
+    target_equipment.last_updated = datetime.now()
+    target_equipment.updated_by = current_user.id
 
     db.session.commit()
-    return {}
+    return target_equipment.to_dict()
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_DELETE_ROUTE, methods=[DELETE])
 @login_required
 @require_approved
-def delete_lab_equipment(lab_equipment_id):
-    target_equipment = LabEquipment.query.get_or_404(lab_equipment_id)
+def delete_lab_equipment(equipment_id):
+    target_equipment = LabEquipment.query.get_or_404(equipment_id)
     db.session.delete(target_equipment)
     db.session.commit()
-    return {}
+    return {"message": "Lab equipment deleted successfully"}
