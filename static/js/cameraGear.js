@@ -82,8 +82,8 @@ function displayCameraGear(gear) {
             row.classList.add('checked-out-row');
         }
         
-        // Get location name
-        const locationName = allLocations.find(loc => loc.id === item.location_id)?.name || '';
+        // Use location name directly from API response
+        const locationName = item.location || '';
         
         row.innerHTML = `
             <td>${item.id}</td>

@@ -148,6 +148,11 @@ class CameraGear(db.Model):
     def __repr__(self):
         return f"<CameraGear {self.name}>"
 
+    # relationship to Location so templates and views can use `camera_gear.location`
+    location = db.relationship(
+        "Location", backref="camera_gear", foreign_keys=[location_id]
+    )
+
     updated_by_user = db.relationship(
         "User", foreign_keys=[updated_by], backref="updated_camera_gear", uselist=False
     )
@@ -160,6 +165,14 @@ class CameraGear(db.Model):
 
     def to_dict(self):
         tags = [t.name for t in getattr(self, "tags", [])]
+
+        # Get location name
+        location_name = None
+        try:
+            if getattr(self, "location", None):
+                location_name = self.location.name
+        except Exception:
+            location_name = None
 
         updater = None
         checked_out_user = None
@@ -175,6 +188,8 @@ class CameraGear(db.Model):
             "id": self.id,
             ITEM_FIELD_NAME: self.name,
             ITEM_FIELD_TAGS: tags,
+            ITEM_FIELD_LOCATION_ID: self.location_id,
+            "location": location_name,
             "last_updated": (
                 self.last_updated.isoformat() if self.last_updated else None
             ),
