@@ -22,6 +22,8 @@ from constants import (
     CAMERA_GEAR_DELETE_ROUTE,
     CAMERA_GEAR_GET_ONE_ROUTE,
     CAMERA_GEAR_LOCATION_FIELD,
+    CAMERA_GEAR_CHECK_OUT_ROUTE,
+    CAMERA_GEAR_CHECK_IN_ROUTE,
     CAMERA_GEAR_NAME_FIELD,
     CAMERA_GEAR_TAGS_FIELD,
     CAMERA_GEAR_UPDATE_ROUTE,
@@ -123,6 +125,38 @@ def update_camera_gear(tag_id):
             else:
                 return {"error": "Location not found"}, 404
 
+    gear_item.last_updated = datetime.now()
+    gear_item.updated_by = current_user.id
+
+    db.session.commit()
+    return gear_item.to_dict()
+
+
+@camera_gear_blueprint.route(CAMERA_GEAR_CHECK_OUT_ROUTE, methods=[PUT])
+@require_approved
+@login_required
+def check_out_camera_gear(tag_id):
+    gear_item = CameraGear.query.get_or_404(tag_id)
+    if gear_item.checked_out_by is not None:
+        return {"error": "Camera gear is already checked out"}, 400
+
+    gear_item.checked_out_by = current_user.id
+    gear_item.last_updated = datetime.now()
+    gear_item.updated_by = current_user.id
+
+    db.session.commit()
+    return gear_item.to_dict()
+
+
+@camera_gear_blueprint.route(CAMERA_GEAR_CHECK_IN_ROUTE, methods=[PUT])
+@require_approved
+@login_required
+def check_in_camera_gear(tag_id):
+    gear_item = CameraGear.query.get_or_404(tag_id)
+    if gear_item.checked_out_by is None:
+        return {"error": "Camera gear is not checked out"}, 400
+
+    gear_item.checked_out_by = None
     gear_item.last_updated = datetime.now()
     gear_item.updated_by = current_user.id
 

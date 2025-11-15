@@ -138,6 +138,8 @@ CAMERA_GEAR_ALL_ROUTE = "/all"
 CAMERA_GEAR_GET_ONE_ROUTE = "/one/<int:tag_id>"
 CAMERA_GEAR_CREATE_ROUTE = "/"
 CAMERA_GEAR_UPDATE_ROUTE = "/<int:tag_id>"
+CAMERA_GEAR_CHECK_OUT_ROUTE = "/<int:tag_id>/check-out"
+CAMERA_GEAR_CHECK_IN_ROUTE = "/<int:tag_id>/check-in"
 CAMERA_GEAR_DELETE_ROUTE = "/<int:tag_id>"
 
 """
