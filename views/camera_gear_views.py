@@ -13,6 +13,7 @@ DELETE  /api/v1/camera_gear/<int:tag_id>       → Delete a camera gear item by 
 from flask import Blueprint, request
 from flask_login import current_user
 from flask_login.utils import login_required
+from datetime import datetime
 
 from constants import (
     CAMERA_GEAR_ALL_ROUTE,
@@ -63,8 +64,11 @@ def get_camera_gear(tag_id):
 def create_camera_gear():
     data = request.get_json()
     name = data.get(CAMERA_GEAR_NAME_FIELD)
-    tag_names = data.get(CAMERA_GEAR_TAGS_FIELD)
-    location_id = data.get(CAMERA_GEAR_LOCATION_FIELD)
+    tag_names = data.get(CAMERA_GEAR_TAGS_FIELD, [])
+    location_id = data.get("location_id")
+
+    if not name:
+        return {"error": "Name is required"}, 400
 
     tags = []
     for tag_name in tag_names:
@@ -74,19 +78,14 @@ def create_camera_gear():
             db.session.add(tag)
         tags.append(tag)
 
-    location = None
-    if location_id:
-        location = Location.query.get(location_id)
-        if not location:
-            return "Location not found", ERROR_NOT_FOUND
-
     new_gear = CameraGear(
-        name=name, 
-        tags=tags, 
+        name=name,
+        tags=tags,
         location_id=location_id,
-        last_updated=datetime.now(),  # Fix: Set the current datetime
-        updated_by=current_user.id,  # Fix: Set the user ID instead of user object
+        last_updated=datetime.now(),
+        updated_by=current_user.id,
     )
+    db.session.add(new_gear)
     db.session.commit()
     return new_gear.to_dict()
 
@@ -99,9 +98,11 @@ def update_camera_gear(tag_id):
     data = request.get_json()
     name = data.get(CAMERA_GEAR_NAME_FIELD)
     tag_names = data.get(CAMERA_GEAR_TAGS_FIELD)
-    location_id = data.get(CAMERA_GEAR_LOCATION_FIELD)
+    location_id = data.get("location_id")
+
     if name:
         gear_item.name = name
+
     if tag_names is not None:
         tags = []
         for tag_name in tag_names:
@@ -111,11 +112,20 @@ def update_camera_gear(tag_id):
                 db.session.add(tag)
             tags.append(tag)
         gear_item.tags = tags
+
     if location_id is not None:
-        location = Location.query.get(location_id)
-        if not location:
-            return "Location not found", ERROR_NOT_FOUND
-        gear_item.location_id = location_id
+        if location_id == "":
+            gear_item.location_id = None
+        else:
+            location = Location.query.get(location_id)
+            if location:
+                gear_item.location_id = location_id
+            else:
+                return {"error": "Location not found"}, 404
+
+    gear_item.last_updated = datetime.now()
+    gear_item.updated_by = current_user.id
+
     db.session.commit()
     return gear_item.to_dict()
 

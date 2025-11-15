@@ -68,11 +68,23 @@ LOGOUT_ROUTE = "/logout"
 AUTHORIZE_ROUTE = "/authorize"
 AUTH_REDIRECT_URI = "auth.authorize"
 
-# home routes
+"""
+===============================================
+ Home Routes (prefixed with "/home") — Templates
+===============================================
+
+GET     /home/                     → Render the home page
+GET     /home/unauthorized         → Render the unauthorized access page
+GET     /home/lab-equipment        → Render the lab equipment page
+GET     /home/camera-gear          → Render the camera gear page
+REDIRECT home.home                 → Named route for "not found" fallback
+"""
 HOME_PREFIX = "/home"
 HOME_ROUTE = "/"
 NOT_FOUND_ROUTE = "home.home"
 UNAUTHORIZED_ROUTE = "/unauthorized"
+LAB_EQUIPMENT_ROUTE = "/lab-equipment"
+CAMERA_GEAR_ROUTE = "/camera-gear"
 
 # item routes
 ITEM_PREFIX = "/items"
@@ -236,13 +248,23 @@ LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
 ADMIN_PREFIX = "/admin"
 
 
-# Template constants
+"""
+=========================================
+Template constants
+=========================================
+"""
 LOGIN_TEMPLATE = "landing.html"
 HOME_TEMPLATE = "home.html"
 UNAUTHORIZED_TEMPLATE = "unauthorized.html"
 ADMIN_TEMPLATE = "admin.html"
+CAMERA_GEAR_TEMPLATE = "camera_gear.html"
+LAB_EQUIPMENT_TEMPLATE = "lab_equipment.html"
 
-# environment variable names
+"""
+=========================================
+Environment variable names
+=========================================
+"""
 GOOGLE_CLIENT_ID = "GOOGLE_CLIENT_ID"
 GOOGLE_CLIENT_SECRET = "GOOGLE_CLIENT_SECRET"
 SECRET_KEY = "SECERET_KEY"
@@ -250,7 +272,11 @@ SQLALCHEMY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
 SQLALCHEMY_TRACK_MODIFICATIONS = "SQLALCHEMY_TRACK_MODIFICATIONS"
 DEFAULT_ADMIN_EMAIL = "DEFAULT_ADMIN_EMAIL"
 
-# Google constant variables
+"""
+=========================================
+Google constant variables
+=========================================
+"""
 OAUTH_NAME = "google"
 SERVER_METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
 CLIENT_KWARGS_KEY = "scope"
@@ -281,13 +307,25 @@ GOOGLE_USER_PICTURE = "picture"
 GOOGLE_USER_HD = "hd"
 
 
-# Session keys
+"""
+=========================================
+Session Keys
+=========================================
+"""
 USER_KEY = "user"
 
-# JSON response keys
+"""
+=========================================
+JSON response keys
+=========================================
+"""
 MESSAGE_KEY = "message"
 
-# Status messages
+"""
+=========================================
+Status messages
+=========================================
+"""
 ERROR_NOT_FOUND = 404
 ERROR_NOT_AUTHORIZED = 403
 ERROR_BAD_REQUEST = 400
