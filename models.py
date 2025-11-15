@@ -24,6 +24,25 @@ item_tags = db.Table(
     db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
 )
 
+camera_gear_tags = db.Table(
+    "camera_gear_tags",
+    db.Column(
+        "camera_gear_id", db.Integer, db.ForeignKey("camera_gear.id"), primary_key=True
+    ),
+    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
+)
+
+lab_equipment_tags = db.Table(
+    "lab_equipment_tags",
+    db.Column(
+        "lab_equipment_id",
+        db.Integer,
+        db.ForeignKey("lab_equipment.id"),
+        primary_key=True,
+    ),
+    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
+)
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -109,6 +128,124 @@ class Item(db.Model):
                 self.last_updated.isoformat() if self.last_updated else None
             ),
             ITEM_FIELD_UPDATED_BY: updater,
+        }
+
+
+class CameraGear(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    tags = db.relationship("Tag", secondary="camera_gear_tags", backref="camera_gear")
+    location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
+    last_updated = db.Column(db.DateTime, nullable=False)
+    updated_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    # Checkout tracking fields
+    is_checked_out = db.Column(db.Boolean, default=False, nullable=False)
+    checked_out_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    checked_out_date = db.Column(db.DateTime, nullable=True)
+    return_date = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<CameraGear {self.name}>"
+
+    updated_by_user = db.relationship(
+        "User", foreign_keys=[updated_by], backref="updated_camera_gear", uselist=False
+    )
+    checked_out_by_user = db.relationship(
+        "User",
+        foreign_keys=[checked_out_by],
+        backref="checked_out_camera_gear",
+        uselist=False,
+    )
+
+    def to_dict(self):
+        tags = [t.name for t in getattr(self, "tags", [])]
+
+        updater = None
+        checked_out_user = None
+        try:
+            if self.updated_by and getattr(self, "updated_by_user", None):
+                updater = self.updated_by_user.email
+            if self.checked_out_by and getattr(self, "checked_out_by_user", None):
+                checked_out_user = self.checked_out_by_user.email
+        except Exception:
+            pass
+
+        return {
+            "id": self.id,
+            ITEM_FIELD_NAME: self.name,
+            ITEM_FIELD_TAGS: tags,
+            "last_updated": (
+                self.last_updated.isoformat() if self.last_updated else None
+            ),
+            ITEM_FIELD_UPDATED_BY: updater,
+            "is_checked_out": self.is_checked_out,
+            "checked_out_by": checked_out_user,
+            "checked_out_date": (
+                self.checked_out_date.isoformat() if self.checked_out_date else None
+            ),
+            "return_date": self.return_date.isoformat() if self.return_date else None,
+        }
+
+
+class LabEquipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    tags = db.relationship(
+        "Tag", secondary="lab_equipment_tags", backref="lab_equipment"
+    )
+    last_updated = db.Column(db.DateTime, nullable=False)
+    updated_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    # Service tracking fields
+    last_serviced_on = db.Column(db.Date, nullable=True)
+    last_serviced_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    service_frequency = db.Column(
+        db.String(100), nullable=True
+    )  # e.g., "monthly", "yearly", etc.
+
+    def __repr__(self):
+        return f"<LabEquipment {self.name}>"
+
+    updated_by_user = db.relationship(
+        "User",
+        foreign_keys=[updated_by],
+        backref="updated_lab_equipment",
+        uselist=False,
+    )
+    last_serviced_by_user = db.relationship(
+        "User",
+        foreign_keys=[last_serviced_by],
+        backref="serviced_lab_equipment",
+        uselist=False,
+    )
+
+    def to_dict(self):
+        tags = [t.name for t in getattr(self, "tags", [])]
+
+        updater = None
+        serviced_by_user = None
+        try:
+            if self.updated_by and getattr(self, "updated_by_user", None):
+                updater = self.updated_by_user.email
+            if self.last_serviced_by and getattr(self, "last_serviced_by_user", None):
+                serviced_by_user = self.last_serviced_by_user.email
+        except Exception:
+            pass
+
+        return {
+            "id": self.id,
+            ITEM_FIELD_NAME: self.name,
+            ITEM_FIELD_TAGS: tags,
+            "last_updated": (
+                self.last_updated.isoformat() if self.last_updated else None
+            ),
+            ITEM_FIELD_UPDATED_BY: updater,
+            "last_serviced_on": (
+                self.last_serviced_on.isoformat() if self.last_serviced_on else None
+            ),
+            "last_serviced_by": serviced_by_user,
+            "service_frequency": self.service_frequency,
         }
 
 

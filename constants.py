@@ -17,20 +17,36 @@ class UserRole(enum.Enum):
     STUDENT = "student"
     INVALID = "invalid"
 
-# Flask route constants
+"""
+=========================================
+Flask route constants
+=========================================
+"""
 
-# API version
+"""
+-----------------------------------------
+API version
+-----------------------------------------
+"""
 API_BASE = "/api/"
 API_VERSION = "v1"
 API_PREFIX = API_BASE + API_VERSION
 
-# CRUD operation routes
+"""
+-----------------------------------------
+CRUD operation routes
+-----------------------------------------
+"""
 GET = "GET"
 POST = "POST"
 PUT = "PUT"
 DELETE = "DELETE"
 
-# Blueprint names
+"""
+-----------------------------------------
+Blueprint names
+-----------------------------------------
+"""
 AUTH_BLUEPRINT_NAME = "auth"
 HOME_BLUEPRINT_NAME = "home"
 
@@ -89,6 +105,78 @@ ITEM_FIELD_LOCATION_ID = "location_id"
 ITEM_FIELD_EXPIRES = "expires"
 ITEM_FIELD_LAST_UPDATED = "last_updated"
 ITEM_FIELD_UPDATED_BY = "updated_by"
+
+
+"""
+=====================================================
+ Camera Gear Routes (prefixed with "/camera_gear")
+=====================================================
+
+GET     /api/v1/camera_gear/all                → Retrieve all camera gear
+GET     /api/v1/camera_gear/one/<int:tag_id>   → Retrieve a specific camera gear item by ID
+POST    /api/v1/camera_gear/                   → Create a new camera gear item
+PUT     /api/v1/camera_gear/<int:tag_id>       → Update an existing camera gear item
+DELETE  /api/v1/camera_gear/<int:tag_id>       → Delete a camera gear item by ID
+"""
+
+CAMERA_GEAR_PREFIX = "/camera_gear"
+CAMERA_GEAR_ALL_ROUTE = "/all"
+CAMERA_GEAR_GET_ONE_ROUTE = "/one/<int:tag_id>"
+CAMERA_GEAR_CREATE_ROUTE = "/"
+CAMERA_GEAR_UPDATE_ROUTE = "/<int:tag_id>"
+CAMERA_GEAR_DELETE_ROUTE = "/<int:tag_id>"
+
+"""
+=====================================================
+    Camera Gear Fields
+=====================================================
+"""
+CAMERA_GEAR_DEAFULT_NAME = "camera_gear"
+CAMERA_GEAR_NAME_FIELD = "name"
+CAMERA_GEAR_TAGS_FIELD = "tags"
+CAMERA_GEAR_LOCATION_FIELD = "location_id"
+CAMERA_GEAR_LAST_UPDATED_FIELD = "last_updated"
+CAMERA_GEAR_UPDATED_BY_FIELD = "updated_by"
+CAMERA_GEAR_IS_CHECKED_OUT_FIELD = "is_checked_out"
+CAMERA_GEAR_CHECKED_OUT_BY_FIELD = "checked_out_by"
+CAMERA_GEAR_CHECKED_OUT_DATE_FIELD = "checked_out_date"
+CAMERA_GEAR_RETURN_DATE_FIELD = "return_date"
+
+"""
+=====================================================
+ Lab equipment fields
+=====================================================
+"""
+LAB_EQUIPMENT_DEFAULT_NAME = "lab_equipment"
+
+LAB_EQUIPMENT_NAME_FIELD = "name"
+LAB_EQUIPMENT_TAGS_FIELD = "tags"
+LAB_EQUIPMENT_LAST_UPDATED_FIELD = "last_updated"
+LAB_EQUIPMENT_UPDATED_BY_FIELD = "updated_by"
+LAB_EQUIPMENT_LAST_SERVICED_ON_FIELD = "last_serviced_on"
+LAB_EQUIPMENT_LAST_SERVICED_BY_FIELD = "last_serviced_by"
+LAB_EQUIPMENT_SERVICE_FREQUENCY_FIELD = "service_frequency"
+LAB_EQUIPMENT_UPDATED_BY_USER_FIELD = "updated_by_user"
+LAB_EQUIPMENT_LAST_SERVICED_BY_USER_FIELD = "last_serviced_by_user"
+
+"""
+=====================================================
+ Lab Equipment Routes (prefixed with "/lab_equipment")
+=====================================================
+
+GET     /api/v1/lab_equipment/all                → Retrieve all lab equipment
+GET     /api/v1/lab_equipment/one/<int:tag_id>   → Retrieve a specific lab equipment item by ID
+POST    /api/v1/lab_equipment/                   → Create a new lab equipment item
+PUT     /api/v1/lab_equipment/<int:tag_id>       → Update an existing lab equipment item
+DELETE  /api/v1/lab_equipment/<int:tag_id>       → Delete a lab equipment item by ID
+"""
+
+LAB_EQUIPMENT_PREFIX = "/lab_equipment"
+LAB_EQUIPMENT_ALL_ROUTE = "/all"
+LAB_EQUIPMENT_GET_ONE_ROUTE = "/one/<int:tag_id>"
+LAB_EQUIPMENT_CREATE_ROUTE = "/"
+LAB_EQUIPMENT_UPDATE_ROUTE = "/<int:tag_id>"
+LAB_EQUIPMENT_DELETE_ROUTE = "/<int:tag_id>"
 
 # tags fields
 TAG_PREFIX = "/tags"
