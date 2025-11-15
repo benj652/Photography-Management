@@ -43,12 +43,19 @@ function displayEquipment(equipment) {
     
     equipment.forEach(item => {
         const row = document.createElement('tr');
+        
+        // Format dates properly
+        const lastServiced = item.last_serviced_on
+            ? new Date(item.last_serviced_on).toLocaleDateString()
+            : '—';
+        
         row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.name}</td>
             <td>${Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || ''}</td>
-            <td>${item.service_frequency || ''}</td>
-            <td>${item.last_serviced_on || ''}</td>
+            <td>${item.service_frequency || '—'}</td>
+            <td>${lastServiced}</td>
+            <td>${item.last_serviced_by || '—'}</td>
             <td>
                 <button class="btn btn-sm btn-warning" onclick="editEquipment(${item.id})">Edit</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${item.id})">Delete</button>

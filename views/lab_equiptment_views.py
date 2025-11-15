@@ -61,8 +61,12 @@ def get_lab_equipment(equipment_id):
 def create_lab_equipment():
     data = request.get_json()
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
-    tag_names = data.get(LAB_EQUIPMENT_TAGS_FIELD)
+    tag_names = data.get(LAB_EQUIPMENT_TAGS_FIELD, [])
     service_freq = data.get(LAB_EQUIPMENT_SERVICE_FREQUENCY_FIELD)
+    last_serviced_on = data.get("last_serviced_on")
+
+    if not name:
+        return {"error": "Name is required"}, 400
 
     tags = []
     if tag_names:
@@ -73,12 +77,22 @@ def create_lab_equipment():
                 db.session.add(tag)
             tags.append(tag)
 
+    # Parse the date if provided
+    serviced_date = None
+    if last_serviced_on:
+        try:
+            serviced_date = datetime.strptime(last_serviced_on, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
     new_equipment = LabEquipment(
         name=name,
         tags=tags,
         service_frequency=service_freq,
-        last_updated=datetime.now(),  # Fix: Set the current datetime
-        updated_by=current_user.id,  # Fix: Set the user ID instead of user object
+        last_serviced_on=serviced_date,
+        last_serviced_by=current_user.id if serviced_date else None,
+        last_updated=datetime.now(),
+        updated_by=current_user.id,
     )
 
     db.session.add(new_equipment)
@@ -96,6 +110,7 @@ def update_lab_equipment(equipment_id):
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
     tag_names = data.get(LAB_EQUIPMENT_TAGS_FIELD)
     service_freq = data.get(LAB_EQUIPMENT_SERVICE_FREQUENCY_FIELD)
+    last_serviced_on = data.get("last_serviced_on")
 
     if name:
         target_equipment.name = name
@@ -112,6 +127,19 @@ def update_lab_equipment(equipment_id):
 
     if service_freq is not None:
         target_equipment.service_frequency = service_freq
+
+    # Handle last serviced date
+    if last_serviced_on is not None:
+        if last_serviced_on:  # Not empty string
+            try:
+                serviced_date = datetime.strptime(last_serviced_on, "%Y-%m-%d").date()
+                target_equipment.last_serviced_on = serviced_date
+                target_equipment.last_serviced_by = current_user.id
+            except ValueError:
+                pass
+        else:  # Empty string, clear the date
+            target_equipment.last_serviced_on = None
+            target_equipment.last_serviced_by = None
 
     target_equipment.last_updated = datetime.now()
     target_equipment.updated_by = current_user.id
