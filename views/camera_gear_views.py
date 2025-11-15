@@ -4,10 +4,12 @@
 =====================================================
 
 GET     /api/v1/camera_gear/all                → Retrieve all camera gear
-GET     /api/v1/camera_gear/one/<int:tag_id>   → Retrieve a specific camera gear item by ID
+GET     /api/v1/camera_gear/one/<int:gear_id>   → Retrieve a specific camera gear item by ID
 POST    /api/v1/camera_gear/                   → Create a new camera gear item
-PUT     /api/v1/camera_gear/<int:tag_id>       → Update an existing camera gear item
-DELETE  /api/v1/camera_gear/<int:tag_id>       → Delete a camera gear item by ID
+PUT     /api/v1/camera_gear/<int:gear_id>       → Update an existing camera gear item
+PUT     /api/v1/camera_gear/checkout/<int:gear_id> → Check out a camera gear item
+PUT     /api/v1/camera_gear/checkin/<int:gear_id>  → Check in a camera gear item
+DELETE  /api/v1/camera_gear/<int:gear_id>       → Delete a camera gear item by ID
 """
 
 from flask import Blueprint, request
@@ -55,8 +57,8 @@ def get_all_camera_gear():
 @camera_gear_blueprint.route(CAMERA_GEAR_GET_ONE_ROUTE, methods=[GET])
 @require_approved
 @login_required
-def get_camera_gear(tag_id):
-    gear_item = CameraGear.query.get_or_404(tag_id)
+def get_camera_gear(gear_id):
+    gear_item = CameraGear.query.get_or_404(gear_id)
     return gear_item.to_dict()
 
 
@@ -95,8 +97,8 @@ def create_camera_gear():
 @camera_gear_blueprint.route(CAMERA_GEAR_UPDATE_ROUTE, methods=[PUT])
 @require_approved
 @login_required
-def update_camera_gear(tag_id):
-    gear_item = CameraGear.query.get_or_404(tag_id)
+def update_camera_gear(gear_id):
+    gear_item = CameraGear.query.get_or_404(gear_id)
     data = request.get_json()
     name = data.get(CAMERA_GEAR_NAME_FIELD)
     tag_names = data.get(CAMERA_GEAR_TAGS_FIELD)
@@ -135,12 +137,14 @@ def update_camera_gear(tag_id):
 @camera_gear_blueprint.route(CAMERA_GEAR_CHECK_OUT_ROUTE, methods=[PUT])
 @require_approved
 @login_required
-def check_out_camera_gear(tag_id):
-    gear_item = CameraGear.query.get_or_404(tag_id)
+def check_out_camera_gear(gear_id):
+    gear_item = CameraGear.query.get_or_404(gear_id)
     if gear_item.checked_out_by is not None:
         return {"error": "Camera gear is already checked out"}, 400
 
     gear_item.checked_out_by = current_user.id
+    gear_item.checked_out_date = datetime.now()
+    gear_item.is_checked_out = True
     gear_item.last_updated = datetime.now()
     gear_item.updated_by = current_user.id
 
@@ -151,12 +155,15 @@ def check_out_camera_gear(tag_id):
 @camera_gear_blueprint.route(CAMERA_GEAR_CHECK_IN_ROUTE, methods=[PUT])
 @require_approved
 @login_required
-def check_in_camera_gear(tag_id):
-    gear_item = CameraGear.query.get_or_404(tag_id)
+def check_in_camera_gear(gear_id):
+    gear_item = CameraGear.query.get_or_404(gear_id)
     if gear_item.checked_out_by is None:
         return {"error": "Camera gear is not checked out"}, 400
 
     gear_item.checked_out_by = None
+    gear_item.checked_out_date = None
+    gear_item.is_checked_out = False
+    gear_item.return_date = datetime.now()
     gear_item.last_updated = datetime.now()
     gear_item.updated_by = current_user.id
 
@@ -167,8 +174,8 @@ def check_in_camera_gear(tag_id):
 @camera_gear_blueprint.route(CAMERA_GEAR_DELETE_ROUTE, methods=[DELETE])
 @require_approved
 @login_required
-def delete_camera_gear(tag_id):
-    gear_item = CameraGear.query.get_or_404(tag_id)
+def delete_camera_gear(gear_id):
+    gear_item = CameraGear.query.get_or_404(gear_id)
     db.session.delete(gear_item)
     db.session.commit()
     return {"message": "Camera gear item deleted successfully."}

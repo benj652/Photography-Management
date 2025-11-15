@@ -127,20 +127,22 @@ ITEM_FIELD_UPDATED_BY = "updated_by"
 =====================================================
 
 GET     /api/v1/camera_gear/all                → Retrieve all camera gear
-GET     /api/v1/camera_gear/one/<int:tag_id>   → Retrieve a specific camera gear item by ID
+GET     /api/v1/camera_gear/one/<int:gear_id>   → Retrieve a specific camera gear item by ID
 POST    /api/v1/camera_gear/                   → Create a new camera gear item
-PUT     /api/v1/camera_gear/<int:tag_id>       → Update an existing camera gear item
-DELETE  /api/v1/camera_gear/<int:tag_id>       → Delete a camera gear item by ID
+PUT     /api/v1/camera_gear/<int:gear_id>       → Update an existing camera gear item
+PUT     /api/v1/camera_gear/checkout/<int:gear_id> → Check out a camera gear item
+PUT     /api/v1/camera_gear/checkin/<int:gear_id>  → Check in a camera gear item
+DELETE  /api/v1/camera_gear/<int:gear_id>       → Delete a camera gear item by ID
 """
 
 CAMERA_GEAR_PREFIX = "/camera_gear"
 CAMERA_GEAR_ALL_ROUTE = "/all"
-CAMERA_GEAR_GET_ONE_ROUTE = "/one/<int:tag_id>"
+CAMERA_GEAR_GET_ONE_ROUTE = "/one/<int:gear_id>"
 CAMERA_GEAR_CREATE_ROUTE = "/"
-CAMERA_GEAR_UPDATE_ROUTE = "/<int:tag_id>"
-CAMERA_GEAR_CHECK_OUT_ROUTE = "/<int:tag_id>/check-out"
-CAMERA_GEAR_CHECK_IN_ROUTE = "/<int:tag_id>/check-in"
-CAMERA_GEAR_DELETE_ROUTE = "/<int:tag_id>"
+CAMERA_GEAR_UPDATE_ROUTE = "/<int:gear_id>"
+CAMERA_GEAR_CHECK_OUT_ROUTE = "/checkout/<int:gear_id>"
+CAMERA_GEAR_CHECK_IN_ROUTE = "/checkin/<int:gear_id>"
+CAMERA_GEAR_DELETE_ROUTE = "/<int:gear_id>"
 
 """
 =====================================================
