@@ -9,17 +9,21 @@ from views import (
     init_oauth,
     tags_blueprint,
     location_blueprint,
-    admin_blueprint
+    admin_blueprint,
+    lab_equipment_blueprint,
+    camera_gear_blueprint,
 )
 from constants import (
     ADMIN_PREFIX,
     ADMIN_TEMPLATE,
     API_PREFIX,
     AUTH_PREFIX,
+    CAMERA_GEAR_PREFIX,
     ERROR_NOT_AUTHORIZED,
     ERROR_NOT_FOUND,
     HOME_PREFIX,
     ITEM_PREFIX,
+    LAB_EQUIPMENT_PREFIX,
     LOCATION_PREFIX,
     NOT_FOUND_ROUTE,
     SECRET_KEY,
@@ -59,16 +63,26 @@ init_oauth(app)
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 app.register_blueprint(admin_blueprint, url_prefix=ADMIN_PREFIX)
-app.register_blueprint(item_blueprint, url_prefix=API_PREFIX+ITEM_PREFIX)
-app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX+TAG_PREFIX)
-app.register_blueprint(location_blueprint, url_prefix=API_PREFIX+LOCATION_PREFIX)
+app.register_blueprint(item_blueprint, url_prefix=API_PREFIX + ITEM_PREFIX)
+app.register_blueprint(
+    camera_gear_blueprint, url_prefix=API_PREFIX + CAMERA_GEAR_PREFIX
+)
+app.register_blueprint(
+    lab_equipment_blueprint, url_prefix=API_PREFIX + LAB_EQUIPMENT_PREFIX
+)
+app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX + TAG_PREFIX)
+app.register_blueprint(location_blueprint, url_prefix=API_PREFIX + LOCATION_PREFIX)
+
 
 @app.errorhandler(ERROR_NOT_FOUND)
 def page_not_found(e):
     return redirect(url_for(NOT_FOUND_ROUTE))
+
+
 @app.errorhandler(ERROR_NOT_AUTHORIZED)
 def not_authorized(e):
-    return render_template(UNAUTHORIZED_TEMPLATE) 
+    return render_template(UNAUTHORIZED_TEMPLATE)
+
 
 if __name__ == "__main__":
     with app.app_context():

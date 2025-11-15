@@ -1,3 +1,15 @@
+"""
+===============================================
+ Home Routes (prefixed with "/home") — Templates
+===============================================
+
+GET     /home/                     → Render the home page
+GET     /home/unauthorized         → Render the unauthorized access page
+GET     /home/lab-equipment        → Render the lab equipment page
+GET     /home/camera-gear          → Render the camera gear page
+REDIRECT home.home                 → Named route for "not found" fallback
+"""
+
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from models import Item, User
@@ -5,6 +17,8 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from datetime import date
 from constants import(
+    CAMERA_GEAR_ROUTE,
+    CAMERA_GEAR_TEMPLATE,
     HOME_ROUTE,
     ITEM_FIELD_ID,
     ITEM_FIELD_NAME,
@@ -16,6 +30,8 @@ from constants import(
     ITEM_FIELD_UPDATED_BY,
     HOME_TEMPLATE,
     HOME_BLUEPRINT_NAME,
+    LAB_EQUIPMENT_ROUTE,
+    LAB_EQUIPMENT_TEMPLATE,
     UNAUTHORIZED_ROUTE,
     UNAUTHORIZED_TEMPLATE
     )
@@ -84,5 +100,27 @@ def home():
                          in_stock_count=in_stock_count,
                          out_of_stock_count=out_of_stock_count,
                          expired_count=expired_count)
+
+
+@home_blueprint.route(LAB_EQUIPMENT_ROUTE)
+@login_required
+@require_approved
+def lab_equipment():
+    return render_template(LAB_EQUIPMENT_TEMPLATE)
+
+@home_blueprint.route(CAMERA_GEAR_ROUTE)
+@login_required
+@require_approved
+def camera_gear():
+    return render_template(CAMERA_GEAR_TEMPLATE)
+
+
+
+
+
+
+
+
+
 
 
