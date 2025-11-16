@@ -19,7 +19,6 @@
 //     });
 // });
 
-
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Modal script loaded");
 
@@ -31,19 +30,22 @@ document.addEventListener("DOMContentLoaded", function () {
   // Helper to update the button label while preserving the spinner element
   function setButtonLabel(btn, text) {
     if (!btn) return;
+    const textNodes = [];
     for (const node of Array.from(btn.childNodes)) {
       if (node.nodeType === Node.TEXT_NODE) {
-        node.nodeValue = ' ' + text;
-        return;
+        textNodes.push(node);
       }
     }
-    btn.appendChild(document.createTextNode(' ' + text));
+    textNodes.forEach((node) => node.remove());
+    btn.appendChild(document.createTextNode(" " + text));
   }
 
   // Tags functionality
   const tagsInput = document.getElementById("tags-input");
   const tagsDropdown = document.getElementById("tags-dropdown");
-  const createTagBtnContainer = document.getElementById("create-tag-btn-container");
+  const createTagBtnContainer = document.getElementById(
+    "create-tag-btn-container"
+  );
   const createTagBtn = document.getElementById("createTagBtn");
   const newTagNameSpan = document.getElementById("new-tag-name");
   const selectedTagsContainer = document.getElementById("selected-tags");
@@ -52,10 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Location functionality - exact mirror of tags
   const locationInput = document.getElementById("location-input");
   const locationDropdown = document.getElementById("location-dropdown");
-  const createLocationBtnContainer = document.getElementById("create-location-btn-container");
+  const createLocationBtnContainer = document.getElementById(
+    "create-location-btn-container"
+  );
   const createLocationBtn = document.getElementById("createLocationBtn");
   const newLocationNameSpan = document.getElementById("new-location-name");
-  const selectedLocationContainer = document.getElementById("selected-location");
+  const selectedLocationContainer =
+    document.getElementById("selected-location");
   const hiddenLocationInput = document.getElementById("location_id");
 
   let allTags = [];
@@ -64,28 +69,29 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedLocation = null;
 
   function updateItem(itemId, updatedData) {
-  // Simple helper that updates an item via API and then refreshes the row using updateItemInTable
-  fetch(`${API_PREFIX}/items/${itemId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(updatedData),
-  })
-    .then((resp) => {
-      if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
-      return resp.json();
+    // Simple helper that updates an item via API and then refreshes the row using updateItemInTable
+    fetch(`${API_PREFIX}/items/${itemId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(updatedData),
     })
-    .then((data) => {
-      if (typeof window.updateItemInTable === "function") window.updateItemInTable(data);
-    })
-    .catch((err) => console.error("Failed to update item:", err));
-}
+      .then((resp) => {
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        return resp.json();
+      })
+      .then((data) => {
+        if (typeof window.updateItemInTable === "function")
+          window.updateItemInTable(data);
+      })
+      .catch((err) => console.error("Failed to update item:", err));
+  }
   // Fetch all tags from the database
   async function fetchTags() {
     try {
-      const response = await fetch(API_PREFIX+"/tags/all");
+      const response = await fetch(API_PREFIX + "/tags/all");
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
       }
@@ -101,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Fetch all locations from the database - exact mirror of fetchTags
   async function fetchLocations() {
     try {
-      const response = await fetch(API_PREFIX+"/location/all");
+      const response = await fetch(API_PREFIX + "/location/all");
       if (!response.ok) {
         throw new Error("Failed to fetch locations");
       }
@@ -135,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
       locationDropdown.innerHTML = "";
       createLocationBtnContainer.classList.add("d-none");
       locationInput.disabled = false;
-      
+
       // If editing data was placed on the window, prefill fields now
       if (window.editingItemData) {
         const item = window.editingItemData;
@@ -143,7 +149,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Name, quantity, expires
         document.getElementById("name").value = item.name || "";
         document.getElementById("quantity").value = item.quantity;
-        document.getElementById("expires").value = item.expires ? item.expires.split("T")[0] : "";
+        document.getElementById("expires").value = item.expires
+          ? item.expires.split("T")[0]
+          : "";
 
         // Tags - select the first tag if present
         if (Array.isArray(item.tags) && item.tags.length > 0) {
@@ -160,7 +168,8 @@ document.addEventListener("DOMContentLoaded", function () {
           if (typeof window.selectLocation === "function") {
             window.selectLocation(item.location_id);
           } else {
-            document.getElementById("location_id").value = item.location_id || "";
+            document.getElementById("location_id").value =
+              item.location_id || "";
           }
         } else if (item.location_id) {
           document.getElementById("location_id").value = item.location_id;
@@ -173,7 +182,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Also show the Item ID in the modal if the container exists
         const idContainer = document.getElementById("modalItemIdContainer");
         const idValue = document.getElementById("modalItemIdValue");
-        const idToShow = window.editingItemId || (window.editingItemData && window.editingItemData.id) || item.id;
+        const idToShow =
+          window.editingItemId ||
+          (window.editingItemData && window.editingItemData.id) ||
+          item.id;
         if (idContainer && idValue) {
           idValue.textContent = idToShow || "";
           if (idToShow) idContainer.classList.remove("d-none");
@@ -268,7 +280,9 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
     // Check if the query exactly matches an existing location
-    const exactMatch = allLocations.find((location) => location.name.toLowerCase() === query);
+    const exactMatch = allLocations.find(
+      (location) => location.name.toLowerCase() === query
+    );
 
     if (exactMatch) {
       // Exact match found, show only that location
@@ -363,7 +377,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 </span>
             `;
       // Find the location ID and set it in the hidden input
-      const locationObj = allLocations.find(loc => loc.name === selectedLocation);
+      const locationObj = allLocations.find(
+        (loc) => loc.name === selectedLocation
+      );
       hiddenLocationInput.value = locationObj ? locationObj.id : "";
     }
   }
@@ -374,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!newTagName) return;
 
     try {
-      const response = await fetch(API_PREFIX+"/tags", {
+      const response = await fetch(API_PREFIX + "/tags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -443,7 +459,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!tagsInput.contains(e.target) && !tagsDropdown.contains(e.target)) {
       tagsDropdown.innerHTML = "";
     }
-    if (!locationInput.contains(e.target) && !locationDropdown.contains(e.target)) {
+    if (
+      !locationInput.contains(e.target) &&
+      !locationDropdown.contains(e.target)
+    ) {
       locationDropdown.innerHTML = "";
     }
   });
@@ -481,22 +500,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const editingId = window.editingItemId;
 
     if (editingId) {
-    console.log("Editing item with ID:", editingId);
-        updateItem(editingId, data)
-        showAlert("Item updated successfully!", "success");
-        setTimeout(() => {
+      console.log("Editing item with ID:", editingId);
+      updateItem(editingId, data);
+      showAlert("Item updated successfully!", "success");
+      setTimeout(() => {
         const modal = bootstrap.Modal.getInstance(
-            document.getElementById("addItemModal")
+          document.getElementById("addItemModal")
         );
         if (modal) modal.hide();
         form.reset();
         hideAlert();
-        }, 3);
-        submitBtn.disabled = false;
-        spinner.classList.add("d-none");
+      }, 3);
+      submitBtn.disabled = false;
+      spinner.classList.add("d-none");
     } else {
       // Create new item (existing flow)
-      fetch(API_PREFIX+"/items", {
+      fetch(API_PREFIX + "/items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
