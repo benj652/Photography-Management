@@ -8,9 +8,18 @@ async function fetchItems() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const items = await response.json();
-    console.log("Fetched items:", items);
-    populateTable(items);
+    const data = await response.json();
+    console.log("Fetched items:", data);
+    const items = data.items || [];
+
+    // Initialize pagination with items
+    Pagination.init(items);
+    Pagination.setOnPageChange(() => {
+      populateTable();
+    });
+
+    populateTable();
+    Pagination.render();
   } catch (error) {
     console.error("Failed to fetch items:", error);
     showEmptyState("Failed to load items. Please refresh the page.");
@@ -79,12 +88,15 @@ window.updateItemInTable = function (data) {
 };
 
 // Function to populate the table
-function populateTable(items) {
+function populateTable() {
   const tableBody = document.getElementById("items-table-body");
   tableBody.innerHTML = "";
-  items = items.items;
-  if (items && items.length > 0) {
-    items.forEach((item) => {
+
+  // Get items for current page from pagination module
+  const itemsToShow = Pagination.getCurrentPageItems();
+
+  if (itemsToShow.length > 0) {
+    itemsToShow.forEach((item) => {
       const row = document.createElement("tr");
 
       // Handle tags display - could be array or string
@@ -131,6 +143,8 @@ function populateTable(items) {
   } else {
     showEmptyState("No items found. Click 'Add Item' to get started.");
   }
+
+  Pagination.render();
 }
 
 async function openEditModal(itemId) {
@@ -145,7 +159,7 @@ async function openEditModal(itemId) {
     // Also expose the numeric id explicitly so the modal script can read it directly
     window.editingItemId = itemId;
 
-    // Update modal UI elements immediately (preserve spinner span if present)
+    // Update modal UI elements immediately
     const titleEl = document.getElementById("addItemModalLabel");
     const submitBtn = document.getElementById("createItemBtn");
     if (titleEl) titleEl.textContent = "Edit Item";
@@ -154,13 +168,15 @@ async function openEditModal(itemId) {
       for (const node of Array.from(submitBtn.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
           textNodes.push(node);
+          node.nodeValue = " " + "Save Changes";
+          break;
         }
       }
       textNodes.forEach((node) => node.remove());
       submitBtn.appendChild(document.createTextNode(" Save Changes"));
     }
 
-    // Show modal - the modal's shown handler will read window.editingItemData and prefill after tags/locations are loaded
+    // Show modal
     const modalEl = document.getElementById("addItemModal");
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
@@ -237,10 +253,9 @@ async function updateStats() {
   }
 }
 
-// Function to add a new item to the table (called from modal) - MAKE IT GLOBAL
+// Function to add a new item to the table (called from modal)
 window.addItemToTable = function (item) {
   console.log("Adding item to table:", item);
-  const tableBody = document.getElementById("items-table-body");
 
   if (!tableBody) {
     console.error("Table body not found!");
@@ -303,11 +318,15 @@ window.addItemToTable = function (item) {
   }, 1000);
 
   // Update stats after adding item
+  // Add item to pagination module
+  Pagination.addItem(item);
+  populateTable();
   updateStats();
 
   console.log("Item added to table successfully");
 };
 
+// Update filterTable function
 function filterTable() {
   // Get search input value
   const searchValue =
@@ -321,18 +340,16 @@ function filterTable() {
   const locationFilter =
     document.getElementById("filter-location")?.value.toLowerCase() || "";
 
-  const rows = document.querySelectorAll("#items-table-body tr");
+  // Get all items from pagination module
+  const allItems = Pagination.getAllItems();
 
-  rows.forEach((row) => {
-    // Skip the "no items" row
-    if (row.querySelector('td[colspan="9"]')) {
-      return;
-    }
-
-    const cells = row.cells;
-    const itemName = cells[1].textContent.toLowerCase();
-    const itemTags = cells[3].textContent.toLowerCase();
-    const itemLocation = cells[4].textContent.toLowerCase();
+  // Filter the allItems array
+  const filteredItems = allItems.filter((item) => {
+    const itemName = (item.name || "").toLowerCase();
+    const itemTags = Array.isArray(item.tags)
+      ? item.tags.join(", ").toLowerCase()
+      : (item.tags || "").toLowerCase();
+    const itemLocation = (item.location || "").toLowerCase();
 
     // Search input searches across all fields
     const searchMatch =
@@ -359,29 +376,28 @@ function filterTable() {
 
     // Show if search matches or all specific filters match (if any have values)
     const hasSpecificFilters = nameFilter || tagsFilter || locationFilter;
-    const shouldShow =
+    return (
       searchMatch &&
-      (!hasSpecificFilters || (nameMatch && tagsMatch && locationMatch));
-
-    if (shouldShow) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
+      (!hasSpecificFilters || (nameMatch && tagsMatch && locationMatch))
+    );
   });
+
+  // Update pagination with filtered items
+  Pagination.setFilteredItems(filteredItems);
+  populateTable();
 }
 
+// Update clearFilters function
 function clearFilters() {
   document.getElementById("search-input").value = "";
   document.getElementById("filter-name").value = "";
   document.getElementById("filter-tags").value = "";
   document.getElementById("filter-location").value = "";
 
-  // Show all rows
-  const rows = document.querySelectorAll("#items-table-body tr");
-  rows.forEach((row) => {
-    row.style.display = "";
-  });
+  // Reset filtered items to all items
+  const allItems = Pagination.getAllItems();
+  Pagination.setFilteredItems(allItems);
+  populateTable();
 }
 
 // Make functions global for HTML onclick handlers
@@ -464,7 +480,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Failed to delete item:", error);
         alert("Failed to delete item. Please try again.");
       } finally {
-        // Re-enable button
         this.disabled = false;
         this.innerHTML = "Delete Item";
       }
