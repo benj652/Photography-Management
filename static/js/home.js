@@ -4,7 +4,7 @@ const API_PREFIX = "/api/v1";
 async function fetchItems() {
   try {
     console.log("Fetching items from /items/all");
-    const response = await fetch(API_PREFIX+"/items/all");
+    const response = await fetch(API_PREFIX + "/items/all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -43,9 +43,15 @@ window.updateItemInTable = function (data) {
       return;
     }
 
-    const tags = Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "";
-    const expires = data.expires ? new Date(data.expires).toLocaleDateString() : "";
-    const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "";
+    const tags = Array.isArray(data.tags)
+      ? data.tags.join(", ")
+      : data.tags || "";
+    const expires = data.expires
+      ? new Date(data.expires).toLocaleDateString()
+      : "";
+    const lastUpdated = data.last_updated
+      ? new Date(data.last_updated).toLocaleString()
+      : "";
 
     targetRow.innerHTML = `
       <td class="item-id-${id}">${id}</td>
@@ -105,10 +111,14 @@ function populateTable(items) {
                 <td>${item.updated_by || ""}</td>
                 <td class="text-end">
                   <div class="d-inline-flex gap-3 align-items-center">
-                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${
+                      item.id
+                    })" title="Edit item">
                       <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${item.id})" title="Delete item">
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${
+                      item.id
+                    })" title="Delete item">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -126,25 +136,28 @@ function populateTable(items) {
 async function openEditModal(itemId) {
   try {
     const resp = await fetch(`${API_PREFIX}/items/one/${itemId}`);
-    if (!resp.ok) throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
+    if (!resp.ok)
+      throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
     const data = await resp.json();
 
     // Make the fetched item available for the modal initializer
     window.editingItemData = data;
-  	// Also expose the numeric id explicitly so the modal script can read it directly
-  	window.editingItemId = itemId;
+    // Also expose the numeric id explicitly so the modal script can read it directly
+    window.editingItemId = itemId;
 
     // Update modal UI elements immediately (preserve spinner span if present)
     const titleEl = document.getElementById("addItemModalLabel");
     const submitBtn = document.getElementById("createItemBtn");
     if (titleEl) titleEl.textContent = "Edit Item";
     if (submitBtn) {
+      const textNodes = [];
       for (const node of Array.from(submitBtn.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
-          node.nodeValue = ' ' + 'Save Changes';
-          break;
+          textNodes.push(node);
         }
       }
+      textNodes.forEach((node) => node.remove());
+      submitBtn.appendChild(document.createTextNode(" Save Changes"));
     }
 
     // Show modal - the modal's shown handler will read window.editingItemData and prefill after tags/locations are loaded
@@ -262,21 +275,23 @@ window.addItemToTable = function (item) {
 		<td>${last_updated}</td>
 		<td>${item.updated_by || ""}</td>
 		<td class="text-end">
-		<button 
-			class="btn btn-sm btn-link text-primary edit-btn p-0 me-2 display-inline" 
-			onclick="openEditModal(${item.id})"
-			title="Edit item"
-		>
-		<i class="fas fa-edit"></i>
-		</button>
-		<button 
-			class="btn btn-sm btn-link text-danger delete-btn p-0 display-inline" 
-			onclick="deleteItem(${item.id})"
-			title="Delete item"
-		>
-        <i class="fas fa-trash"></i>
-      </button>
-    </td>
+			<div class="d-inline-flex gap-3 align-items-center">
+				<button 
+					class="btn btn-sm btn-link text-primary p-0" 
+					onclick="openEditModal(${item.id})"
+					title="Edit item"
+				>
+					<i class="fas fa-edit"></i>
+				</button>
+				<button 
+					class="btn btn-sm btn-link text-danger p-0" 
+					onclick="deleteItem(${item.id})"
+					title="Delete item"
+				>
+					<i class="fas fa-trash"></i>
+				</button>
+			</div>
+		</td>
 	`;
   row.classList.add("item-row");
 
