@@ -32,6 +32,8 @@ from constants import(
     HOME_BLUEPRINT_NAME,
     LAB_EQUIPMENT_ROUTE,
     LAB_EQUIPMENT_TEMPLATE,
+    CONSUMABLES_ROUTE,
+    CONSUMABLES_TEMPLATE,
     UNAUTHORIZED_ROUTE,
     UNAUTHORIZED_TEMPLATE
     )
@@ -113,6 +115,13 @@ def lab_equipment():
 @require_approved
 def camera_gear():
     return render_template(CAMERA_GEAR_TEMPLATE)
+
+@home_blueprint.route(CONSUMABLES_ROUTE)
+@login_required
+@require_approved
+def consumables():
+    return render_template(CONSUMABLES_TEMPLATE)
+
 
 
 
