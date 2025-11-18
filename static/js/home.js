@@ -257,6 +257,8 @@ async function updateStats() {
 window.addItemToTable = function (item) {
   console.log("Adding item to table:", item);
 
+  const tableBody = document.getElementById("items-table-body");
+
   if (!tableBody) {
     console.error("Table body not found!");
     return;
