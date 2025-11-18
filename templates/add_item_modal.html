@@ -1,21 +1,10 @@
-<div
-  class="modal fade"
-  id="addItemModal"
-  tabindex="-1"
-  aria-labelledby="addItemModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="addItemForm">
         <div class="modal-header">
           <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <!-- Alert container for messages -->
@@ -23,9 +12,7 @@
 
           <!-- Item ID (shown only when editing) -->
           <div id="modalItemIdContainer" class="mb-2 d-none">
-            <small class="text-muted"
-              >Item ID: <span id="modalItemIdValue"></span
-            ></small>
+            <small class="text-muted">Item ID: <span id="modalItemIdValue"></span></small>
           </div>
 
           <div class="mb-3">
@@ -34,41 +21,19 @@
           </div>
           <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
-            <input
-              id="quantity"
-              name="quantity"
-              type="number"
-              min="0"
-              class="form-control"
-              value="1"
-            />
+            <input id="quantity" name="quantity" type="number" min="0" class="form-control" value="1" />
           </div>
           <div class="mb-3">
             <label for="tags" class="form-label">Tags</label>
             <div class="tags-input-container">
               <div class="tags-input-wrapper">
-                <input
-                  type="text"
-                  id="tags-input"
-                  class="form-control"
-                  placeholder="Search or type to create a new tag..."
-                  autocomplete="off"
-                />
+                <input type="text" id="tags-input" class="form-control"
+                  placeholder="Search or type to create a new tag..." autocomplete="off" />
                 <div id="tags-dropdown" class="tags-dropdown"></div>
               </div>
-              <div
-                id="create-tag-btn-container"
-                class="create-tag-btn-container d-none"
-              >
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  id="createTagBtn"
-                >
-                  <i class="fas fa-plus me-1"></i>Create Tag: "<span
-                    id="new-tag-name"
-                  ></span
-                  >"
+              <div id="create-tag-btn-container" class="create-tag-btn-container d-none">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="createTagBtn">
+                  <i class="fas fa-plus me-1"></i>Create Tag: "<span id="new-tag-name"></span>"
                 </button>
               </div>
               <div id="selected-tags" class="selected-tags mt-2"></div>
@@ -77,33 +42,16 @@
             </div>
           </div>
           <div class="mb-3">
-            <label for="location-input" class="form-label"
-              >Location (optional)</label
-            >
+            <label for="location-input" class="form-label">Location (optional)</label>
             <div class="tags-input-container">
               <div class="tags-input-wrapper">
-                <input
-                  id="location-input"
-                  name="location-input"
-                  class="form-control"
-                  autocomplete="off"
-                  placeholder="Search or type to create a new location..."
-                />
+                <input id="location-input" name="location-input" class="form-control" autocomplete="off"
+                  placeholder="Search or type to create a new location..." />
                 <div id="location-dropdown" class="tags-dropdown"></div>
               </div>
-              <div
-                id="create-location-btn-container"
-                class="create-tag-btn-container d-none"
-              >
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  id="createLocationBtn"
-                >
-                  <i class="fas fa-plus me-1"></i>Create Location: "<span
-                    id="new-location-name"
-                  ></span
-                  >"
+              <div id="create-location-btn-container" class="create-tag-btn-container d-none">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="createLocationBtn">
+                  <i class="fas fa-plus me-1"></i>Create Location: "<span id="new-location-name"></span>"
                 </button>
               </div>
               <div id="selected-location" class="selected-tags mt-2"></div>
@@ -113,28 +61,15 @@
           </div>
           <div class="mb-3">
             <label for="expires" class="form-label">Expires</label>
-            <input
-              id="expires"
-              name="expires"
-              type="date"
-              class="form-control"
-            />
+            <input id="expires" name="expires" type="date" class="form-control" />
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             Close
           </button>
           <button type="submit" class="btn btn-primary" id="createItemBtn">
-            <span
-              class="spinner-border spinner-border-sm d-none"
-              role="status"
-              aria-hidden="true"
-            ></span>
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
             Create
           </button>
         </div>
@@ -144,7 +79,4 @@
 </div>
 
 <script src="/static/js/add_item_modal.js"></script>
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/add_item.css') }}"
-/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_item.css') }}" />
