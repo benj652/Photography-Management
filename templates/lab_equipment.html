@@ -181,13 +181,11 @@
                                     <tr>
                                         <th scope="col">ID</th>
                                         <th scope="col">Name</th>
-                                        <th scope="col">Quantity</th>
                                         <th scope="col">Tags</th>
-                                        <th scope="col">Expires</th>
+                                        <th scope="col">Service Frequency</th>
                                         <th scope="col">Last Serviced</th>
-                                        <th scope="col" class="text-end" style="width: 60px">
-                                            Actions
-                                        </th>
+                                        <th scope="col">Last Serviced By</th>
+                                        <th scope="col" class="text-end" style="width: 60px">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="items-table-body"></tbody>
@@ -198,7 +196,7 @@
             </div>
         </div>
     </div>
-    {% include 'add_item_modal.html' %}
+    {% include 'add_equipment_modal.html' %}
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
         aria-hidden="true">
