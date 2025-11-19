@@ -1,0 +1,117 @@
+<!-- ========================================= -->
+<!-- ADD EQUIPMENT MODAL (Bootstrap modal wrapper) -->
+<!-- ========================================= -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- ============================== -->
+      <!-- FORM WRAPPER for Adding Items -->
+      <!-- ============================== -->
+      <form id="addItemForm">
+
+        <!-- =================== -->
+        <!-- MODAL HEADER (title + close button) -->
+        <!-- =================== -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="addItemModalLabel">Add Equipment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- =================== -->
+        <!-- MODAL BODY -->
+        <!-- Holds all input fields and alert messages -->
+        <!-- =================== -->
+        <div class="modal-body">
+
+          <!-- STATUS / ALERT MESSAGE AREA -->
+          <div id="modalAlert" class="alert d-none" role="alert"></div>
+
+          <!-- ITEM ID (visible only when editing an existing item) -->
+          <div id="modalItemIdContainer" class="mb-2 d-none">
+            <small class="text-muted">Item ID: <span id="modalItemIdValue"></span></small>
+          </div>
+
+          <!-- Name field -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input id="name" name="name" class="form-control" required />
+          </div>
+
+          <!-- Service Frequency Field -->
+          <div class="mb-3">
+            <label for="service_frequency" class="form-label">Service Frequency</label>
+            <select id="service_frequency" name="service_frequency" class="form-select">
+              <option value="">Select frequency</option>
+              <option value="weekly">Weekly</option>
+              <option value="weekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+              <option value="as-needed">As Needed</option>
+            </select>
+          </div>
+
+
+          <!-- =========================== -->
+          <!-- TAGS SECTION (search, create, select tags) -->
+          <!-- =========================== -->
+          <div class="mb-3">
+            <label for="tags" class="form-label">Tags </label>
+
+            <div class="tags-input-container">
+
+              <!-- Search field + dropdown results -->
+              <div class="tags-input-wrapper">
+                <input type="text" id="tags-input" class="form-control"
+                  placeholder="Search or type to create a new tag..." autocomplete="off" />
+                <div id="tags-dropdown" class="tags-dropdown"></div>
+              </div>
+
+              <!-- Button to create a brand-new tag -->
+              <div id="create-tag-btn-container" class="create-tag-btn-container d-none">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="createTagBtn">
+                  <i class="fas fa-plus me-1"></i>Create Tag: "<span id="new-tag-name"></span>"
+                </button>
+              </div>
+
+              <!-- Display selected tags -->
+              <div id="selected-tags" class="selected-tags mt-2"></div>
+
+              <!-- Hidden input to submit selected tags -->
+              <input type="hidden" id="tags" name="tags" />
+            </div>
+          </div>
+
+
+          <!-- Last serviced on field -->
+          <div class="mb-3">
+            <label for="last_serviced_on" class="form-label">Last Serviced On</label>
+            <input id="last_serviced_on" name="last_serviced_on" type="date" class="form-control" />
+          </div>
+
+        </div> <!-- end modal-body -->
+
+        <!-- =================== -->
+        <!-- MODAL FOOTER (buttons) -->
+        <!-- =================== -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          <!-- Submit button (includes spinner for async operations) -->
+          <button type="submit" class="btn btn-primary" id="createItemBtn">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Create
+          </button>
+        </div>
+
+      </form> <!-- end form -->
+    </div>
+  </div>
+</div>
+
+<!-- External JS controlling modal behavior -->
+<script src="/static/js/add_equipment_modal.js"></script>
+
+<!-- CSS for tags, dropdowns, modal layout -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_item.css') }}" />
