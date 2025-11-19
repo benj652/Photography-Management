@@ -1,5 +1,3 @@
-const API_PREFIX = "/api/v1";
-
 // Function to fetch items from the server
 async function fetchItems() {
   try {

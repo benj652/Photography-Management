@@ -80,6 +80,10 @@
   cursor: pointer;
 }
 
+.checked-out-row {
+  background-color: #fff3cd !important;
+}
+
 /* Stat Cards */
 .stat-card {
   background: white;
