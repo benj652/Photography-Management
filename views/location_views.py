@@ -3,11 +3,11 @@
  Location Routes (prefixed with "/location")
 =========================================
 
-GET     /location/all                   → Retrieve all locations
-GET     /location/one/<int:location_id> → Retrieve a specific location by ID
-POST    /location/create                → Create a new location
-PUT     /location/update/<int:location_id> → Update an existing location
-DELETE  /location/delete/<int:location_id> → Delete a location by ID
+GET     /api/v1/location/all                   → Retrieve all locations
+GET     /api/v1/location/one/<int:location_id> → Retrieve a specific location by ID
+POST    /api/v1/location/                      → Create a new location
+PUT     /api/v1/location/<int:location_id>     → Update an existing location
+DELETE  /api/v1/location/<int:location_id>     → Delete a location by ID
 """
 
 from constants import (

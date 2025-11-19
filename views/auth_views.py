@@ -1,5 +1,13 @@
 """
-Auth views
+=========================================================
+ Authentication Routes (prefixed with "/auth")
+=========================================================
+
+GET     /auth/                     → Login page
+POST    /auth/login                → Handle login submission
+GET     /auth/logout               → Log the user out
+GET     /auth/authorize            → OAuth2 / SSO authorization endpoint
+REDIRECT auth.authorize            → Internal redirect URI name
 """
 
 from flask import Blueprint, json, render_template, session, redirect, url_for
@@ -9,6 +17,7 @@ from constants import (
     AUTHORIZE_ROUTE,
     CLIENT_KWARGS_ITEMS,
     CLIENT_KWARGS_KEY,
+    DEFAULT_ADMIN_EMAIL,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
     GOOGLE_USER_EMAIL,
@@ -25,6 +34,7 @@ from constants import (
     OAUTH_NAME,
     SERVER_METADATA_URL,
     USER_KEY,
+    UserRole,
 )
 from authlib.integrations.flask_client import OAuth
 import os
@@ -106,11 +116,20 @@ def create_new_user(user):
     This function exists so in the future, when we add roles and stuff
     we will add the roles here.
     """
+    # print(user[GOOGLE_USER_EMAIL])
+    # print(os.getenv(DEFAULT_ADMIN_EMAIL))
+    starting_role = UserRole.INVALID
+
+    if user[GOOGLE_USER_EMAIL] == os.getenv(DEFAULT_ADMIN_EMAIL):
+        starting_role = UserRole.ADMIN
+    # print(starting_role)
+
     new_user = User(
         email=user[GOOGLE_USER_EMAIL],
         first_name=user[GOOGLE_USER_GIVEN_NAME],
         last_name=user[GOOGLE_USER_FAMILY_NAME],
         profile_picture=user[GOOGLE_USER_PICTURE],
+        role=starting_role,  # Temporary role assignment
     )
     db.session.add(new_user)
     db.session.commit()
