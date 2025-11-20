@@ -254,9 +254,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     (tag) => `
                 <span class="badge bg-primary me-1 mb-1" style="font-size: 0.875rem;">
                     ${tag}
-                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag(${JSON.stringify(
+                    <button type="button" class="btn-close btn-close-white ms-1" onclick='removeTag(${JSON.stringify(
                         tag
-                    )})" aria-label="Remove"></button>
+                    )})' aria-label="Remove"></button>
                 </span>
             `
                 )
