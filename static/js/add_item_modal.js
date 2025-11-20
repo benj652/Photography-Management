@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let allTags = [];
   let allLocations = [];
-  let selectedTag = null;
+  let selectedTags = [];
   let selectedLocation = null;
 
   function updateItem(itemId, updatedData) {
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("shown.bs.modal", async function () {
       // Initialize tags
       await fetchTags();
-      selectedTag = null;
+      selectedTags = [];
       updateSelectedTagDisplay();
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
@@ -155,13 +155,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Tags - select the first tag if present
         if (Array.isArray(item.tags) && item.tags.length > 0) {
-          // Use selectTag if available
-          if (typeof window.selectTag === "function") {
-            window.selectTag(item.tags[0]);
-          } else {
-            document.getElementById("tags").value = item.tags.join(", ");
-          }
+          selectedTags = item.tags
+            .map((tag) =>
+              typeof tag === "string" ? tag : (tag && tag.name) || ""
+            )
+            .filter(Boolean);
+        } else {
+          selectedTags = [];
         }
+        updateSelectedTagDisplay();
 
         // Location - prefer name, otherwise leave id
         if (item.location_id) {
@@ -207,34 +209,38 @@ document.addEventListener("DOMContentLoaded", function () {
   // Handle tags input
   tagsInput.addEventListener("input", function (e) {
     // If a tag is already selected, don't show dropdown
-    if (selectedTag) {
-      tagsDropdown.innerHTML = "";
-      createTagBtnContainer.classList.add("d-none");
-      return;
-    }
+        const query = e.target.value.trim().toLowerCase();
 
-    const query = e.target.value.trim().toLowerCase();
-
-    if (query === "") {
+        if (query === "") {
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
       return;
     }
 
     // Filter tags that match the query
-    const matchingTags = allTags.filter((tag) =>
-      tag.name.toLowerCase().includes(query)
+    const selectedLower = new Set(
+      selectedTags.map((tag) => tag.toLowerCase())
+    );
+    const matchingTags = allTags.filter(
+      (tag) =>
+        tag.name.toLowerCase().includes(query) &&
+        !selectedLower.has(tag.name.toLowerCase())
     );
 
     // Check if the query exactly matches an existing tag
     const exactMatch = allTags.find((tag) => tag.name.toLowerCase() === query);
 
-    if (exactMatch) {
+    if (exactMatch && !selectedLower.has(exactMatch.name.toLowerCase())) {
       // Exact match found, show only that tag
       tagsDropdown.innerHTML = `
                 <div class="tags-dropdown-item" onclick="selectTag('${exactMatch.name}')">
                     ${exactMatch.name}
                 </div>
+            `;
+      createTagBtnContainer.classList.add("d-none");
+    } else if (exactMatch && selectedLower.has(exactMatch.name.toLowerCase())) {
+      tagsDropdown.innerHTML = `
+                <div class="p-2 text-muted">Tag already selected.</div>
             `;
       createTagBtnContainer.classList.add("d-none");
     } else if (matchingTags.length > 0) {
@@ -314,12 +320,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle tag selection
   window.selectTag = function (tagName) {
-    selectedTag = tagName;
+    if (!tagName) return;
+    const exists = selectedTags.some(
+      (tag) => tag.toLowerCase() === tagName.toLowerCase()
+    );
+    if (!exists) {
+      selectedTags.push(tagName);
+    }
     updateSelectedTagDisplay();
     tagsInput.value = "";
     tagsDropdown.innerHTML = "";
     createTagBtnContainer.classList.add("d-none");
-    tagsInput.disabled = true;
   };
 
   // Handle location selection - exact mirror of tag selection
@@ -333,10 +344,9 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // Handle tag removal
-  window.removeTag = function () {
-    selectedTag = null;
+  window.removeTag = function (tagName) {
+    selectedTags = selectedTags.filter((tag) => tag !== tagName);
     updateSelectedTagDisplay();
-    tagsInput.disabled = false;
     tagsInput.focus();
   };
 
@@ -350,18 +360,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update selected tag display
   function updateSelectedTagDisplay() {
-    if (!selectedTag) {
+    if (!selectedTags.length) {
       selectedTagsContainer.innerHTML = "";
-      hiddenTagsInput.value = "";
     } else {
-      selectedTagsContainer.innerHTML = `
+      selectedTagsContainer.innerHTML = selectedTags
+        .map(
+          (tag) => `
                 <span class="badge bg-primary me-1 mb-1" style="font-size: 0.875rem;">
-                    ${selectedTag}
-                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag()" aria-label="Remove"></button>
+                    ${tag}
+                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag(${JSON.stringify(
+                      tag
+                    )})" aria-label="Remove"></button>
                 </span>
-            `;
-      hiddenTagsInput.value = selectedTag;
+            `
+        )
+        .join("");
     }
+    hiddenTagsInput.value = selectedTags.length
+      ? JSON.stringify(selectedTags)
+      : "";
   }
 
   // Update selected location display - exact mirror of tag display
@@ -405,14 +422,15 @@ document.addEventListener("DOMContentLoaded", function () {
       const newTag = await response.json();
 
       allTags.push(newTag);
-      selectedTag = newTag.name;
-      updateSelectedTagDisplay();
+      if (!selectedTags.includes(newTag.name)) {
+        selectedTags.push(newTag.name);
+        updateSelectedTagDisplay();
+      }
 
       // Clear input
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
-      tagsInput.disabled = true;
     } catch (error) {
       console.error("Error creating tag:", error);
       showAlert("Failed to create tag. Please try again.", "danger");
@@ -487,7 +505,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const data = {
       name: formData.get("name"),
       quantity: parseInt(formData.get("quantity")),
-      tags: selectedTag ? [selectedTag] : [],
+      tags: selectedTags,
       location_id: formData.get("location_id")
         ? parseInt(formData.get("location_id"))
         : null,

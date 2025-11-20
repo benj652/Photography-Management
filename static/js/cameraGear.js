@@ -269,10 +269,63 @@ window.updateItemInTable = function (item) {
     }
 };
 
+function filterTable() {
+    const searchValue =
+        document.getElementById("search-input")?.value.toLowerCase() || "";
+    const nameFilter =
+        document.getElementById("filter-name")?.value.toLowerCase() || "";
+    const tagsFilter =
+        document.getElementById("filter-tags")?.value.toLowerCase() || "";
+    const locationFilter =
+        document.getElementById("filter-location")?.value.toLowerCase() || "";
+
+    const rows = document.querySelectorAll("#items-table-body tr");
+
+    rows.forEach((row) => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length === 0) return;
+
+        // camera_gear.html columns:
+        // 0: ID, 1: Name, 2: Tags, 3: Location, 4: Status, 5: Checked Out By, 6: Actions
+        const nameText = (cells[1]?.textContent || "").toLowerCase();
+        const tagsText = (cells[2]?.textContent || "").toLowerCase();
+        const locationText = (cells[3]?.textContent || "").toLowerCase();
+
+        const matchesSearch =
+            !searchValue ||
+            nameText.includes(searchValue) ||
+            tagsText.includes(searchValue) ||
+            locationText.includes(searchValue);
+
+        const matchesName = !nameFilter || nameText.includes(nameFilter);
+        const matchesTags = !tagsFilter || tagsText.includes(tagsFilter);
+        const matchesLocation =
+            !locationFilter || locationText.includes(locationFilter);
+
+        row.style.display =
+            matchesSearch && matchesName && matchesTags && matchesLocation
+                ? ""
+                : "none";
+    });
+}
+
+function clearFilters() {
+    ["search-input", "filter-name", "filter-tags", "filter-location"].forEach(
+        (id) => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        }
+    );
+    filterTable();
+}
+
 
 // Make functions global for onclick handlers
 window.editCameraGear = editCameraGear;
 window.deleteCameraGear = deleteCameraGear;
 window.checkOutGear = checkOutGear;
 window.checkInGear = checkInGear;
+window.filterTable = filterTable;
+window.clearFilters = clearFilters;
+
 
