@@ -1,0 +1,65 @@
+<!-- ========================= -->
+<!-- ADD CAMERA GEAR (MODAL)  -->
+<!-- ========================= -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form id="addItemForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addItemModalLabel">Add Camera Gear</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Alert -->
+                    <div id="modalAlert" class="alert d-none" role="alert"></div>
+
+                    <!-- Item ID (editing only) -->
+                    <div id="modalItemIdContainer" class="mb-2 d-none">
+                        <small class="text-muted">Gear ID: <span id="modalItemIdValue"></span></small>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Name *</label>
+                        <input id="name" name="name" type="text" class="form-control" required />
+                    </div>
+
+                    <!-- Tags (multi select with searchable dropdown) -->
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <div class="tag-input-wrapper position-relative">
+                            <input id="tags-input" type="hidden" name="tags" />
+                            <input id="tag-search" type="text" class="form-control"
+                                placeholder="Type to search or create tag…" autocomplete="off" />
+                            <div id="tags-dropdown"
+                                class="tag-dropdown border rounded-2 bg-white shadow-sm position-absolute w-100 mt-1"
+                                style="z-index: 1060;"></div>
+                        </div>
+                        <div id="selected-tags" class="mt-2"></div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-3">
+                        <label class="form-label" for="location-select">Location</label>
+                        <select id="location-select" class="form-select">
+                            <option value="">Select location…</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="createItemBtn" type="submit" class="btn btn-primary">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        Create
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/static/css/modal.css" />
+<script src="/static/js/add_gear_modal.js"></script>
