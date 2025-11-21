@@ -199,6 +199,7 @@
   box-shadow: none;
 }
 
+
 @media (max-width: 768px) {
   .search-filter-section .d-flex {
     flex-direction: column;
