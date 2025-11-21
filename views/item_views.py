@@ -36,6 +36,7 @@ from constants import (
     POST,
     PUT,
 )
+from utils.mail import send_low_stock_alert
 
 item_blueprint = Blueprint(ITEM_PREFIX, __name__)
 
@@ -118,6 +119,13 @@ def create_item():
     db.session.add(new_item)
     db.session.commit()
 
+    # After creating, check for low stock and notify admins if configured
+    try:
+        send_low_stock_alert(new_item)
+    except Exception:
+        # do not break the create flow if email sending fails
+        pass
+
     return new_item.to_dict(), 201
 
 
@@ -161,6 +169,12 @@ def update_item(item_id):
         item.location = location
 
     db.session.commit()
+    # After updating, check for low stock and notify admins if configured
+    try:
+        send_low_stock_alert(item)
+    except Exception:
+        pass
+
     return item.to_dict()
 
 
