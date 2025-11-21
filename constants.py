@@ -87,6 +87,7 @@ NOT_FOUND_ROUTE = "home.home"
 UNAUTHORIZED_ROUTE = "/unauthorized"
 LAB_EQUIPMENT_ROUTE = "/lab-equipment"
 CAMERA_GEAR_ROUTE = "/camera-gear"
+CONSUMABLES_ROUTE = "/consumables"
 
 # item routes
 ITEM_PREFIX = "/items"
@@ -265,6 +266,8 @@ UNAUTHORIZED_TEMPLATE = "unauthorized.html"
 ADMIN_TEMPLATE = "admin.html"
 CAMERA_GEAR_TEMPLATE = "camera_gear.html"
 LAB_EQUIPMENT_TEMPLATE = "lab_equipment.html"
+CONSUMABLES_TEMPLATE = "consumables.html"
+
 
 """
 =========================================
