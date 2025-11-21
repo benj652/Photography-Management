@@ -1,136 +1,181 @@
-<!-- ========================================= -->
-<!-- ADD ITEM MODAL (Bootstrap modal wrapper) -->
-<!-- ========================================= -->
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="addItemModal"
+  tabindex="-1"
+  aria-labelledby="addItemModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog">
     <div class="modal-content">
-
-      <!-- ============================== -->
-      <!-- FORM WRAPPER for Adding Items -->
-      <!-- ============================== -->
       <form id="addItemForm">
-
-        <!-- =================== -->
-        <!-- MODAL HEADER (title + close button) -->
-        <!-- =================== -->
         <div class="modal-header">
           <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
-
-        <!-- =================== -->
-        <!-- MODAL BODY -->
-        <!-- Holds all input fields and alert messages -->
-        <!-- =================== -->
         <div class="modal-body">
-
-          <!-- STATUS / ALERT MESSAGE AREA -->
+          <!-- Alert container for messages -->
           <div id="modalAlert" class="alert d-none" role="alert"></div>
 
-          <!-- ITEM ID (visible only when editing an existing item) -->
+          <!-- Item ID (shown only when editing) -->
           <div id="modalItemIdContainer" class="mb-2 d-none">
-            <small class="text-muted">Item ID: <span id="modalItemIdValue"></span></small>
+            <small class="text-muted"
+              >Item ID: <span id="modalItemIdValue"></span
+            ></small>
           </div>
 
-          <!-- BASIC FIELDS (Name + Quantity) -->
           <div class="mb-3">
             <label for="name" class="form-label">Name</label>
             <input id="name" name="name" class="form-control" required />
           </div>
-
           <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
-            <input id="quantity" name="quantity" type="number" min="0" class="form-control" value="1" />
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min="0"
+              class="form-control"
+              value="1"
+            />
           </div>
-
-          <!-- =========================== -->
-          <!-- TAGS SECTION (search, create, select tags) -->
-          <!-- =========================== -->
           <div class="mb-3">
             <label for="tags" class="form-label">Tags</label>
-
             <div class="tags-input-container">
-
-              <!-- Search field + dropdown results -->
               <div class="tags-input-wrapper">
-                <input type="text" id="tags-input" class="form-control"
-                  placeholder="Search or type to create a new tag..." autocomplete="off" />
+                <input
+                  type="text"
+                  id="tags-input"
+                  class="form-control"
+                  placeholder="Search or type to create a new tag..."
+                  autocomplete="off"
+                />
                 <div id="tags-dropdown" class="tags-dropdown"></div>
               </div>
-
-              <!-- Button to create a brand-new tag -->
-              <div id="create-tag-btn-container" class="create-tag-btn-container d-none">
-                <button type="button" class="btn btn-sm btn-outline-primary" id="createTagBtn">
-                  <i class="fas fa-plus me-1"></i>Create Tag: "<span id="new-tag-name"></span>"
+              <div
+                id="create-tag-btn-container"
+                class="create-tag-btn-container d-none"
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  id="createTagBtn"
+                >
+                  <i class="fas fa-plus me-1"></i>Create Tag: "<span
+                    id="new-tag-name"
+                  ></span
+                  >"
                 </button>
               </div>
-
-              <!-- Display selected tags -->
               <div id="selected-tags" class="selected-tags mt-2"></div>
-
-              <!-- Hidden input to submit selected tags -->
+              <!-- Hidden input to store selected tag names for form submission -->
               <input type="hidden" id="tags" name="tags" />
             </div>
           </div>
-
-          <!-- ============================ -->
-          <!-- LOCATION SECTION (similar to tags) -->
-          <!-- ============================ -->
           <div class="mb-3">
-            <label for="location-input" class="form-label">Location (optional)</label>
-
+            <label for="location-input" class="form-label"
+              >Location (optional)</label
+            >
             <div class="tags-input-container">
-
-              <!-- Search field + dropdown -->
               <div class="tags-input-wrapper">
-                <input id="location-input" name="location-input" class="form-control" autocomplete="off"
-                  placeholder="Search or type to create a new location..." />
+                <input
+                  id="location-input"
+                  name="location-input"
+                  class="form-control"
+                  autocomplete="off"
+                  placeholder="Search or type to create a new location..."
+                />
                 <div id="location-dropdown" class="tags-dropdown"></div>
               </div>
-
-              <!-- Create new location button -->
-              <div id="create-location-btn-container" class="create-tag-btn-container d-none">
-                <button type="button" class="btn btn-sm btn-outline-primary" id="createLocationBtn">
-                  <i class="fas fa-plus me-1"></i>Create Location: "<span id="new-location-name"></span>"
+              <div
+                id="create-location-btn-container"
+                class="create-tag-btn-container d-none"
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  id="createLocationBtn"
+                >
+                  <i class="fas fa-plus me-1"></i>Create Location: "<span
+                    id="new-location-name"
+                  ></span
+                  >"
                 </button>
               </div>
-
-              <!-- Selected location display -->
               <div id="selected-location" class="selected-tags mt-2"></div>
-
-              <!-- Hidden input stores location ID -->
+              <!-- Hidden input to store selected location ID for form submission -->
               <input type="hidden" id="location_id" name="location_id" />
             </div>
           </div>
-
-          <!-- EXPIRATION FIELD -->
           <div class="mb-3">
             <label for="expires" class="form-label">Expires</label>
-            <input id="expires" name="expires" type="date" class="form-control" />
+            <input
+              id="expires"
+              name="expires"
+              type="date"
+              class="form-control"
+            />
           </div>
 
-        </div> <!-- end modal-body -->
+          <!-- Lab Equipment Specific Fields -->
+          <div class="mb-3" id="service-frequency-field" style="display: none">
+            <label for="service-frequency" class="form-label"
+              >Service Frequency</label
+            >
+            <select
+              id="service-frequency"
+              name="service-frequency"
+              class="form-select"
+            >
+              <option value="">Select frequency</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+              <option value="as-needed">As Needed</option>
+            </select>
+          </div>
 
-        <!-- =================== -->
-        <!-- MODAL FOOTER (buttons) -->
-        <!-- =================== -->
+          <div class="mb-3" id="last-serviced-field" style="display: none">
+            <label for="last-serviced" class="form-label"
+              >Last Serviced Date</label
+            >
+            <input
+              id="last-serviced"
+              name="last-serviced"
+              type="date"
+              class="form-control"
+            />
+          </div>
+        </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-          <!-- Submit button (includes spinner for async operations) -->
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
           <button type="submit" class="btn btn-primary" id="createItemBtn">
-            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span
+              class="spinner-border spinner-border-sm d-none"
+              role="status"
+              aria-hidden="true"
+            ></span>
             Create
           </button>
         </div>
-
-      </form> <!-- end form -->
+      </form>
     </div>
   </div>
 </div>
 
-<!-- External JS controlling modal behavior -->
 <script src="/static/js/add_item_modal.js"></script>
-
-<!-- CSS for tags, dropdowns, modal layout -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/add_item.css') }}" />
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/add_item.css') }}"
+/>

@@ -1,331 +1,315 @@
-const API_BASE = '/api/v1/camera_gear';
+const API_BASE = "/api/v1/camera_gear";
 
+// Load camera gear on page load
+document.addEventListener("DOMContentLoaded", function () {
+  loadCameraGear();
+  setupDeleteHandler();
 
-
-document.addEventListener('DOMContentLoaded', function () {
-    loadCameraGear();
-
-    // Open modal in "create" mode
-    const addBtn = document.getElementById('openAddItemBtn');
-    if (addBtn) {
-        addBtn.addEventListener('click', () => {
-            window.editingItemId = null;
-            window.editingItemData = null;
-            const titleEl = document.getElementById("addItemModalLabel");
-            const submitBtn = document.getElementById("createItemBtn");
-            if (titleEl) titleEl.textContent = "Add Camera Gear";
-            if (submitBtn) {
-                Array.from(submitBtn.childNodes)
-                    .filter(n => n.nodeType === Node.TEXT_NODE)
-                    .forEach(n => n.remove());
-                submitBtn.appendChild(document.createTextNode(" Create"));
-            }
-        });
-    }
+  // Logout button
+  const logoutButton = document.getElementById("logoutButton");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      window.location.href = "/auth/logout";
+    });
+  }
 });
-
 
 // Load all camera gear
 async function loadCameraGear() {
-    try {
-        const response = await fetch(`${API_BASE}/all`);
-        const data = await response.json();
-        displayCameraGear(data.camera_gear || []);
-    } catch (error) {
-        console.error('Error loading camera gear:', error);
-        alert('Failed to load camera gear');
-    }
+  try {
+    const response = await fetch(`${API_BASE}/all`);
+    const data = await response.json();
+    displayCameraGear(data.camera_gear || []);
+  } catch (error) {
+    console.error("Error loading camera gear:", error);
+    showEmptyState("Failed to load camera gear");
+  }
 }
-
-
 
 // Display camera gear in table
 function displayCameraGear(gear) {
-    const tbody = document.getElementById('items-table-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+  const tbody = document.getElementById("camera-gear-table-body");
+  if (!tbody) return;
 
-    if (!Array.isArray(gear) || gear.length === 0) {
-        const emptyRow = document.createElement('tr');
-        emptyRow.dataset.empty = "true";
-        emptyRow.innerHTML = `
-          <td colspan="7" class="text-center text-muted">
-            No camera gear found.
-          </td>
+  tbody.innerHTML = "";
+
+  if (gear.length === 0) {
+    showEmptyState('No camera gear found. Click "Add Item" to get started.');
+    return;
+  }
+
+  gear.forEach((item) => {
+    const row = document.createElement("tr");
+
+    // Determine checkout status
+    const isCheckedOut = item.checked_out_by;
+    const status = isCheckedOut
+      ? '<span class="badge bg-warning">Checked Out</span>'
+      : '<span class="badge bg-success">Available</span>';
+
+    // Add checked-out styling
+    if (isCheckedOut) {
+      row.classList.add("checked-out-row");
+    }
+
+    // Use location name directly from API response
+    const locationName = item.location || "—";
+    const tags = Array.isArray(item.tags)
+      ? item.tags.join(", ")
+      : item.tags || "";
+    const lastUpdated = item.last_updated
+      ? new Date(item.last_updated).toLocaleString()
+      : "—";
+
+    row.innerHTML = `
+            <td class="text-center">${item.id}</td>
+            <td class="text-start">${item.name}</td>
+            <td class="text-start">${tags}</td>
+            <td class="text-start">${locationName}</td>
+            <td class="text-center">${status}</td>
+            <td class="text-center">${item.checked_out_by || "—"}</td>
+            <td class="text-center">${lastUpdated}</td>
+            <td class="text-end">
+                <div class="d-inline-flex gap-2 align-items-center">
+                    <button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${
+                      item.id
+                    })" title="Edit item">
+                        Edit
+                    </button>
+                    ${
+                      isCheckedOut
+                        ? `<button class="btn btn-sm btn-info me-1" onclick="checkInGear(${item.id})" title="Check In" style="white-space: nowrap;">
+                            Check In
+                        </button>`
+                        : `<button class="btn btn-sm btn-success me-1" onclick="checkOutGear(${item.id})" title="Check Out" style="white-space: nowrap;">
+                            Check Out
+                        </button>`
+                    }
+                    <button class="btn btn-sm btn-danger" onclick="deleteCameraGear(${
+                      item.id
+                    })" title="Delete item">
+                        Delete
+                    </button>
+                </div>
+            </td>
         `;
-        tbody.appendChild(emptyRow);
-        return;
-    }
-
-    gear.forEach(item => {
-        const row = buildCameraGearRow(item);
-        tbody.appendChild(row);
-    });
+    tbody.appendChild(row);
+  });
 }
 
-
-
-
-/// Edit camera gear – open the modal and let add_gear_modal.js prefill the form
-async function editCameraGear(id) {
-    try {
-        const response = await fetch(`${API_BASE}/one/${id}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch camera gear: ${response.status}`);
-        }
-
-        const item = await response.json();
-
-        // Make the fetched item available for the modal initializer
-        window.editingItemData = item;
-        window.editingItemId = id;
-
-        // Update modal title + button label (parallel to equipment)
-        const titleEl = document.getElementById("addItemModalLabel");
-        const submitBtn = document.getElementById("createItemBtn");
-        if (titleEl) titleEl.textContent = "Edit Camera Gear";
-        if (submitBtn) {
-            for (const node of Array.from(submitBtn.childNodes)) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    node.nodeValue = " Save Changes";
-                    break;
-                }
-            }
-        }
-
-        // Show the modal – its 'shown.bs.modal' listener will read window.editingItemData
-        const modalEl = document.getElementById("addItemModal");
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-    } catch (error) {
-        console.error('Error loading camera gear for edit:', error);
-        alert('Failed to load camera gear for editing: ' + error.message);
-    }
+// Show empty state
+function showEmptyState(message) {
+  const tbody = document.getElementById("camera-gear-table-body");
+  if (!tbody) return;
+  const row = document.createElement("tr");
+  row.innerHTML = `
+        <td colspan="8" class="text-center text-muted py-4">
+            ${message}
+        </td>
+    `;
+  tbody.appendChild(row);
 }
 
+// Open edit modal
+async function openEditModal(itemId) {
+  try {
+    const response = await fetch(`${API_BASE}/one/${itemId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch camera gear: ${response.status}`);
+    }
+
+    const item = await response.json();
+
+    // Make the fetched item available for the modal initializer
+    window.editingItemData = item;
+    window.editingItemId = itemId;
+
+    // Update modal UI elements
+    const titleEl = document.getElementById("addItemModalLabel");
+    const submitBtn = document.getElementById("createItemBtn");
+    if (titleEl) titleEl.textContent = "Edit Camera Gear";
+    if (submitBtn) {
+      const textNodes = [];
+      for (const node of Array.from(submitBtn.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          textNodes.push(node);
+        }
+      }
+      textNodes.forEach((node) => node.remove());
+      submitBtn.appendChild(document.createTextNode(" Save Changes"));
+    }
+
+    // Show modal - the modal's shown handler will prefill
+    const modalEl = document.getElementById("addItemModal");
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  } catch (error) {
+    console.error("Error opening edit modal:", error);
+    alert("Failed to load camera gear for editing");
+  }
+}
 
 // Check out camera gear
 async function checkOutGear(id) {
-    if (!confirm('Are you sure you want to check out this camera gear?')) {
-        return;
-    }
+  try {
+    const response = await fetch(`${API_BASE}/checkout/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
 
-    try {
-        const response = await fetch(`${API_BASE}/checkout/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            loadCameraGear();
-            alert('Camera gear checked out successfully!');
-        } else {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to check out camera gear');
-        }
-    } catch (error) {
-        console.error('Error checking out camera gear:', error);
-        alert('Failed to check out camera gear: ' + error.message);
+    if (response.ok) {
+      loadCameraGear();
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to check out camera gear");
     }
+  } catch (error) {
+    console.error("Error checking out camera gear:", error);
+    alert("Failed to check out camera gear: " + error.message);
+  }
 }
 
 // Check in camera gear
 async function checkInGear(id) {
-    if (!confirm('Are you sure you want to check in this camera gear?')) {
-        return;
-    }
+  try {
+    const response = await fetch(`${API_BASE}/checkin/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
 
-    try {
-        const response = await fetch(`${API_BASE}/checkin/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            loadCameraGear();
-            alert('Camera gear checked in successfully!');
-        } else {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to check in camera gear');
-        }
-    } catch (error) {
-        console.error('Error checking in camera gear:', error);
-        alert('Failed to check in camera gear: ' + error.message);
+    if (response.ok) {
+      loadCameraGear();
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to check in camera gear");
     }
+  } catch (error) {
+    console.error("Error checking in camera gear:", error);
+    alert("Failed to check in camera gear: " + error.message);
+  }
 }
 
 // Delete camera gear
 async function deleteCameraGear(id) {
-    if (!confirm('Are you sure you want to delete this camera gear?')) {
-        return;
-    }
+  const confirmBtn = document.getElementById("confirmDeleteBtn");
+  if (confirmBtn) {
+    confirmBtn.setAttribute("data-item-id", id);
+    const modal = new bootstrap.Modal(
+      document.getElementById("deleteConfirmModal")
+    );
+    modal.show();
+  }
+}
 
-    try {
-        const response = await fetch(`${API_BASE}/${id}`, {
-            method: 'DELETE'
+// Setup delete confirmation handler
+function setupDeleteHandler() {
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async function () {
+      const itemId = this.getAttribute("data-item-id");
+      if (!itemId) return;
+
+      this.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE}/${itemId}`, {
+          method: "DELETE",
         });
 
         if (response.ok) {
-            loadCameraGear();
-            alert('Camera gear deleted!');
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("deleteConfirmModal")
+          );
+          if (modal) modal.hide();
+          loadCameraGear();
         } else {
-            const errorText = await response.text();
-            throw new Error(`Failed to delete camera gear: ${errorText}`);
+          throw new Error("Failed to delete camera gear");
         }
-    } catch (error) {
-        console.error('Error deleting camera gear:', error);
-        alert('Failed to delete camera gear: ' + error.message);
-    }
-}
-
-
-// Helper to build a table row for a single camera gear item
-function buildCameraGearRow(item) {
-    const row = document.createElement('tr');
-    row.classList.add(`item-id-${item.id}`);
-
-    const isCheckedOut = !!item.checked_out_by;
-    if (isCheckedOut) {
-        row.classList.add('checked-out-row');
-    }
-
-    const statusHtml = isCheckedOut
-        ? '<span class="badge bg-warning">Checked Out</span>'
-        : '<span class="badge bg-success">Available</span>';
-
-    // tags may be ["name"] or [{name: ""}] or a plain string
-    let tagsText = '—';
-    if (Array.isArray(item.tags) && item.tags.length) {
-        tagsText = item.tags
-            .map(t => (typeof t === 'string' ? t : t?.name || ''))
-            .filter(Boolean)
-            .join(', ') || '—';
-    } else if (typeof item.tags === 'string') {
-        tagsText = item.tags || '—';
-    }
-
-    const locationName = item.location || '—';
-    const checkedOutBy = item.checked_out_by || '—';
-
-    const actionsHtml = `
-      <button class="btn btn-sm btn-link text-primary p-0 me-2"
-              onclick="editCameraGear(${item.id})" title="Edit">
-        <i class="fas fa-edit"></i>
-      </button>
-      ${
-        isCheckedOut
-          ? `<button class="btn btn-sm btn-link text-info p-0 me-2"
-                    onclick="checkInGear(${item.id})" title="Check In">
-               <i class="fas fa-sign-in-alt"></i>
-             </button>`
-          : `<button class="btn btn-sm btn-link text-success p-0 me-2"
-                    onclick="checkOutGear(${item.id})" title="Check Out">
-               <i class="fas fa-sign-out-alt"></i>
-             </button>`
+      } catch (error) {
+        console.error("Error deleting camera gear:", error);
+        alert("Failed to delete camera gear");
+      } finally {
+        this.disabled = false;
       }
-      <button class="btn btn-sm btn-link text-danger p-0"
-              onclick="deleteCameraGear(${item.id})" title="Delete">
-        <i class="fas fa-trash"></i>
-      </button>
-    `;
-
-    row.innerHTML = `
-      <td>${item.id}</td>
-      <td>${item.name || ''}</td>
-      <td>${tagsText}</td>
-      <td>${locationName}</td>
-      <td>${statusHtml}</td>
-      <td>${checkedOutBy}</td>
-      <td class="text-end">${actionsHtml}</td>
-    `;
-
-    return row;
+    });
+  }
 }
 
-// Called by add_gear_modal.js after a successful CREATE
-window.addItemToTable = function (item) {
-    const tbody = document.getElementById('items-table-body');
-    if (!tbody) return;
-
-    const emptyRow = tbody.querySelector('tr[data-empty="true"]');
-    if (emptyRow) emptyRow.remove();
-
-    const row = buildCameraGearRow(item);
-    tbody.prepend(row);
+// Add item to table (called from modal)
+window.addCameraGearToTable = function (item) {
+  loadCameraGear();
 };
 
-// Called by add_gear_modal.js after a successful UPDATE
-window.updateItemInTable = function (item) {
-    const tbody = document.getElementById('items-table-body');
-    if (!tbody) return;
-
-    const existingRow = tbody.querySelector(`tr.item-id-${item.id}`);
-    const row = buildCameraGearRow(item);
-
-    if (existingRow) {
-        existingRow.replaceWith(row);
-    } else {
-        tbody.prepend(row);
-    }
+// Update item in table (called from modal)
+window.updateCameraGearInTable = function (data) {
+  loadCameraGear();
 };
 
+// Filter table
 function filterTable() {
-    const searchValue =
-        document.getElementById("search-input")?.value.toLowerCase() || "";
-    const nameFilter =
-        document.getElementById("filter-name")?.value.toLowerCase() || "";
-    const tagsFilter =
-        document.getElementById("filter-tags")?.value.toLowerCase() || "";
-    const locationFilter =
-        document.getElementById("filter-location")?.value.toLowerCase() || "";
+  const searchValue =
+    document.getElementById("search-input")?.value.toLowerCase() || "";
+  const nameFilter =
+    document.getElementById("filter-name")?.value.toLowerCase() || "";
+  const tagsFilter =
+    document.getElementById("filter-tags")?.value.toLowerCase() || "";
+  const locationFilter =
+    document.getElementById("filter-location")?.value.toLowerCase() || "";
+  const statusFilter = document.getElementById("filter-status")?.value || "";
 
-    const rows = document.querySelectorAll("#items-table-body tr");
+  const rows = document.querySelectorAll("#camera-gear-table-body tr");
 
-    rows.forEach((row) => {
-        const cells = row.querySelectorAll("td");
-        if (cells.length === 0) return;
+  rows.forEach((row) => {
+    if (row.querySelector("td[colspan]")) return; // Skip empty state row
 
-        // camera_gear.html columns:
-        // 0: ID, 1: Name, 2: Tags, 3: Location, 4: Status, 5: Checked Out By, 6: Actions
-        const nameText = (cells[1]?.textContent || "").toLowerCase();
-        const tagsText = (cells[2]?.textContent || "").toLowerCase();
-        const locationText = (cells[3]?.textContent || "").toLowerCase();
+    const cells = row.cells;
+    if (cells.length < 8) return;
 
-        const matchesSearch =
-            !searchValue ||
-            nameText.includes(searchValue) ||
-            tagsText.includes(searchValue) ||
-            locationText.includes(searchValue);
+    const itemName = cells[1].textContent.toLowerCase();
+    const itemTags = cells[2].textContent.toLowerCase();
+    const itemLocation = cells[3].textContent.toLowerCase();
+    const itemStatus = cells[4].textContent.toLowerCase();
 
-        const matchesName = !nameFilter || nameText.includes(nameFilter);
-        const matchesTags = !tagsFilter || tagsText.includes(tagsFilter);
-        const matchesLocation =
-            !locationFilter || locationText.includes(locationFilter);
+    const searchMatch =
+      !searchValue ||
+      itemName.includes(searchValue) ||
+      itemTags.includes(searchValue) ||
+      itemLocation.includes(searchValue);
 
-        row.style.display =
-            matchesSearch && matchesName && matchesTags && matchesLocation
-                ? ""
-                : "none";
-    });
+    const nameMatch = !nameFilter || itemName.includes(nameFilter);
+    const tagsMatch =
+      !tagsFilter || itemTags.includes(tagsFilter.toLowerCase());
+    const locationMatch =
+      !locationFilter || itemLocation.includes(locationFilter);
+    const statusMatch =
+      !statusFilter ||
+      (statusFilter === "available" && itemStatus.includes("available")) ||
+      (statusFilter === "checked-out" && itemStatus.includes("checked out"));
+
+    const hasSpecificFilters =
+      nameFilter || tagsFilter || locationFilter || statusFilter;
+    const shouldShow =
+      searchMatch &&
+      (!hasSpecificFilters ||
+        (nameMatch && tagsMatch && locationMatch && statusMatch));
+
+    row.style.display = shouldShow ? "" : "none";
+  });
 }
 
 function clearFilters() {
-    ["search-input", "filter-name", "filter-tags", "filter-location"].forEach(
-        (id) => {
-            const el = document.getElementById(id);
-            if (el) el.value = "";
-        }
-    );
-    filterTable();
+  document.getElementById("search-input").value = "";
+  document.getElementById("filter-name").value = "";
+  document.getElementById("filter-tags").value = "";
+  document.getElementById("filter-location").value = "";
+  document.getElementById("filter-status").value = "";
+  filterTable();
 }
 
-
-// Make functions global for onclick handlers
-window.editCameraGear = editCameraGear;
+// Make functions global
+window.openEditModal = openEditModal;
 window.deleteCameraGear = deleteCameraGear;
 window.checkOutGear = checkOutGear;
 window.checkInGear = checkInGear;
 window.filterTable = filterTable;
 window.clearFilters = clearFilters;
-
-
