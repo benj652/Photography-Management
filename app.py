@@ -62,7 +62,26 @@ def load_user(user_id):
 
 db.init_app(app)
 
+# Mail configuration - read common mail-related env vars. If not present, Mail initialization will still
+# occur but sending will be a no-op until valid settings are provided in env.
+app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
+app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", "587")) if os.getenv("MAIL_PORT") else None
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", os.getenv("DEFAULT_ADMIN_EMAIL"))
+app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() in ("1", "true", "yes")
+
 init_oauth(app)
+
+# Initialize the mail helper (flask-mailman)
+try:
+    from utils.mail import init_mail
+
+    init_mail(app)
+except Exception:
+    # don't crash app if mail isn't available; emails will be a no-op
+    pass
 
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
