@@ -1,19 +1,90 @@
-const API_PREFIX = "/api/v1";
+const CONSUMABLES_API_BASE = "/api/v1/consumables";
+const EMPTY_PLACEHOLDER = "&mdash;";
 
-// Function to fetch items from the server
+function formatDisplayValue(value) {
+  if (value === null || value === undefined) {
+    return EMPTY_PLACEHOLDER;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : EMPTY_PLACEHOLDER;
+  }
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? EMPTY_PLACEHOLDER : value;
+  }
+  return value || EMPTY_PLACEHOLDER;
+}
+
+function formatDateDisplay(value, includeTime = false) {
+  if (!value) return EMPTY_PLACEHOLDER;
+
+  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    if (Number.isNaN(date.getTime())) return EMPTY_PLACEHOLDER;
+    return includeTime ? date.toLocaleString() : date.toLocaleDateString();
+  }
+
+  // For ISO datetime strings, parse and handle timezone correctly
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return EMPTY_PLACEHOLDER;
+
+  if (includeTime) {
+    return parsed.toLocaleString();
+  } else {
+    // Extract date parts from the parsed date to avoid timezone issues
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    // Create a local date object from the components
+    const localDate = new Date(year, parsed.getMonth(), parsed.getDate());
+    return localDate.toLocaleDateString();
+  }
+}
+
+function formatTagsDisplay(tags) {
+  if (Array.isArray(tags)) {
+    if (!tags.length) return EMPTY_PLACEHOLDER;
+    const normalized = tags
+      .map((tag) => {
+        if (typeof tag === "string") return tag;
+        if (tag && typeof tag.name === "string") return tag.name;
+        return "";
+      })
+      .filter((tag) => tag && tag.trim().length);
+    return normalized.length ? normalized.join(", ") : EMPTY_PLACEHOLDER;
+  }
+  if (typeof tags === "string") {
+    return formatDisplayValue(tags);
+  }
+  return EMPTY_PLACEHOLDER;
+}
+
+function getLocationDisplay(item) {
+  if (!item) return EMPTY_PLACEHOLDER;
+  const locationName =
+    typeof item.location === "object" && item.location !== null
+      ? item.location.name
+      : item.location;
+  const fallback = item.location_name || item.location_id || "";
+  return formatDisplayValue(locationName || fallback);
+}
+
+// Function to fetch consumables from the server
 async function fetchItems() {
   try {
-    console.log("Fetching items from /items/all");
-    const response = await fetch(API_PREFIX+"/items/all");
+    console.log("Fetching consumables from /consumables/all");
+    const response = await fetch(CONSUMABLES_API_BASE + "/all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const items = await response.json();
-    console.log("Fetched items:", items);
-    populateTable(items);
+    const data = await response.json();
+    console.log("Fetched consumables:", data);
+    populateTable(data.consumables || []);
   } catch (error) {
-    console.error("Failed to fetch items:", error);
-    showEmptyState("Failed to load items. Please refresh the page.");
+    console.error("Failed to fetch consumables:", error);
+    showEmptyState("Failed to load consumables. Please refresh the page.");
   }
 }
 
@@ -43,30 +114,40 @@ window.updateItemInTable = function (data) {
       return;
     }
 
-    const tags = Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "";
-    const expires = data.expires ? new Date(data.expires).toLocaleDateString() : "";
-    const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "";
+    const tagsText = formatTagsDisplay(data.tags);
+    const expires = data.expires ? formatDateDisplay(data.expires) : "";
+    const lastUpdated = formatDateDisplay(data.last_updated, true);
+    const locationText = getLocationDisplay(data);
+    const nameText = formatDisplayValue(data.name);
+    const updatedByText = formatDisplayValue(data.updated_by);
+    const quantityText =
+      typeof data.quantity === "number"
+        ? data.quantity
+        : formatDisplayValue(data.quantity);
 
     targetRow.innerHTML = `
-      <td class="item-id-${id}">${id}</td>
-      <td>${data.name || ""}</td>
-      <td>${data.quantity}</td>
-      <td>${tags}</td>
-      <td>${data.location || data.location_id || ""}</td>
-      <td>${expires}</td>
-      <td>${lastUpdated}</td>
-      <td>${data.updated_by || ""}</td>
-      <td class="text-end">
-        <div class="d-inline-flex gap-2 align-items-center">
-          <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    `;
+        <td class="item-id-${id}">${id}</td>
+        <td>${nameText}</td>
+        <td>${quantityText}</td>
+        <td>${tagsText}</td>
+        <td>${locationText}</td>
+        <td>${expires}</td>
+        <td>${lastUpdated}</td>
+        <td>${updatedByText}</td>
+        <td class="text-end">
+          <div class="d-inline-flex gap-3 align-items-center">
+            <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      `;
 
     targetRow.classList.add("table-warning");
     setTimeout(() => targetRow.classList.remove("table-warning"), 1200);
-    updateStats();
   } catch (err) {
     console.error("Failed to update table row:", err);
   }
@@ -76,33 +157,31 @@ window.updateItemInTable = function (data) {
 function populateTable(items) {
   const tableBody = document.getElementById("items-table-body");
   tableBody.innerHTML = "";
-  items = items.items;
   if (items && items.length > 0) {
     items.forEach((item) => {
       const row = document.createElement("tr");
-
-      // Handle tags display - could be array or string
-      const tags = Array.isArray(item.tags)
-        ? item.tags.join(", ")
-        : item.tags || "";
-
-      // Format dates properly
-      const expires = item.expires
-        ? new Date(item.expires).toLocaleDateString()
-        : "";
-      const lastUpdated = item.last_updated
-        ? new Date(item.last_updated).toLocaleString()
-        : "";
+      const itemIdText =
+        item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
+      const nameText = formatDisplayValue(item.name);
+      const quantityText =
+        typeof item.quantity === "number"
+          ? item.quantity
+          : formatDisplayValue(item.quantity);
+      const tagsText = formatTagsDisplay(item.tags);
+      const locationText = getLocationDisplay(item);
+      const expires = item.expires ? formatDateDisplay(item.expires) : "";
+      const lastUpdated = formatDateDisplay(item.last_updated, true);
+      const updatedByText = formatDisplayValue(item.updated_by);
 
       row.innerHTML = `
-                <td class="item-id-${item.id}">${item.id || ""}</td>
-                <td>${item.name || ""}</td>
-                <td>${item.quantity}</td>
-                <td>${tags}</td>
-                <td>${item.location || ""}</td>
+                <td class="item-id-${item.id}">${itemIdText}</td>
+                <td>${nameText}</td>
+                <td>${quantityText}</td>
+                <td>${tagsText}</td>
+                <td>${locationText}</td>
                 <td>${expires}</td>
                 <td>${lastUpdated}</td>
-                <td>${item.updated_by || ""}</td>
+                <td>${updatedByText}</td>
                 <td class="text-end">
                   <div class="d-inline-flex gap-3 align-items-center">
                     <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
@@ -119,32 +198,35 @@ function populateTable(items) {
       tableBody.appendChild(row);
     });
   } else {
-    showEmptyState("No items found. Click 'Add Item' to get started.");
+    showEmptyState("No consumables found. Click 'Add Item' to get started.");
   }
 }
 
 async function openEditModal(itemId) {
   try {
-    const resp = await fetch(`${API_PREFIX}/items/one/${itemId}`);
-    if (!resp.ok) throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
+    const resp = await fetch(`${CONSUMABLES_API_BASE}/one/${itemId}`);
+    if (!resp.ok)
+      throw new Error(`Failed to fetch consumable ${itemId}: ${resp.status}`);
     const data = await resp.json();
 
     // Make the fetched item available for the modal initializer
     window.editingItemData = data;
-  	// Also expose the numeric id explicitly so the modal script can read it directly
-  	window.editingItemId = itemId;
+    // Also expose the numeric id explicitly so the modal script can read it directly
+    window.editingItemId = itemId;
 
     // Update modal UI elements immediately (preserve spinner span if present)
     const titleEl = document.getElementById("addItemModalLabel");
     const submitBtn = document.getElementById("createItemBtn");
-    if (titleEl) titleEl.textContent = "Edit Item";
+    if (titleEl) titleEl.textContent = "Edit Consumable";
     if (submitBtn) {
+      const textNodes = [];
       for (const node of Array.from(submitBtn.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
-          node.nodeValue = ' ' + 'Save Changes';
-          break;
+          textNodes.push(node);
         }
       }
+      textNodes.forEach((node) => node.remove());
+      submitBtn.appendChild(document.createTextNode(" Save Changes"));
     }
 
     // Show modal - the modal's shown handler will read window.editingItemData and prefill after tags/locations are loaded
@@ -153,7 +235,9 @@ async function openEditModal(itemId) {
     modal.show();
   } catch (err) {
     console.error("Failed to open edit modal:", err);
-    alert("Failed to load item for editing. Please refresh and try again.");
+    alert(
+      "Failed to load consumable for editing. Please refresh and try again."
+    );
   }
 }
 
@@ -169,64 +253,9 @@ function showEmptyState(message) {
   tableBody.appendChild(row);
 }
 
-// Function to calculate and update stats
-async function updateStats() {
-  try {
-    const response = await fetch(API_PREFIX + "/items/all");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    const items = data.items || [];
-    const totalItems = items.length;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // In stock
-    const inStockCount = items.filter((item) => {
-      if (item.quantity <= 0) return false;
-      if (!item.expires) return true;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate >= today;
-    }).length;
-
-    // Out of stock
-    const outOfStockCount = items.filter((item) => {
-      if (item.quantity > 0) return false;
-      if (!item.expires) return true;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate >= today;
-    }).length;
-
-    // Expired
-    const expiredCount = items.filter((item) => {
-      if (!item.expires) return false;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate < today;
-    }).length;
-
-    // Update stat cards
-    document.getElementById("stat-total").textContent = `${totalItems} Items`;
-    document.getElementById(
-      "stat-in-stock"
-    ).textContent = `${inStockCount} Items`;
-    document.getElementById(
-      "stat-out-of-stock"
-    ).textContent = `${outOfStockCount} Items`;
-    document.getElementById(
-      "stat-expired"
-    ).textContent = `${expiredCount} Items`;
-  } catch (error) {
-    console.error("Failed to update stats:", error);
-  }
-}
-
-// Function to add a new item to the table (called from modal) - MAKE IT GLOBAL
+// Function to add a new consumable to the table (called from modal) - MAKE IT GLOBAL
 window.addItemToTable = function (item) {
-  console.log("Adding item to table:", item);
+  console.log("Adding consumable to table:", item);
   const tableBody = document.getElementById("items-table-body");
 
   if (!tableBody) {
@@ -242,41 +271,38 @@ window.addItemToTable = function (item) {
 
   // Create new row - handle both response formats
   const row = document.createElement("tr");
-  const tags = Array.isArray(item.tags)
-    ? item.tags.join(", ")
-    : item.tags || "";
-  const expires = item.expires
-    ? new Date(item.expires).toLocaleDateString()
-    : "";
-  const last_updated = item.last_updated
-    ? new Date(item.last_updated).toLocaleString()
-    : "";
+  const itemIdText =
+    item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
+  const nameText = formatDisplayValue(item.name);
+  const quantityText =
+    typeof item.quantity === "number"
+      ? item.quantity
+      : formatDisplayValue(item.quantity);
+  const tags = formatTagsDisplay(item.tags);
+  const locationText = getLocationDisplay(item);
+  const expires = item.expires ? formatDateDisplay(item.expires) : "";
+  const last_updated = formatDateDisplay(item.last_updated, true);
+  const updatedByText = formatDisplayValue(item.updated_by);
 
   row.innerHTML = `
-		<td>${item.id || ""}</td>
-		<td>${item.name || ""}</td>
-		<td>${item.quantity}</td>
+		<td class="item-id-${item.id}">${itemIdText}</td>
+		<td>${nameText}</td>
+		<td>${quantityText}</td>
 		<td>${tags}</td>
-		<td>${item.location || item.location_id || ""}</td>
+		<td>${locationText}</td>
 		<td>${expires}</td>
 		<td>${last_updated}</td>
-		<td>${item.updated_by || ""}</td>
+		<td>${updatedByText}</td>
 		<td class="text-end">
-		<button 
-			class="btn btn-sm btn-link text-primary edit-btn p-0 me-2 display-inline" 
-			onclick="openEditModal(${item.id})"
-			title="Edit item"
-		>
-		<i class="fas fa-edit"></i>
-		</button>
-		<button 
-			class="btn btn-sm btn-link text-danger delete-btn p-0 display-inline" 
-			onclick="deleteItem(${item.id})"
-			title="Delete item"
-		>
-        <i class="fas fa-trash"></i>
-      </button>
-    </td>
+                  <div class="d-inline-flex gap-3 align-items-center">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${item.id})" title="Delete item">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
 	`;
   row.classList.add("item-row");
 
@@ -287,10 +313,7 @@ window.addItemToTable = function (item) {
     row.classList.remove("table-success");
   }, 1000);
 
-  // Update stats after adding item
-  updateStats();
-
-  console.log("Item added to table successfully");
+  console.log("Consumable added to table successfully");
 };
 
 function filterTable() {
@@ -373,9 +396,6 @@ function clearFilters() {
 window.filterTable = filterTable;
 window.clearFilters = clearFilters;
 
-// Make updateStats globally accessible
-window.updateStats = updateStats;
-
 // Function to delete an item
 async function deleteItem(itemId) {
   // Store the item ID in a data attribute on the confirm button
@@ -412,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
       try {
-        const response = await fetch(`${API_PREFIX}/items/${itemId}`, {
+        const response = await fetch(`${CONSUMABLES_API_BASE}/${itemId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -439,15 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
             row.classList.add("table-danger");
             setTimeout(() => {
               row.remove();
-              // Refresh table and stats
+              // Refresh table
               fetchItems();
-              updateStats();
             }, 500);
           }
         });
       } catch (error) {
-        console.error("Failed to delete item:", error);
-        alert("Failed to delete item. Please try again.");
+        console.error("Failed to delete consumable:", error);
+        alert("Failed to delete consumable. Please try again.");
       } finally {
         // Re-enable button
         this.disabled = false;
