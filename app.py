@@ -81,16 +81,6 @@ except Exception:
     # don't crash app if mail isn't available; emails will be a no-op
     pass
 
-# Initialize scheduled jobs (daily expiration check at 6am)
-try:
-    # initialize Celery integration (worker optional)
-    from utils.celery_app import init_celery
-
-    init_celery(app)
-except Exception:
-    # celery not critical for app operation; continue if it's not available
-    pass
-
 
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
