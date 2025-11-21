@@ -298,3 +298,44 @@
 
 <script src="/static/js/home.js"></script>
 {% endblock %}
+
+<div class="row mb-3">
+  <div class="col-md-3">
+      <label for="search-input" class="form-label">Search All</label>
+      <input type="text" class="form-control" id="search-input" placeholder="Search...">
+  </div>
+  
+  <div class="col-md-2">
+      <label for="filter-name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="filter-name" placeholder="Filter by name...">
+  </div>
+  
+  <div class="col-md-2">
+      <label for="filter-tags-dropdown" class="form-label">Tags</label>
+      <select class="form-select" id="filter-tags-dropdown" multiple>
+          <option value="">All Tags</option>
+          <!-- Dynamically populated -->
+      </select>
+      <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple</small>
+  </div>
+  
+  <div class="col-md-2">
+      <label for="filter-location-dropdown" class="form-label">Location</label>
+      <select class="form-select" id="filter-location-dropdown">
+          <option value="">All Locations</option>
+          <!-- Dynamically populated -->
+      </select>
+  </div>
+  
+  <div class="col-md-3 d-flex align-items-end">
+      <button class="btn btn-outline-secondary me-2" onclick="clearFilters()">
+          Clear Filters
+      </button>
+      <button class="btn btn-primary" onclick="filterTable()">
+          Apply Filters
+      </button>
+  </div>
+</div>
+
+
+
