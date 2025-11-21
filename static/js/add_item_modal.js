@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return "camera-gear";
     } else if (path.includes("/lab-equipment")) {
       return "lab-equipment";
+    } else if (path.includes("/consumables")) {
+      return "consumables";
     }
     return "home"; // default to home/items
   }
@@ -62,6 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Show fields based on page type
     if (pageType === "home") {
+      if (quantityField) quantityField.style.display = "block";
+      if (expiresField) expiresField.style.display = "block";
+      if (locationField) locationField.style.display = "block";
+    } else if (pageType === "consumables") {
       if (quantityField) quantityField.style.display = "block";
       if (expiresField) expiresField.style.display = "block";
       if (locationField) locationField.style.display = "block";
@@ -97,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectedTagsContainer = document.getElementById("selected-tags");
   const hiddenTagsInput = document.getElementById("tags");
 
-  // Location functionality - exact mirror of tags
+  // Location functionality
   const locationInput = document.getElementById("location-input");
   const locationDropdown = document.getElementById("location-dropdown");
   const createLocationBtnContainer = document.getElementById(
@@ -111,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let allTags = [];
   let allLocations = [];
-  let selectedTag = null;
+  let selectedTags = [];
   let selectedLocation = null;
 
   function updateItem(itemId, updatedData, endpoint) {
@@ -154,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Fetch all locations from the database - exact mirror of fetchTags
+  // Fetch all locations from the database
   async function fetchLocations() {
     try {
       const response = await fetch(API_PREFIX + "/location/all");
@@ -179,14 +185,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Initialize tags
       await fetchTags();
-      selectedTag = null;
+      selectedTags = [];
       updateSelectedTagDisplay();
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
       tagsInput.disabled = false;
 
-      // Initialize locations - exact mirror
+      // Initialize locations
       await fetchLocations();
       selectedLocation = null;
       updateSelectedLocationDisplay();
@@ -205,8 +211,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("name").value = item.name || "";
 
         // Page-specific fields
-        if (pageType === "home") {
-          // General items
+        if (pageType === "home" || pageType === "consumables") {
+          // General items and consumables
           document.getElementById("quantity").value = item.quantity || 1;
           document.getElementById("expires").value = item.expires
             ? item.expires.split("T")[0]
@@ -225,19 +231,19 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
 
-        // Tags - select the first tag if present
+        // Tags - select all tags if present
         if (Array.isArray(item.tags) && item.tags.length > 0) {
-          // Use selectTag if available
-          if (typeof window.selectTag === "function") {
-            window.selectTag(item.tags[0]);
-          } else {
-            document.getElementById("tags").value = item.tags.join(", ");
-          }
+          // Set all tags from the item
+          selectedTags = item.tags.map((tag) =>
+            typeof tag === "string" ? tag : tag.name
+          );
+          updateSelectedTagDisplay();
         }
 
-        // Location - for home and camera-gear pages
         if (
-          (pageType === "home" || pageType === "camera-gear") &&
+          (pageType === "home" ||
+            pageType === "consumables" ||
+            pageType === "camera-gear") &&
           item.location_id
         ) {
           // Find location name from allLocations
@@ -288,13 +294,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle tags input
   tagsInput.addEventListener("input", function (e) {
-    // If a tag is already selected, don't show dropdown
-    if (selectedTag) {
-      tagsDropdown.innerHTML = "";
-      createTagBtnContainer.classList.add("d-none");
-      return;
-    }
-
     const query = e.target.value.trim().toLowerCase();
 
     if (query === "") {
@@ -303,13 +302,19 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Filter tags that match the query
-    const matchingTags = allTags.filter((tag) =>
-      tag.name.toLowerCase().includes(query)
-    );
+    // Filter tags that match the query and are not already selected
+    const matchingTags = allTags.filter((tag) => {
+      const tagNameLower = tag.name.toLowerCase();
+      const isMatching = tagNameLower.includes(query);
+      const isNotSelected = !selectedTags.includes(tag.name);
+      return isMatching && isNotSelected;
+    });
 
-    // Check if the query exactly matches an existing tag
-    const exactMatch = allTags.find((tag) => tag.name.toLowerCase() === query);
+    // Check if the query exactly matches an existing tag (that's not selected)
+    const exactMatch = allTags.find(
+      (tag) =>
+        tag.name.toLowerCase() === query && !selectedTags.includes(tag.name)
+    );
 
     if (exactMatch) {
       // Exact match found, show only that tag
@@ -320,7 +325,7 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
       createTagBtnContainer.classList.add("d-none");
     } else if (matchingTags.length > 0) {
-      // Show matching tags
+      // Show matching tags (excluding already selected ones)
       tagsDropdown.innerHTML = matchingTags
         .map(
           (tag) => `
@@ -332,10 +337,18 @@ document.addEventListener("DOMContentLoaded", function () {
         .join("");
       createTagBtnContainer.classList.add("d-none");
     } else {
-      // No matches, show create tag button
-      tagsDropdown.innerHTML = "";
-      newTagNameSpan.textContent = query;
-      createTagBtnContainer.classList.remove("d-none");
+      // Check if this tag is already selected
+      const queryTag = allTags.find((tag) => tag.name.toLowerCase() === query);
+      if (queryTag && selectedTags.includes(queryTag.name)) {
+        // Tag already selected, don't show create button
+        tagsDropdown.innerHTML = "";
+        createTagBtnContainer.classList.add("d-none");
+      } else {
+        // No matches, show create tag button
+        tagsDropdown.innerHTML = "";
+        newTagNameSpan.textContent = query;
+        createTagBtnContainer.classList.remove("d-none");
+      }
     }
   });
 
@@ -396,15 +409,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle tag selection
   window.selectTag = function (tagName) {
-    selectedTag = tagName;
-    updateSelectedTagDisplay();
+    // Only add if not already selected
+    if (!selectedTags.includes(tagName)) {
+      selectedTags.push(tagName);
+      updateSelectedTagDisplay();
+    }
     tagsInput.value = "";
     tagsDropdown.innerHTML = "";
     createTagBtnContainer.classList.add("d-none");
-    tagsInput.disabled = true;
+    tagsInput.focus();
   };
 
-  // Handle location selection - exact mirror of tag selection
+  // Handle location selection
   window.selectLocation = function (locationName) {
     selectedLocation = locationName;
     updateSelectedLocationDisplay();
@@ -415,14 +431,13 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // Handle tag removal
-  window.removeTag = function () {
-    selectedTag = null;
+  window.removeTag = function (tagName) {
+    selectedTags = selectedTags.filter((tag) => tag !== tagName);
     updateSelectedTagDisplay();
-    tagsInput.disabled = false;
     tagsInput.focus();
   };
 
-  // Handle location removal - exact mirror of tag removal
+  // Handle location removal
   window.removeLocation = function () {
     selectedLocation = null;
     updateSelectedLocationDisplay();
@@ -432,21 +447,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update selected tag display
   function updateSelectedTagDisplay() {
-    if (!selectedTag) {
+    if (selectedTags.length === 0) {
       selectedTagsContainer.innerHTML = "";
       hiddenTagsInput.value = "";
     } else {
-      selectedTagsContainer.innerHTML = `
+      selectedTagsContainer.innerHTML = selectedTags
+        .map(
+          (tag) => `
                 <span class="badge bg-primary me-1 mb-1" style="font-size: 0.875rem;">
-                    ${selectedTag}
-                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag()" aria-label="Remove"></button>
+                    ${tag}
+                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag('${tag}')" aria-label="Remove"></button>
                 </span>
-            `;
-      hiddenTagsInput.value = selectedTag;
+            `
+        )
+        .join("");
+      hiddenTagsInput.value = selectedTags.join(", ");
     }
   }
 
-  // Update selected location display - exact mirror of tag display
+  // Update selected location display
   function updateSelectedLocationDisplay() {
     if (!selectedLocation) {
       selectedLocationContainer.innerHTML = "";
@@ -471,6 +490,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const newTagName = tagsInput.value.trim();
     if (!newTagName) return;
 
+    // Check if tag already selected
+    if (selectedTags.includes(newTagName)) {
+      tagsInput.value = "";
+      tagsDropdown.innerHTML = "";
+      createTagBtnContainer.classList.add("d-none");
+      return;
+    }
+
     try {
       const response = await fetch(API_PREFIX + "/tags", {
         method: "POST",
@@ -487,21 +514,22 @@ document.addEventListener("DOMContentLoaded", function () {
       const newTag = await response.json();
 
       allTags.push(newTag);
-      selectedTag = newTag.name;
+      selectedTags.push(newTag.name);
       updateSelectedTagDisplay();
 
       // Clear input
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
-      tagsInput.disabled = true;
+      // Don't disable input - allow adding more tags
+      tagsInput.focus();
     } catch (error) {
       console.error("Error creating tag:", error);
       showAlert("Failed to create tag. Please try again.", "danger");
     }
   });
 
-  // Handle create location button - exact mirror of create tag button
+  // Handle create location button
   createLocationBtn.addEventListener("click", async function () {
     const newLocationName = locationInput.value.trim();
     if (!newLocationName) return;
@@ -568,7 +596,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const formData = new FormData(form);
     const pageType = getPageType();
 
-    // Build data object based on page type
+    // Build data object
     let data = {};
 
     if (pageType === "home") {
@@ -576,7 +604,18 @@ document.addEventListener("DOMContentLoaded", function () {
       data = {
         name: formData.get("name"),
         quantity: parseInt(formData.get("quantity")) || 1,
-        tags: selectedTag ? [selectedTag] : [],
+        tags: selectedTags,
+        location_id: formData.get("location_id")
+          ? parseInt(formData.get("location_id"))
+          : null,
+        expires: formData.get("expires") || null,
+      };
+    } else if (pageType === "consumables") {
+      // Consumables
+      data = {
+        name: formData.get("name"),
+        quantity: parseInt(formData.get("quantity")) || 1,
+        tags: selectedTags,
         location_id: formData.get("location_id")
           ? parseInt(formData.get("location_id"))
           : null,
@@ -586,7 +625,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Camera gear
       data = {
         name: formData.get("name"),
-        tags: selectedTag ? [selectedTag] : [],
+        tags: selectedTags,
         location_id: formData.get("location_id")
           ? parseInt(formData.get("location_id"))
           : null,
@@ -595,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Lab equipment
       data = {
         name: formData.get("name"),
-        tags: selectedTag ? [selectedTag] : [],
+        tags: selectedTags,
         service_frequency: formData.get("service-frequency") || null,
         last_serviced_on: formData.get("last-serviced") || null,
       };
@@ -608,6 +647,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiEndpoint =
       pageType === "home"
         ? API_PREFIX + "/items"
+        : pageType === "consumables"
+        ? API_PREFIX + "/consumables/"
         : pageType === "camera-gear"
         ? API_PREFIX + "/camera_gear/"
         : API_PREFIX + "/lab_equipment/";
@@ -617,6 +658,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const updateEndpoint =
         pageType === "home"
           ? `${API_PREFIX}/items/${editingId}`
+          : pageType === "consumables"
+          ? `${API_PREFIX}/consumables/${editingId}`
           : pageType === "camera-gear"
           ? `${API_PREFIX}/camera_gear/${editingId}`
           : `${API_PREFIX}/lab_equipment/${editingId}`;
@@ -686,7 +729,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    return false; // Extra prevention of form submission
+    return false;
   });
 
   function showAlert(message, type) {

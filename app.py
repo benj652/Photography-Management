@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager
 
-from models import db, User
+from models import db, User, Consumable
 from views import (
     auth_blueprint,
     home_blueprint,
@@ -12,6 +12,7 @@ from views import (
     admin_blueprint,
     lab_equipment_blueprint,
     camera_gear_blueprint,
+    consumables_blueprint,
 )
 from constants import (
     ADMIN_PREFIX,
@@ -31,6 +32,7 @@ from constants import (
     SQLALCHEMY_TRACK_MODIFICATIONS,
     TAG_PREFIX,
     UNAUTHORIZED_TEMPLATE,
+    CONSUMABLES_PREFIX,
 )
 
 import os
@@ -72,6 +74,9 @@ app.register_blueprint(
 )
 app.register_blueprint(
     lab_equipment_blueprint, url_prefix=API_PREFIX + LAB_EQUIPMENT_PREFIX
+)
+app.register_blueprint(
+    consumables_blueprint, url_prefix=API_PREFIX + CONSUMABLES_PREFIX
 )
 app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX + TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=API_PREFIX + LOCATION_PREFIX)

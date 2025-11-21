@@ -1,4 +1,4 @@
-const API_PREFIX = "/api/v1";
+const CONSUMABLES_API_BASE = "/api/v1/consumables";
 const EMPTY_PLACEHOLDER = "&mdash;";
 
 function formatDisplayValue(value) {
@@ -32,9 +32,7 @@ function formatTagsDisplay(tags) {
         return "";
       })
       .filter((tag) => tag && tag.trim().length);
-    return normalized.length
-      ? normalized.join(", ")
-      : EMPTY_PLACEHOLDER;
+    return normalized.length ? normalized.join(", ") : EMPTY_PLACEHOLDER;
   }
   if (typeof tags === "string") {
     return formatDisplayValue(tags);
@@ -52,20 +50,20 @@ function getLocationDisplay(item) {
   return formatDisplayValue(locationName || fallback);
 }
 
-// Function to fetch items from the server
+// Function to fetch consumables from the server
 async function fetchItems() {
   try {
-    console.log("Fetching items from /items/all");
-    const response = await fetch(API_PREFIX+"/items/all");
+    console.log("Fetching consumables from /consumables/all");
+    const response = await fetch(CONSUMABLES_API_BASE + "/all");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const items = await response.json();
-    console.log("Fetched items:", items);
-    populateTable(items);
+    const data = await response.json();
+    console.log("Fetched consumables:", data);
+    populateTable(data.consumables || []);
   } catch (error) {
-    console.error("Failed to fetch items:", error);
-    showEmptyState("Failed to load items. Please refresh the page.");
+    console.error("Failed to fetch consumables:", error);
+    showEmptyState("Failed to load consumables. Please refresh the page.");
   }
 }
 
@@ -107,25 +105,28 @@ window.updateItemInTable = function (data) {
         : formatDisplayValue(data.quantity);
 
     targetRow.innerHTML = `
-      <td class="item-id-${id}">${id}</td>
-      <td>${nameText}</td>
-      <td>${quantityText}</td>
-      <td>${tagsText}</td>
-      <td>${locationText}</td>
-      <td>${expires}</td>
-      <td>${lastUpdated}</td>
-      <td>${updatedByText}</td>
-      <td class="text-end">
-        <div class="d-inline-flex gap-2 align-items-center">
-          <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    `;
+        <td class="item-id-${id}">${id}</td>
+        <td>${nameText}</td>
+        <td>${quantityText}</td>
+        <td>${tagsText}</td>
+        <td>${locationText}</td>
+        <td>${expires}</td>
+        <td>${lastUpdated}</td>
+        <td>${updatedByText}</td>
+        <td class="text-end">
+          <div class="d-inline-flex gap-3 align-items-center">
+            <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      `;
 
     targetRow.classList.add("table-warning");
     setTimeout(() => targetRow.classList.remove("table-warning"), 1200);
-    updateStats();
   } catch (err) {
     console.error("Failed to update table row:", err);
   }
@@ -135,7 +136,6 @@ window.updateItemInTable = function (data) {
 function populateTable(items) {
   const tableBody = document.getElementById("items-table-body");
   tableBody.innerHTML = "";
-  items = items.items;
   if (items && items.length > 0) {
     items.forEach((item) => {
       const row = document.createElement("tr");
@@ -177,25 +177,26 @@ function populateTable(items) {
       tableBody.appendChild(row);
     });
   } else {
-    showEmptyState("No items found. Click 'Add Item' to get started.");
+    showEmptyState("No consumables found. Click 'Add Item' to get started.");
   }
 }
 
 async function openEditModal(itemId) {
   try {
-    const resp = await fetch(`${API_PREFIX}/items/one/${itemId}`);
-    if (!resp.ok) throw new Error(`Failed to fetch item ${itemId}: ${resp.status}`);
+    const resp = await fetch(`${CONSUMABLES_API_BASE}/one/${itemId}`);
+    if (!resp.ok)
+      throw new Error(`Failed to fetch consumable ${itemId}: ${resp.status}`);
     const data = await resp.json();
 
     // Make the fetched item available for the modal initializer
     window.editingItemData = data;
-  	// Also expose the numeric id explicitly so the modal script can read it directly
-  	window.editingItemId = itemId;
+    // Also expose the numeric id explicitly so the modal script can read it directly
+    window.editingItemId = itemId;
 
     // Update modal UI elements immediately (preserve spinner span if present)
     const titleEl = document.getElementById("addItemModalLabel");
     const submitBtn = document.getElementById("createItemBtn");
-    if (titleEl) titleEl.textContent = "Edit Item";
+    if (titleEl) titleEl.textContent = "Edit Consumable";
     if (submitBtn) {
       const textNodes = [];
       for (const node of Array.from(submitBtn.childNodes)) {
@@ -213,7 +214,9 @@ async function openEditModal(itemId) {
     modal.show();
   } catch (err) {
     console.error("Failed to open edit modal:", err);
-    alert("Failed to load item for editing. Please refresh and try again.");
+    alert(
+      "Failed to load consumable for editing. Please refresh and try again."
+    );
   }
 }
 
@@ -229,64 +232,9 @@ function showEmptyState(message) {
   tableBody.appendChild(row);
 }
 
-// Function to calculate and update stats
-async function updateStats() {
-  try {
-    const response = await fetch(API_PREFIX + "/items/all");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    const items = data.items || [];
-    const totalItems = items.length;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // In stock
-    const inStockCount = items.filter((item) => {
-      if (item.quantity <= 0) return false;
-      if (!item.expires) return true;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate >= today;
-    }).length;
-
-    // Out of stock
-    const outOfStockCount = items.filter((item) => {
-      if (item.quantity > 0) return false;
-      if (!item.expires) return true;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate >= today;
-    }).length;
-
-    // Expired
-    const expiredCount = items.filter((item) => {
-      if (!item.expires) return false;
-      const expiresDate = new Date(item.expires);
-      expiresDate.setHours(0, 0, 0, 0);
-      return expiresDate < today;
-    }).length;
-
-    // Update stat cards
-    document.getElementById("stat-total").textContent = `${totalItems} Items`;
-    document.getElementById(
-      "stat-in-stock"
-    ).textContent = `${inStockCount} Items`;
-    document.getElementById(
-      "stat-out-of-stock"
-    ).textContent = `${outOfStockCount} Items`;
-    document.getElementById(
-      "stat-expired"
-    ).textContent = `${expiredCount} Items`;
-  } catch (error) {
-    console.error("Failed to update stats:", error);
-  }
-}
-
-// Function to add a new item to the table (called from modal) - MAKE IT GLOBAL
+// Function to add a new consumable to the table (called from modal) - MAKE IT GLOBAL
 window.addItemToTable = function (item) {
-  console.log("Adding item to table:", item);
+  console.log("Adding consumable to table:", item);
   const tableBody = document.getElementById("items-table-body");
 
   if (!tableBody) {
@@ -325,21 +273,15 @@ window.addItemToTable = function (item) {
 		<td>${last_updated}</td>
 		<td>${updatedByText}</td>
 		<td class="text-end">
-		<button 
-			class="btn btn-sm btn-link text-primary edit-btn p-0 me-2 display-inline" 
-			onclick="openEditModal(${item.id})"
-			title="Edit item"
-		>
-		<i class="fas fa-edit"></i>
-		</button>
-		<button 
-			class="btn btn-sm btn-link text-danger delete-btn p-0 display-inline" 
-			onclick="deleteItem(${item.id})"
-			title="Delete item"
-		>
-        <i class="fas fa-trash"></i>
-      </button>
-    </td>
+                  <div class="d-inline-flex gap-3 align-items-center">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${item.id})" title="Delete item">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
 	`;
   row.classList.add("item-row");
 
@@ -350,10 +292,7 @@ window.addItemToTable = function (item) {
     row.classList.remove("table-success");
   }, 1000);
 
-  // Update stats after adding item
-  updateStats();
-
-  console.log("Item added to table successfully");
+  console.log("Consumable added to table successfully");
 };
 
 function filterTable() {
@@ -436,9 +375,6 @@ function clearFilters() {
 window.filterTable = filterTable;
 window.clearFilters = clearFilters;
 
-// Make updateStats globally accessible
-window.updateStats = updateStats;
-
 // Function to delete an item
 async function deleteItem(itemId) {
   // Store the item ID in a data attribute on the confirm button
@@ -475,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
       try {
-        const response = await fetch(`${API_PREFIX}/items/${itemId}`, {
+        const response = await fetch(`${CONSUMABLES_API_BASE}/${itemId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -502,15 +438,14 @@ document.addEventListener("DOMContentLoaded", () => {
             row.classList.add("table-danger");
             setTimeout(() => {
               row.remove();
-              // Refresh table and stats
+              // Refresh table
               fetchItems();
-              updateStats();
             }, 500);
           }
         });
       } catch (error) {
-        console.error("Failed to delete item:", error);
-        alert("Failed to delete item. Please try again.");
+        console.error("Failed to delete consumable:", error);
+        alert("Failed to delete consumable. Please try again.");
       } finally {
         // Re-enable button
         this.disabled = false;
