@@ -5,5 +5,5 @@ from .location_views import *
 from .home_views import *
 from .admin_views import *
 from .camera_gear_views import *
-from .lab_equiptment_views import *
+from .lab_equipment_views import *
 from .consumables_views import *

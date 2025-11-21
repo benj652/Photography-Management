@@ -42,7 +42,7 @@
           <span class="fw-semibold text-dark"
             >{{ current_user.first_name }}</span
           >
-          <small class="text-muted">Admin</small>
+          <small class="text-muted">{{ current_user.role.value|title }}</small>
         </div>
       </div>
       <button id="logoutButton" class="btn btn-outline-dark btn-sm">

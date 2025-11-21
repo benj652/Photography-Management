@@ -42,7 +42,7 @@
           <span class="fw-semibold text-dark"
             >{{ current_user.first_name }}</span
           >
-          <small class="text-muted">Admin</small>
+          <small class="text-muted">{{ current_user.role.value|title }}</small>
         </div>
       </div>
       <button id="logoutButton" class="btn btn-outline-dark btn-sm">
@@ -67,9 +67,12 @@
         </li>
       </ol>
       <div class="breadcrumb-nav">
-        <a href="{{ url_for('home.consumables') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-flask me-1"></i>Consumables
-          </a>
+        <a
+          href="{{ url_for('home.consumables') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
+          <i class="fas fa-flask me-1"></i>Consumables
+        </a>
         <a
           href="{{ url_for('home.lab_equipment') }}"
           class="btn btn-sm btn-outline-secondary me-2"

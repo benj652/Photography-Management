@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 
 {% extends "index.html" %} {% block head %} {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
 {% endblock %} {% block content %}
 <!-- NavBar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
+<nav
+  class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top"
+>
   <div class="container-fluid px-4">
     <!-- Logo-->
-    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home.home') }}">
+    <a
+      class="navbar-brand d-flex align-items-center"
+      href="{{ url_for('home.home') }}"
+    >
       <div class="landing-logo">
         <span class="logo-icon">📸</span>
         <span class="logo-text">PhotoInventory</span>
@@ -18,16 +26,25 @@
     <div class="d-flex align-items-center">
       <div class="user-profile d-flex align-items-center me-4">
         {% if current_user.profile_picture %}
-        <img src="{{ current_user.profile_picture }}" alt="Profile" class="user-avatar rounded-circle me-2" height="45"
-          width="45" />
+        <img
+          src="{{ current_user.profile_picture }}"
+          alt="Profile"
+          class="user-avatar rounded-circle me-2"
+          height="45"
+          width="45"
+        />
         {% else %}
-        <div class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center me-2">
+        <div
+          class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center me-2"
+        >
           {{ current_user.first_name[0]|upper }}
         </div>
         {% endif %}
         <div class="d-flex flex-column align-items-start">
-          <span class="fw-semibold text-dark">{{ current_user.first_name }}</span>
-          <small class="text-muted">Admin</small>
+          <span class="fw-semibold text-dark"
+            >{{ current_user.first_name }}</span
+          >
+          <small class="text-muted">{{ current_user.role.value|title }}</small>
         </div>
       </div>
       <button id="logoutButton" class="btn btn-outline-dark btn-sm">
@@ -47,17 +64,29 @@
         </li>
       </ol>
       <div class="breadcrumb-nav">
-        <a href="{{ url_for('home.lab_equipment') }}" class="btn btn-sm btn-outline-secondary me-2">
+        <a
+          href="{{ url_for('home.lab_equipment') }}"
+          class="btn btn-sm btn-outline-secondary me-2"
+        >
           <i class="fas fa-microscope me-1"></i>Lab Equipment
         </a>
-        <a href="{{ url_for('home.camera_gear') }}" class="btn btn-sm btn-outline-secondary me-2">
+        <a
+          href="{{ url_for('home.camera_gear') }}"
+          class="btn btn-sm btn-outline-secondary me-2"
+        >
           <i class="fas fa-camera me-1"></i>Camera Gear
         </a>
-        <a href="{{ url_for('home.consumables') }}" class="btn btn-sm btn-outline-secondary">
+        <a
+          href="{{ url_for('home.consumables') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
           <i class="fas fa-flask me-1"></i>Consumables
         </a>
         {% if current_user.role.value == 'admin' %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+        <a
+          href="{{ url_for('admin.dashboard') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
           <i class="fas fa-user-shield me-1"></i>Admin
         </a>
         {% endif %}
@@ -112,7 +141,6 @@
 
 <!-- table and features  -->
 <div class="container py-4">
-
   <!-- search and filters -->
   <div class="search-filter-section mb-4">
     <div class="d-flex align-items-center gap-3">
@@ -122,20 +150,35 @@
           <span class="input-group-text search-icon">
             <i class="fas fa-search"></i>
           </span>
-          <input type="text" id="search-input" class="form-control search-input"
-            placeholder="Search by name, tags, location..." oninput="filterTable()" />
+          <input
+            type="text"
+            id="search-input"
+            class="form-control search-input"
+            placeholder="Search by name, tags, location..."
+            oninput="filterTable()"
+          />
         </div>
       </div>
 
       <!-- Filter Button -->
-      <button type="button" class="btn btn-outline-secondary filter-btn" data-bs-toggle="collapse"
-        data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+      <button
+        type="button"
+        class="btn btn-outline-secondary filter-btn"
+        data-bs-toggle="collapse"
+        data-bs-target="#filterCollapse"
+        aria-expanded="false"
+        aria-controls="filterCollapse"
+      >
         <i class="fas fa-filter me-2"></i>Filter
       </button>
 
       <!-- Add Item Button -->
-      <button id="openAddItemBtn" class="btn btn-primary add-item-btn" data-bs-toggle="modal"
-        data-bs-target="#addItemModal">
+      <button
+        id="openAddItemBtn"
+        class="btn btn-primary add-item-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#addItemModal"
+      >
         <i class="fas fa-plus me-2"></i>Add Item
       </button>
     </div>
@@ -145,22 +188,47 @@
       <div class="card card-body filter-panel">
         <div class="row g-3">
           <div class="col-md-4">
-            <label for="filter-name" class="form-label small fw-semibold">Name</label>
-            <input type="text" id="filter-name" class="form-control" placeholder="Filter by name"
-              oninput="filterTable()" />
+            <label for="filter-name" class="form-label small fw-semibold"
+              >Name</label
+            >
+            <input
+              type="text"
+              id="filter-name"
+              class="form-control"
+              placeholder="Filter by name"
+              oninput="filterTable()"
+            />
           </div>
           <div class="col-md-4">
-            <label for="filter-tags" class="form-label small fw-semibold">Tags</label>
-            <input type="text" id="filter-tags" class="form-control" placeholder="Tags (comma-separated)"
-              oninput="filterTable()" />
+            <label for="filter-tags" class="form-label small fw-semibold"
+              >Tags</label
+            >
+            <input
+              type="text"
+              id="filter-tags"
+              class="form-control"
+              placeholder="Tags (comma-separated)"
+              oninput="filterTable()"
+            />
           </div>
           <div class="col-md-4">
-            <label for="filter-location" class="form-label small fw-semibold">Location</label>
-            <input type="text" id="filter-location" class="form-control" placeholder="Location"
-              oninput="filterTable()" />
+            <label for="filter-location" class="form-label small fw-semibold"
+              >Location</label
+            >
+            <input
+              type="text"
+              id="filter-location"
+              class="form-control"
+              placeholder="Location"
+              oninput="filterTable()"
+            />
           </div>
           <div class="col-12">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              onclick="clearFilters()"
+            >
               <i class="fas fa-times me-1"></i>Clear Filters
             </button>
           </div>
@@ -203,8 +271,13 @@
 {% include 'add_item_modal.html' %}
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
-  aria-hidden="true">
+<div
+  class="modal fade"
+  id="deleteConfirmModal"
+  tabindex="-1"
+  aria-labelledby="deleteConfirmModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -212,7 +285,12 @@
           <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirm
           Deletion
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body">
         <p>

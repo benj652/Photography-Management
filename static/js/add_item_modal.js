@@ -211,11 +211,21 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("name").value = item.name || "";
 
         // Page-specific fields
-        if (pageType === "home" || pageType === "consumables") {
+        if (pageType === "home") {
           // General items and consumables
           document.getElementById("quantity").value = item.quantity || 1;
           document.getElementById("expires").value = item.expires
-            ? item.expires.split("T")[0]
+            ? typeof item.expires === "string"
+              ? item.expires.split("T")[0]
+              : item.expires.split("T")[0]
+            : "";
+        } else if (pageType === "consumables") {
+          // Consumables
+          document.getElementById("quantity").value = item.quantity || 1;
+          document.getElementById("expires").value = item.expires
+            ? typeof item.expires === "string"
+              ? item.expires.split("T")[0]
+              : item.expires.split("T")[0]
             : "";
         } else if (pageType === "lab-equipment") {
           // Lab equipment
@@ -226,7 +236,9 @@ document.addEventListener("DOMContentLoaded", function () {
           const lastServicedField = document.getElementById("last-serviced");
           if (lastServicedField) {
             lastServicedField.value = item.last_serviced_on
-              ? item.last_serviced_on.split("T")[0]
+              ? typeof item.last_serviced_on === "string"
+                ? item.last_serviced_on.split("T")[0]
+                : item.last_serviced_on.split("T")[0]
               : "";
           }
         }

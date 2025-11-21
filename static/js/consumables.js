@@ -17,9 +17,30 @@ function formatDisplayValue(value) {
 
 function formatDateDisplay(value, includeTime = false) {
   if (!value) return EMPTY_PLACEHOLDER;
+
+  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    if (Number.isNaN(date.getTime())) return EMPTY_PLACEHOLDER;
+    return includeTime ? date.toLocaleString() : date.toLocaleDateString();
+  }
+
+  // For ISO datetime strings, parse and handle timezone correctly
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return EMPTY_PLACEHOLDER;
-  return includeTime ? parsed.toLocaleString() : parsed.toLocaleDateString();
+
+  if (includeTime) {
+    return parsed.toLocaleString();
+  } else {
+    // Extract date parts from the parsed date to avoid timezone issues
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    // Create a local date object from the components
+    const localDate = new Date(year, parsed.getMonth(), parsed.getDate());
+    return localDate.toLocaleDateString();
+  }
 }
 
 function formatTagsDisplay(tags) {
@@ -94,7 +115,7 @@ window.updateItemInTable = function (data) {
     }
 
     const tagsText = formatTagsDisplay(data.tags);
-    const expires = formatDateDisplay(data.expires);
+    const expires = data.expires ? formatDateDisplay(data.expires) : "";
     const lastUpdated = formatDateDisplay(data.last_updated, true);
     const locationText = getLocationDisplay(data);
     const nameText = formatDisplayValue(data.name);
@@ -148,7 +169,7 @@ function populateTable(items) {
           : formatDisplayValue(item.quantity);
       const tagsText = formatTagsDisplay(item.tags);
       const locationText = getLocationDisplay(item);
-      const expires = formatDateDisplay(item.expires);
+      const expires = item.expires ? formatDateDisplay(item.expires) : "";
       const lastUpdated = formatDateDisplay(item.last_updated, true);
       const updatedByText = formatDisplayValue(item.updated_by);
 
@@ -259,7 +280,7 @@ window.addItemToTable = function (item) {
       : formatDisplayValue(item.quantity);
   const tags = formatTagsDisplay(item.tags);
   const locationText = getLocationDisplay(item);
-  const expires = formatDateDisplay(item.expires);
+  const expires = item.expires ? formatDateDisplay(item.expires) : "";
   const last_updated = formatDateDisplay(item.last_updated, true);
   const updatedByText = formatDisplayValue(item.updated_by);
 

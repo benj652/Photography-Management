@@ -43,7 +43,7 @@ function displayEquipment(equipment) {
 
     // Format dates properly
     const lastServiced = item.last_serviced_on
-      ? new Date(item.last_serviced_on).toLocaleDateString()
+      ? formatDateOnly(item.last_serviced_on)
       : "—";
     const lastUpdated = item.last_updated
       ? new Date(item.last_updated).toLocaleString()
@@ -245,3 +245,22 @@ window.openEditModal = openEditModal;
 window.deleteEquipment = deleteEquipment;
 window.filterTable = filterTable;
 window.clearFilters = clearFilters;
+
+// Add helper function at the top
+function formatDateOnly(dateString) {
+  if (!dateString) return "—";
+  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    return date.toLocaleDateString();
+  }
+  // For ISO datetime strings, extract date components
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return "—";
+  const year = parsed.getFullYear();
+  const month = parsed.getMonth();
+  const day = parsed.getDate();
+  const localDate = new Date(year, month, day);
+  return localDate.toLocaleDateString();
+}
