@@ -1,4 +1,56 @@
 const API_PREFIX = "/api/v1";
+const EMPTY_PLACEHOLDER = "&mdash;";
+
+function formatDisplayValue(value) {
+  if (value === null || value === undefined) {
+    return EMPTY_PLACEHOLDER;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : EMPTY_PLACEHOLDER;
+  }
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? EMPTY_PLACEHOLDER : value;
+  }
+  return value || EMPTY_PLACEHOLDER;
+}
+
+function formatDateDisplay(value, includeTime = false) {
+  if (!value) return EMPTY_PLACEHOLDER;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return EMPTY_PLACEHOLDER;
+  return includeTime ? parsed.toLocaleString() : parsed.toLocaleDateString();
+}
+
+function formatTagsDisplay(tags) {
+  if (Array.isArray(tags)) {
+    if (!tags.length) return EMPTY_PLACEHOLDER;
+    const normalized = tags
+      .map((tag) => {
+        if (typeof tag === "string") return tag;
+        if (tag && typeof tag.name === "string") return tag.name;
+        return "";
+      })
+      .filter((tag) => tag && tag.trim().length);
+    return normalized.length
+      ? normalized.join(", ")
+      : EMPTY_PLACEHOLDER;
+  }
+  if (typeof tags === "string") {
+    return formatDisplayValue(tags);
+  }
+  return EMPTY_PLACEHOLDER;
+}
+
+function getLocationDisplay(item) {
+  if (!item) return EMPTY_PLACEHOLDER;
+  const locationName =
+    typeof item.location === "object" && item.location !== null
+      ? item.location.name
+      : item.location;
+  const fallback = item.location_name || item.location_id || "";
+  return formatDisplayValue(locationName || fallback);
+}
 
 // Function to fetch items from the server
 async function fetchItems() {
@@ -43,19 +95,26 @@ window.updateItemInTable = function (data) {
       return;
     }
 
-    const tags = Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "";
-    const expires = data.expires ? new Date(data.expires).toLocaleDateString() : "";
-    const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "";
+    const tagsText = formatTagsDisplay(data.tags);
+    const expires = formatDateDisplay(data.expires);
+    const lastUpdated = formatDateDisplay(data.last_updated, true);
+    const locationText = getLocationDisplay(data);
+    const nameText = formatDisplayValue(data.name);
+    const updatedByText = formatDisplayValue(data.updated_by);
+    const quantityText =
+      typeof data.quantity === "number"
+        ? data.quantity
+        : formatDisplayValue(data.quantity);
 
     targetRow.innerHTML = `
       <td class="item-id-${id}">${id}</td>
-      <td>${data.name || ""}</td>
-      <td>${data.quantity}</td>
-      <td>${tags}</td>
-      <td>${data.location || data.location_id || ""}</td>
+      <td>${nameText}</td>
+      <td>${quantityText}</td>
+      <td>${tagsText}</td>
+      <td>${locationText}</td>
       <td>${expires}</td>
       <td>${lastUpdated}</td>
-      <td>${data.updated_by || ""}</td>
+      <td>${updatedByText}</td>
       <td class="text-end">
         <div class="d-inline-flex gap-2 align-items-center">
           <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item"><i class="fas fa-edit"></i></button>
@@ -80,29 +139,28 @@ function populateTable(items) {
   if (items && items.length > 0) {
     items.forEach((item) => {
       const row = document.createElement("tr");
-
-      // Handle tags display - could be array or string
-      const tags = Array.isArray(item.tags)
-        ? item.tags.join(", ")
-        : item.tags || "";
-
-      // Format dates properly
-      const expires = item.expires
-        ? new Date(item.expires).toLocaleDateString()
-        : "";
-      const lastUpdated = item.last_updated
-        ? new Date(item.last_updated).toLocaleString()
-        : "";
+      const itemIdText =
+        item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
+      const nameText = formatDisplayValue(item.name);
+      const quantityText =
+        typeof item.quantity === "number"
+          ? item.quantity
+          : formatDisplayValue(item.quantity);
+      const tagsText = formatTagsDisplay(item.tags);
+      const locationText = getLocationDisplay(item);
+      const expires = formatDateDisplay(item.expires);
+      const lastUpdated = formatDateDisplay(item.last_updated, true);
+      const updatedByText = formatDisplayValue(item.updated_by);
 
       row.innerHTML = `
-                <td class="item-id-${item.id}">${item.id || ""}</td>
-                <td>${item.name || ""}</td>
-                <td>${item.quantity}</td>
-                <td>${tags}</td>
-                <td>${item.location || ""}</td>
+                <td class="item-id-${item.id}">${itemIdText}</td>
+                <td>${nameText}</td>
+                <td>${quantityText}</td>
+                <td>${tagsText}</td>
+                <td>${locationText}</td>
                 <td>${expires}</td>
                 <td>${lastUpdated}</td>
-                <td>${item.updated_by || ""}</td>
+                <td>${updatedByText}</td>
                 <td class="text-end">
                   <div class="d-inline-flex gap-3 align-items-center">
                     <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
@@ -139,12 +197,14 @@ async function openEditModal(itemId) {
     const submitBtn = document.getElementById("createItemBtn");
     if (titleEl) titleEl.textContent = "Edit Item";
     if (submitBtn) {
+      const textNodes = [];
       for (const node of Array.from(submitBtn.childNodes)) {
         if (node.nodeType === Node.TEXT_NODE) {
-          node.nodeValue = ' ' + 'Save Changes';
-          break;
+          textNodes.push(node);
         }
       }
+      textNodes.forEach((node) => node.remove());
+      submitBtn.appendChild(document.createTextNode(" Save Changes"));
     }
 
     // Show modal - the modal's shown handler will read window.editingItemData and prefill after tags/locations are loaded
@@ -242,25 +302,28 @@ window.addItemToTable = function (item) {
 
   // Create new row - handle both response formats
   const row = document.createElement("tr");
-  const tags = Array.isArray(item.tags)
-    ? item.tags.join(", ")
-    : item.tags || "";
-  const expires = item.expires
-    ? new Date(item.expires).toLocaleDateString()
-    : "";
-  const last_updated = item.last_updated
-    ? new Date(item.last_updated).toLocaleString()
-    : "";
+  const itemIdText =
+    item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
+  const nameText = formatDisplayValue(item.name);
+  const quantityText =
+    typeof item.quantity === "number"
+      ? item.quantity
+      : formatDisplayValue(item.quantity);
+  const tags = formatTagsDisplay(item.tags);
+  const locationText = getLocationDisplay(item);
+  const expires = formatDateDisplay(item.expires);
+  const last_updated = formatDateDisplay(item.last_updated, true);
+  const updatedByText = formatDisplayValue(item.updated_by);
 
   row.innerHTML = `
-		<td>${item.id || ""}</td>
-		<td>${item.name || ""}</td>
-		<td>${item.quantity}</td>
+		<td class="item-id-${item.id}">${itemIdText}</td>
+		<td>${nameText}</td>
+		<td>${quantityText}</td>
 		<td>${tags}</td>
-		<td>${item.location || item.location_id || ""}</td>
+		<td>${locationText}</td>
 		<td>${expires}</td>
 		<td>${last_updated}</td>
-		<td>${item.updated_by || ""}</td>
+		<td>${updatedByText}</td>
 		<td class="text-end">
 		<button 
 			class="btn btn-sm btn-link text-primary edit-btn p-0 me-2 display-inline" 
