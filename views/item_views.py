@@ -36,7 +36,6 @@ from constants import (
     POST,
     PUT,
 )
-from utils.mail import send_low_stock_alert
 
 item_blueprint = Blueprint(ITEM_PREFIX, __name__)
 
@@ -119,13 +118,6 @@ def create_item():
     db.session.add(new_item)
     db.session.commit()
 
-    # After creating, check for low stock and notify admins if configured
-    try:
-        send_low_stock_alert(new_item)
-    except Exception:
-        # do not break the create flow if email sending fails
-        pass
-
     return new_item.to_dict(), 201
 
 
@@ -135,10 +127,10 @@ def update_item(item_id):
     data = request.get_json()
     name = data.get(ITEM_FIELD_NAME)
     quantity = data.get(ITEM_FIELD_QUANTITY)
-    tag_names = data.get(ITEM_FIELD_TAGS) if ITEM_FIELD_TAGS in data else None
-    location_id = (
-        data.get(ITEM_FIELD_LOCATION_ID) if ITEM_FIELD_LOCATION_ID in data else None
-    )
+    print( data.get(ITEM_FIELD_QUANTITY))
+    print(quantity)
+    tag_names = data.get(ITEM_FIELD_TAGS, [])
+    location_id = data.get(ITEM_FIELD_LOCATION_ID)
     expires_str = data.get(ITEM_FIELD_EXPIRES)
 
     item = Item.query.get_or_404(item_id)
@@ -152,9 +144,9 @@ def update_item(item_id):
             item.expires = datetime.fromisoformat(expires_str)
         except ValueError:
             return "Invalid expiration date format", 400
-    if tag_names is not None:
+    if tag_names:
         tags = []
-        for tag_name in tag_names or []:
+        for tag_name in tag_names:
             tag = Tag.query.filter_by(name=tag_name).first()
             if not tag:
                 tag = Tag(name=tag_name)
@@ -162,22 +154,13 @@ def update_item(item_id):
             tags.append(tag)
         item.tags = tags
 
-    if ITEM_FIELD_LOCATION_ID in data:
-        if location_id:
-            location = Location.query.get(location_id)
-            if not location:
-                return "Location not found", 400
-            item.location = location
-        else:
-            item.location = None
+    if location_id:
+        location = Location.query.get(location_id)
+        if not location:
+            return "Location not found", 400
+        item.location = location
 
     db.session.commit()
-    # After updating, check for low stock and notify admins if configured
-    try:
-        send_low_stock_alert(item)
-    except Exception:
-        pass
-
     return item.to_dict()
 
 

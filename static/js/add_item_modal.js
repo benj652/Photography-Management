@@ -19,8 +19,6 @@
 //     });
 // });
 
-const API_PREFIX = "/api/v1";
-
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Modal script loaded");
 
@@ -28,56 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const submitBtn = document.getElementById("createItemBtn");
   const spinner = submitBtn.querySelector(".spinner-border");
   const modalAlert = document.getElementById("modalAlert");
-
-  // Detect page type from URL
-  function getPageType() {
-    const path = window.location.pathname;
-    if (path.includes("/camera-gear")) {
-      return "camera-gear";
-    } else if (path.includes("/lab-equipment")) {
-      return "lab-equipment";
-    } else if (path.includes("/consumables")) {
-      return "consumables";
-    }
-    return "home"; // default to home/items
-  }
-
-  // Show/hide fields based on page type
-  function configureModalForPageType() {
-    const pageType = getPageType();
-    const quantityField = document.getElementById("quantity").closest(".mb-3");
-    const expiresField = document.getElementById("expires").closest(".mb-3");
-    const locationField = document
-      .getElementById("location-input")
-      .closest(".mb-3");
-    const serviceFrequencyField = document.getElementById(
-      "service-frequency-field"
-    );
-    const lastServicedField = document.getElementById("last-serviced-field");
-
-    // Hide all optional fields first
-    if (quantityField) quantityField.style.display = "none";
-    if (expiresField) expiresField.style.display = "none";
-    if (locationField) locationField.style.display = "none";
-    if (serviceFrequencyField) serviceFrequencyField.style.display = "none";
-    if (lastServicedField) lastServicedField.style.display = "none";
-
-    // Show fields based on page type
-    if (pageType === "home") {
-      if (quantityField) quantityField.style.display = "block";
-      if (expiresField) expiresField.style.display = "block";
-      if (locationField) locationField.style.display = "block";
-    } else if (pageType === "consumables") {
-      if (quantityField) quantityField.style.display = "block";
-      if (expiresField) expiresField.style.display = "block";
-      if (locationField) locationField.style.display = "block";
-    } else if (pageType === "camera-gear") {
-      if (locationField) locationField.style.display = "block";
-    } else if (pageType === "lab-equipment") {
-      if (serviceFrequencyField) serviceFrequencyField.style.display = "block";
-      if (lastServicedField) lastServicedField.style.display = "block";
-    }
-  }
 
   // Helper to update the button label while preserving the spinner element
   function setButtonLabel(btn, text) {
@@ -103,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectedTagsContainer = document.getElementById("selected-tags");
   const hiddenTagsInput = document.getElementById("tags");
 
-  // Location functionality
+  // Location functionality - exact mirror of tags
   const locationInput = document.getElementById("location-input");
   const locationDropdown = document.getElementById("location-dropdown");
   const createLocationBtnContainer = document.getElementById(
@@ -117,12 +65,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let allTags = [];
   let allLocations = [];
-  let selectedTags = [];
+  let selectedTag = null;
   let selectedLocation = null;
 
-  function updateItem(itemId, updatedData, endpoint) {
-    const updateEndpoint = endpoint || `${API_PREFIX}/items/${itemId}`;
-    fetch(updateEndpoint, {
+  function updateItem(itemId, updatedData) {
+    // Simple helper that updates an item via API and then refreshes the row using updateItemInTable
+    fetch(`${API_PREFIX}/items/${itemId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -137,10 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         if (typeof window.updateItemInTable === "function")
           window.updateItemInTable(data);
-        else if (typeof window.updateCameraGearInTable === "function")
-          window.updateCameraGearInTable(data);
-        else if (typeof window.updateLabEquipmentInTable === "function")
-          window.updateLabEquipmentInTable(data);
       })
       .catch((err) => console.error("Failed to update item:", err));
   }
@@ -160,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Fetch all locations from the database
+  // Fetch all locations from the database - exact mirror of fetchTags
   async function fetchLocations() {
     try {
       const response = await fetch(API_PREFIX + "/location/all");
@@ -180,19 +124,16 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("addItemModal")
     .addEventListener("shown.bs.modal", async function () {
-      // Configure fields based on page type
-      configureModalForPageType();
-
       // Initialize tags
       await fetchTags();
-      selectedTags = [];
+      selectedTag = null;
       updateSelectedTagDisplay();
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
       tagsInput.disabled = false;
 
-      // Initialize locations
+      // Initialize locations - exact mirror
       await fetchLocations();
       selectedLocation = null;
       updateSelectedLocationDisplay();
@@ -204,75 +145,34 @@ document.addEventListener("DOMContentLoaded", function () {
       // If editing data was placed on the window, prefill fields now
       if (window.editingItemData) {
         const item = window.editingItemData;
-        const pageType = getPageType();
         console.log("Prefilling form for editing:", item.id);
-
-        // Name (always present)
+        // Name, quantity, expires
         document.getElementById("name").value = item.name || "";
+        document.getElementById("quantity").value = item.quantity;
+        document.getElementById("expires").value = item.expires
+          ? item.expires.split("T")[0]
+          : "";
 
-        // Page-specific fields
-        if (pageType === "home") {
-          // General items and consumables
-          document.getElementById("quantity").value = item.quantity || 1;
-          document.getElementById("expires").value = item.expires
-            ? typeof item.expires === "string"
-              ? item.expires.split("T")[0]
-              : item.expires.split("T")[0]
-            : "";
-        } else if (pageType === "consumables") {
-          // Consumables
-          document.getElementById("quantity").value = item.quantity || 1;
-          document.getElementById("expires").value = item.expires
-            ? typeof item.expires === "string"
-              ? item.expires.split("T")[0]
-              : item.expires.split("T")[0]
-            : "";
-        } else if (pageType === "lab-equipment") {
-          // Lab equipment
-          const serviceFreqField = document.getElementById("service-frequency");
-          if (serviceFreqField) {
-            serviceFreqField.value = item.service_frequency || "";
-          }
-          const lastServicedField = document.getElementById("last-serviced");
-          if (lastServicedField) {
-            lastServicedField.value = item.last_serviced_on
-              ? typeof item.last_serviced_on === "string"
-                ? item.last_serviced_on.split("T")[0]
-                : item.last_serviced_on.split("T")[0]
-              : "";
-          }
-        }
-
-        // Tags - select all tags if present
+        // Tags - select the first tag if present
         if (Array.isArray(item.tags) && item.tags.length > 0) {
-          // Set all tags from the item
-          selectedTags = item.tags.map((tag) =>
-            typeof tag === "string" ? tag : tag.name
-          );
-          updateSelectedTagDisplay();
+          // Use selectTag if available
+          if (typeof window.selectTag === "function") {
+            window.selectTag(item.tags[0]);
+          } else {
+            document.getElementById("tags").value = item.tags.join(", ");
+          }
         }
 
-        if (
-          (pageType === "home" ||
-            pageType === "consumables" ||
-            pageType === "camera-gear") &&
-          item.location_id
-        ) {
-          // Find location name from allLocations
-          const locationObj = allLocations.find(
-            (loc) => loc.id === item.location_id
-          );
-          if (locationObj && typeof window.selectLocation === "function") {
-            window.selectLocation(locationObj.name);
+        // Location - prefer name, otherwise leave id
+        if (item.location_id) {
+          if (typeof window.selectLocation === "function") {
+            window.selectLocation(item.location_id);
           } else {
             document.getElementById("location_id").value =
               item.location_id || "";
           }
-        } else if (item.location) {
-          // If location name is provided directly
-          if (typeof window.selectLocation === "function") {
-            window.selectLocation(item.location);
-          }
+        } else if (item.location_id) {
+          document.getElementById("location_id").value = item.location_id;
         }
 
         // Mark form as editing
@@ -306,6 +206,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle tags input
   tagsInput.addEventListener("input", function (e) {
+    // If a tag is already selected, don't show dropdown
+    if (selectedTag) {
+      tagsDropdown.innerHTML = "";
+      createTagBtnContainer.classList.add("d-none");
+      return;
+    }
+
     const query = e.target.value.trim().toLowerCase();
 
     if (query === "") {
@@ -314,19 +221,13 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Filter tags that match the query and are not already selected
-    const matchingTags = allTags.filter((tag) => {
-      const tagNameLower = tag.name.toLowerCase();
-      const isMatching = tagNameLower.includes(query);
-      const isNotSelected = !selectedTags.includes(tag.name);
-      return isMatching && isNotSelected;
-    });
-
-    // Check if the query exactly matches an existing tag (that's not selected)
-    const exactMatch = allTags.find(
-      (tag) =>
-        tag.name.toLowerCase() === query && !selectedTags.includes(tag.name)
+    // Filter tags that match the query
+    const matchingTags = allTags.filter((tag) =>
+      tag.name.toLowerCase().includes(query)
     );
+
+    // Check if the query exactly matches an existing tag
+    const exactMatch = allTags.find((tag) => tag.name.toLowerCase() === query);
 
     if (exactMatch) {
       // Exact match found, show only that tag
@@ -337,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
       createTagBtnContainer.classList.add("d-none");
     } else if (matchingTags.length > 0) {
-      // Show matching tags (excluding already selected ones)
+      // Show matching tags
       tagsDropdown.innerHTML = matchingTags
         .map(
           (tag) => `
@@ -349,18 +250,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .join("");
       createTagBtnContainer.classList.add("d-none");
     } else {
-      // Check if this tag is already selected
-      const queryTag = allTags.find((tag) => tag.name.toLowerCase() === query);
-      if (queryTag && selectedTags.includes(queryTag.name)) {
-        // Tag already selected, don't show create button
-        tagsDropdown.innerHTML = "";
-        createTagBtnContainer.classList.add("d-none");
-      } else {
-        // No matches, show create tag button
-        tagsDropdown.innerHTML = "";
-        newTagNameSpan.textContent = query;
-        createTagBtnContainer.classList.remove("d-none");
-      }
+      // No matches, show create tag button
+      tagsDropdown.innerHTML = "";
+      newTagNameSpan.textContent = query;
+      createTagBtnContainer.classList.remove("d-none");
     }
   });
 
@@ -421,18 +314,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle tag selection
   window.selectTag = function (tagName) {
-    // Only add if not already selected
-    if (!selectedTags.includes(tagName)) {
-      selectedTags.push(tagName);
-      updateSelectedTagDisplay();
-    }
+    selectedTag = tagName;
+    updateSelectedTagDisplay();
     tagsInput.value = "";
     tagsDropdown.innerHTML = "";
     createTagBtnContainer.classList.add("d-none");
-    tagsInput.focus();
+    tagsInput.disabled = true;
   };
 
-  // Handle location selection
+  // Handle location selection - exact mirror of tag selection
   window.selectLocation = function (locationName) {
     selectedLocation = locationName;
     updateSelectedLocationDisplay();
@@ -443,13 +333,14 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // Handle tag removal
-  window.removeTag = function (tagName) {
-    selectedTags = selectedTags.filter((tag) => tag !== tagName);
+  window.removeTag = function () {
+    selectedTag = null;
     updateSelectedTagDisplay();
+    tagsInput.disabled = false;
     tagsInput.focus();
   };
 
-  // Handle location removal
+  // Handle location removal - exact mirror of tag removal
   window.removeLocation = function () {
     selectedLocation = null;
     updateSelectedLocationDisplay();
@@ -459,25 +350,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update selected tag display
   function updateSelectedTagDisplay() {
-    if (selectedTags.length === 0) {
+    if (!selectedTag) {
       selectedTagsContainer.innerHTML = "";
       hiddenTagsInput.value = "";
     } else {
-      selectedTagsContainer.innerHTML = selectedTags
-        .map(
-          (tag) => `
+      selectedTagsContainer.innerHTML = `
                 <span class="badge bg-primary me-1 mb-1" style="font-size: 0.875rem;">
-                    ${tag}
-                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag('${tag}')" aria-label="Remove"></button>
+                    ${selectedTag}
+                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag()" aria-label="Remove"></button>
                 </span>
-            `
-        )
-        .join("");
-      hiddenTagsInput.value = selectedTags.join(", ");
+            `;
+      hiddenTagsInput.value = selectedTag;
     }
   }
 
-  // Update selected location display
+  // Update selected location display - exact mirror of tag display
   function updateSelectedLocationDisplay() {
     if (!selectedLocation) {
       selectedLocationContainer.innerHTML = "";
@@ -502,14 +389,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const newTagName = tagsInput.value.trim();
     if (!newTagName) return;
 
-    // Check if tag already selected
-    if (selectedTags.includes(newTagName)) {
-      tagsInput.value = "";
-      tagsDropdown.innerHTML = "";
-      createTagBtnContainer.classList.add("d-none");
-      return;
-    }
-
     try {
       const response = await fetch(API_PREFIX + "/tags", {
         method: "POST",
@@ -526,22 +405,21 @@ document.addEventListener("DOMContentLoaded", function () {
       const newTag = await response.json();
 
       allTags.push(newTag);
-      selectedTags.push(newTag.name);
+      selectedTag = newTag.name;
       updateSelectedTagDisplay();
 
       // Clear input
       tagsInput.value = "";
       tagsDropdown.innerHTML = "";
       createTagBtnContainer.classList.add("d-none");
-      // Don't disable input - allow adding more tags
-      tagsInput.focus();
+      tagsInput.disabled = true;
     } catch (error) {
       console.error("Error creating tag:", error);
       showAlert("Failed to create tag. Please try again.", "danger");
     }
   });
 
-  // Handle create location button
+  // Handle create location button - exact mirror of create tag button
   createLocationBtn.addEventListener("click", async function () {
     const newLocationName = locationInput.value.trim();
     if (!newLocationName) return;
@@ -606,77 +484,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Get form data
     const formData = new FormData(form);
-    const pageType = getPageType();
-
-    // Build data object
-    let data = {};
-
-    if (pageType === "home") {
-      // General items
-      data = {
-        name: formData.get("name"),
-        quantity: parseInt(formData.get("quantity")) || 1,
-        tags: selectedTags,
-        location_id: formData.get("location_id")
-          ? parseInt(formData.get("location_id"))
-          : null,
-        expires: formData.get("expires") || null,
-      };
-    } else if (pageType === "consumables") {
-      // Consumables
-      data = {
-        name: formData.get("name"),
-        quantity: parseInt(formData.get("quantity")) || 1,
-        tags: selectedTags,
-        location_id: formData.get("location_id")
-          ? parseInt(formData.get("location_id"))
-          : null,
-        expires: formData.get("expires") || null,
-      };
-    } else if (pageType === "camera-gear") {
-      // Camera gear
-      data = {
-        name: formData.get("name"),
-        tags: selectedTags,
-        location_id: formData.get("location_id")
-          ? parseInt(formData.get("location_id"))
-          : null,
-      };
-    } else if (pageType === "lab-equipment") {
-      // Lab equipment
-      data = {
-        name: formData.get("name"),
-        tags: selectedTags,
-        service_frequency: formData.get("service-frequency") || null,
-        last_serviced_on: formData.get("last-serviced") || null,
-      };
-    }
+    const data = {
+      name: formData.get("name"),
+      quantity: parseInt(formData.get("quantity")),
+      tags: selectedTag ? [selectedTag] : [],
+      location_id: formData.get("location_id")
+        ? parseInt(formData.get("location_id"))
+        : null,
+      expires: formData.get("expires") || null,
+    };
 
     console.log("Sending data:", data);
 
     // Determine if editing or creating
     const editingId = window.editingItemId;
-    const apiEndpoint =
-      pageType === "home"
-        ? API_PREFIX + "/items"
-        : pageType === "consumables"
-        ? API_PREFIX + "/consumables/"
-        : pageType === "camera-gear"
-        ? API_PREFIX + "/camera_gear/"
-        : API_PREFIX + "/lab_equipment/";
 
     if (editingId) {
       console.log("Editing item with ID:", editingId);
-      const updateEndpoint =
-        pageType === "home"
-          ? `${API_PREFIX}/items/${editingId}`
-          : pageType === "consumables"
-          ? `${API_PREFIX}/consumables/${editingId}`
-          : pageType === "camera-gear"
-          ? `${API_PREFIX}/camera_gear/${editingId}`
-          : `${API_PREFIX}/lab_equipment/${editingId}`;
-
-      updateItem(editingId, data, updateEndpoint);
+      updateItem(editingId, data);
       showAlert("Item updated successfully!", "success");
       setTimeout(() => {
         const modal = bootstrap.Modal.getInstance(
@@ -685,12 +510,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (modal) modal.hide();
         form.reset();
         hideAlert();
-      }, 1500);
+      }, 3);
       submitBtn.disabled = false;
       spinner.classList.add("d-none");
     } else {
-      // Create new item
-      fetch(apiEndpoint, {
+      // Create new item (existing flow)
+      fetch(API_PREFIX + "/items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -712,10 +537,6 @@ document.addEventListener("DOMContentLoaded", function () {
           // Try to add to table
           if (typeof window.addItemToTable === "function") {
             window.addItemToTable(createdData);
-          } else if (typeof window.addCameraGearToTable === "function") {
-            window.addCameraGearToTable(createdData);
-          } else if (typeof window.addLabEquipmentToTable === "function") {
-            window.addLabEquipmentToTable(createdData);
           } else {
             setTimeout(() => window.location.reload(), 100);
           }
@@ -728,7 +549,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (modal) modal.hide();
             form.reset();
             hideAlert();
-          }, 1500);
+          }, 3);
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -741,7 +562,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    return false;
+    return false; // Extra prevention of form submission
   });
 
   function showAlert(message, type) {

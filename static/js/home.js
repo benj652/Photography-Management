@@ -1,24 +1,5 @@
 const API_PREFIX = "/api/v1";
 
-// Add a helper function at the top of the file
-function formatDateOnly(dateString) {
-  if (!dateString) return "";
-  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    const [year, month, day] = dateString.split("-").map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-    return date.toLocaleDateString();
-  }
-  // For ISO datetime strings, extract date components
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return "";
-  const year = parsed.getFullYear();
-  const month = parsed.getMonth();
-  const day = parsed.getDate();
-  const localDate = new Date(year, month, day);
-  return localDate.toLocaleDateString();
-}
-
 // Function to fetch items from the server
 async function fetchItems() {
   try {
@@ -65,7 +46,9 @@ window.updateItemInTable = function (data) {
     const tags = Array.isArray(data.tags)
       ? data.tags.join(", ")
       : data.tags || "";
-    const expires = data.expires ? formatDateOnly(data.expires) : "";
+    const expires = data.expires
+      ? new Date(data.expires).toLocaleDateString()
+      : "";
     const lastUpdated = data.last_updated
       ? new Date(data.last_updated).toLocaleString()
       : "";
@@ -110,7 +93,9 @@ function populateTable(items) {
         : item.tags || "";
 
       // Format dates properly
-      const expires = item.expires ? formatDateOnly(item.expires) : "";
+      const expires = item.expires
+        ? new Date(item.expires).toLocaleDateString()
+        : "";
       const lastUpdated = item.last_updated
         ? new Date(item.last_updated).toLocaleString()
         : "";
@@ -273,7 +258,9 @@ window.addItemToTable = function (item) {
   const tags = Array.isArray(item.tags)
     ? item.tags.join(", ")
     : item.tags || "";
-  const expires = item.expires ? formatDateOnly(item.expires) : "";
+  const expires = item.expires
+    ? new Date(item.expires).toLocaleDateString()
+    : "";
   const last_updated = item.last_updated
     ? new Date(item.last_updated).toLocaleString()
     : "";
