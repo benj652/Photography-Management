@@ -19,26 +19,36 @@ async function loadCameraGear() {
   try {
     const response = await fetch(`${API_BASE}/all`);
     const data = await response.json();
-    displayCameraGear(data.camera_gear || []);
+    const gear = data.camera_gear || [];
+
+    // Initialize pagination
+    Pagination.init(gear);
+    Pagination.setOnPageChange(() => {
+      renderPaginatedTable();
+    });
+
+    renderPaginatedTable();
+    Pagination.render();
   } catch (error) {
     console.error("Error loading camera gear:", error);
     showEmptyState("Failed to load camera gear");
   }
 }
 
-// Display camera gear in table
-function displayCameraGear(gear) {
+// Function to render table with pagination
+function renderPaginatedTable() {
   const tbody = document.getElementById("camera-gear-table-body");
   if (!tbody) return;
 
   tbody.innerHTML = "";
+  const itemsToShow = Pagination.getCurrentPageItems();
 
-  if (gear.length === 0) {
+  if (!itemsToShow || itemsToShow.length === 0) {
     showEmptyState('No camera gear found. Click "Add Item" to get started.');
     return;
   }
 
-  gear.forEach((item) => {
+  itemsToShow.forEach((item) => {
     const row = document.createElement("tr");
 
     // Determine checkout status
@@ -71,17 +81,17 @@ function displayCameraGear(gear) {
             <td class="text-center">${lastUpdated}</td>
             <td class="text-end">
                 <div class="d-inline-flex gap-2 align-items-center">
-                    <button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${
+                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${
                       item.id
                     })" title="Edit item">
                         Edit
                     </button>
                     ${
                       isCheckedOut
-                        ? `<button class="btn btn-sm btn-info me-1" onclick="checkInGear(${item.id})" title="Check In" style="white-space: nowrap;">
+                        ? `<button class="btn btn-sm btn-info" onclick="checkInGear(${item.id})" title="Check In">
                             Check In
                         </button>`
-                        : `<button class="btn btn-sm btn-success me-1" onclick="checkOutGear(${item.id})" title="Check Out" style="white-space: nowrap;">
+                        : `<button class="btn btn-sm btn-success" onclick="checkOutGear(${item.id})" title="Check Out">
                             Check Out
                         </button>`
                     }
@@ -95,6 +105,17 @@ function displayCameraGear(gear) {
         `;
     tbody.appendChild(row);
   });
+}
+
+// Display camera gear in table
+function displayCameraGear(gear) {
+  Pagination.init(gear || []);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
+
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 // Show empty state
@@ -158,6 +179,7 @@ async function checkOutGear(id) {
     });
 
     if (response.ok) {
+      // Reload data from server to get updated checkout status
       loadCameraGear();
     } else {
       const errorData = await response.json();
@@ -178,6 +200,7 @@ async function checkInGear(id) {
     });
 
     if (response.ok) {
+      // Reload data from server to get updated checkout status
       loadCameraGear();
     } else {
       const errorData = await response.json();
@@ -221,7 +244,16 @@ function setupDeleteHandler() {
             document.getElementById("deleteConfirmModal")
           );
           if (modal) modal.hide();
-          loadCameraGear();
+
+          // Remove from pagination data and refresh
+          const allItems = Pagination.getAllItems();
+          const filteredItems = allItems.filter((item) => item.id != itemId);
+          Pagination.init(filteredItems);
+          Pagination.setOnPageChange(() => {
+            renderPaginatedTable();
+          });
+          renderPaginatedTable();
+          Pagination.render();
         } else {
           throw new Error("Failed to delete camera gear");
         }
@@ -237,7 +269,19 @@ function setupDeleteHandler() {
 
 // Add item to table (called from modal)
 window.addCameraGearToTable = function (item) {
-  loadCameraGear();
+  // Get current items and add new one
+  const allItems = Pagination.getAllItems();
+  allItems.unshift(item);
+
+  // Reinitialize pagination with updated items
+  Pagination.init(allItems);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
+
+  // Render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 };
 
 // Update item in table (called from modal)
@@ -257,18 +301,18 @@ function filterTable() {
     document.getElementById("filter-location")?.value.toLowerCase() || "";
   const statusFilter = document.getElementById("filter-status")?.value || "";
 
-  const rows = document.querySelectorAll("#camera-gear-table-body tr");
+  // Get all items from pagination
+  const allItems = Pagination.getAllItems();
 
-  rows.forEach((row) => {
-    if (row.querySelector("td[colspan]")) return; // Skip empty state row
-
-    const cells = row.cells;
-    if (cells.length < 8) return;
-
-    const itemName = cells[1].textContent.toLowerCase();
-    const itemTags = cells[2].textContent.toLowerCase();
-    const itemLocation = cells[3].textContent.toLowerCase();
-    const itemStatus = cells[4].textContent.toLowerCase();
+  // Filter items
+  const filteredItems = allItems.filter((item) => {
+    const itemName = (item.name || "").toLowerCase();
+    const itemTags = Array.isArray(item.tags)
+      ? item.tags.join(", ").toLowerCase()
+      : (item.tags || "").toLowerCase();
+    const itemLocation = (item.location || "").toLowerCase();
+    const isCheckedOut = !!item.checked_out_by;
+    const itemStatus = isCheckedOut ? "checked out" : "available";
 
     const searchMatch =
       !searchValue ||
@@ -283,18 +327,24 @@ function filterTable() {
       !locationFilter || itemLocation.includes(locationFilter);
     const statusMatch =
       !statusFilter ||
-      (statusFilter === "available" && itemStatus.includes("available")) ||
-      (statusFilter === "checked-out" && itemStatus.includes("checked out"));
+      (statusFilter === "available" && !isCheckedOut) ||
+      (statusFilter === "checked-out" && isCheckedOut);
 
     const hasSpecificFilters =
       nameFilter || tagsFilter || locationFilter || statusFilter;
-    const shouldShow =
+    return (
       searchMatch &&
       (!hasSpecificFilters ||
-        (nameMatch && tagsMatch && locationMatch && statusMatch));
-
-    row.style.display = shouldShow ? "" : "none";
+        (nameMatch && tagsMatch && locationMatch && statusMatch))
+    );
   });
+
+  // Update pagination with filtered items
+  Pagination.setFilteredItems(filteredItems);
+
+  // Re-render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 function clearFilters() {
@@ -303,7 +353,12 @@ function clearFilters() {
   document.getElementById("filter-tags").value = "";
   document.getElementById("filter-location").value = "";
   document.getElementById("filter-status").value = "";
-  filterTable();
+
+  // Reset to show all items
+  const allItems = Pagination.getAllItems();
+  Pagination.setFilteredItems(allItems);
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 // Make functions global

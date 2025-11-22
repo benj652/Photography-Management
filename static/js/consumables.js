@@ -81,7 +81,17 @@ async function fetchItems() {
     }
     const data = await response.json();
     console.log("Fetched consumables:", data);
-    populateTable(data.consumables || []);
+    const items = data.consumables || [];
+
+    // Initialize pagination
+    Pagination.init(items);
+    Pagination.setOnPageChange(() => {
+      renderPaginatedTable();
+    });
+
+    // Initial render
+    renderPaginatedTable();
+    Pagination.render();
   } catch (error) {
     console.error("Failed to fetch consumables:", error);
     showEmptyState("Failed to load consumables. Please refresh the page.");
@@ -91,6 +101,14 @@ async function fetchItems() {
 // Update an existing row in the table with new data (used after edit)
 window.updateItemInTable = function (data) {
   try {
+    // First, update the item in pagination data
+    if (
+      typeof Pagination !== "undefined" &&
+      typeof Pagination.updateItem === "function"
+    ) {
+      Pagination.updateItem(data);
+    }
+
     const tableBody = document.getElementById("items-table-body");
     if (!tableBody) return;
     const id = data.id || data.item_id || (data.item && data.item.id);
@@ -153,12 +171,16 @@ window.updateItemInTable = function (data) {
   }
 };
 
-// Function to populate the table
-function populateTable(items) {
+// Function to render table with pagination
+function renderPaginatedTable() {
   const tableBody = document.getElementById("items-table-body");
+  if (!tableBody) return;
+
   tableBody.innerHTML = "";
-  if (items && items.length > 0) {
-    items.forEach((item) => {
+  const itemsToShow = Pagination.getCurrentPageItems();
+
+  if (itemsToShow && itemsToShow.length > 0) {
+    itemsToShow.forEach((item) => {
       const row = document.createElement("tr");
       const itemIdText =
         item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
@@ -200,6 +222,19 @@ function populateTable(items) {
   } else {
     showEmptyState("No consumables found. Click 'Add Item' to get started.");
   }
+}
+
+// Function to populate the table
+function populateTable(items) {
+  // Initialize pagination with all items
+  Pagination.init(items || []);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
+
+  // Initial render
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 async function openEditModal(itemId) {
@@ -256,62 +291,20 @@ function showEmptyState(message) {
 // Function to add a new consumable to the table (called from modal) - MAKE IT GLOBAL
 window.addItemToTable = function (item) {
   console.log("Adding consumable to table:", item);
-  const tableBody = document.getElementById("items-table-body");
 
-  if (!tableBody) {
-    console.error("Table body not found!");
-    return;
-  }
+  // Get current items and add new one
+  const allItems = Pagination.getAllItems();
+  allItems.unshift(item);
 
-  // Remove "no items" message if it exists
-  const noItemsRow = tableBody.querySelector('td[colspan="9"]');
-  if (noItemsRow) {
-    noItemsRow.parentElement.remove();
-  }
+  // Reinitialize pagination with updated items
+  Pagination.init(allItems);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
 
-  // Create new row - handle both response formats
-  const row = document.createElement("tr");
-  const itemIdText =
-    item.id !== undefined && item.id !== null ? item.id : EMPTY_PLACEHOLDER;
-  const nameText = formatDisplayValue(item.name);
-  const quantityText =
-    typeof item.quantity === "number"
-      ? item.quantity
-      : formatDisplayValue(item.quantity);
-  const tags = formatTagsDisplay(item.tags);
-  const locationText = getLocationDisplay(item);
-  const expires = item.expires ? formatDateDisplay(item.expires) : "";
-  const last_updated = formatDateDisplay(item.last_updated, true);
-  const updatedByText = formatDisplayValue(item.updated_by);
-
-  row.innerHTML = `
-		<td class="item-id-${item.id}">${itemIdText}</td>
-		<td>${nameText}</td>
-		<td>${quantityText}</td>
-		<td>${tags}</td>
-		<td>${locationText}</td>
-		<td>${expires}</td>
-		<td>${last_updated}</td>
-		<td>${updatedByText}</td>
-		<td class="text-end">
-                  <div class="d-inline-flex gap-3 align-items-center">
-                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id})" title="Edit item">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${item.id})" title="Delete item">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-	`;
-  row.classList.add("item-row");
-
-  tableBody.insertBefore(row, tableBody.firstChild);
-
-  row.classList.add("table-success");
-  setTimeout(() => {
-    row.classList.remove("table-success");
-  }, 1000);
+  // Render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 
   console.log("Consumable added to table successfully");
 };
@@ -329,18 +322,14 @@ function filterTable() {
   const locationFilter =
     document.getElementById("filter-location")?.value.toLowerCase() || "";
 
-  const rows = document.querySelectorAll("#items-table-body tr");
+  // Get all items from pagination
+  const allItems = Pagination.getAllItems();
 
-  rows.forEach((row) => {
-    // Skip the "no items" row
-    if (row.querySelector('td[colspan="9"]')) {
-      return;
-    }
-
-    const cells = row.cells;
-    const itemName = cells[1].textContent.toLowerCase();
-    const itemTags = cells[3].textContent.toLowerCase();
-    const itemLocation = cells[4].textContent.toLowerCase();
+  // Filter items
+  const filteredItems = allItems.filter((item) => {
+    const itemName = (item.name || "").toLowerCase();
+    const itemTags = formatTagsDisplay(item.tags).toLowerCase();
+    const itemLocation = getLocationDisplay(item).toLowerCase();
 
     // Search input searches across all fields
     const searchMatch =
@@ -367,16 +356,18 @@ function filterTable() {
 
     // Show if search matches or all specific filters match (if any have values)
     const hasSpecificFilters = nameFilter || tagsFilter || locationFilter;
-    const shouldShow =
+    return (
       searchMatch &&
-      (!hasSpecificFilters || (nameMatch && tagsMatch && locationMatch));
-
-    if (shouldShow) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
+      (!hasSpecificFilters || (nameMatch && tagsMatch && locationMatch))
+    );
   });
+
+  // Update pagination with filtered items
+  Pagination.setFilteredItems(filteredItems);
+
+  // Re-render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 function clearFilters() {
@@ -385,11 +376,11 @@ function clearFilters() {
   document.getElementById("filter-tags").value = "";
   document.getElementById("filter-location").value = "";
 
-  // Show all rows
-  const rows = document.querySelectorAll("#items-table-body tr");
-  rows.forEach((row) => {
-    row.style.display = "";
-  });
+  // Reset to show all items
+  const allItems = Pagination.getAllItems();
+  Pagination.setFilteredItems(allItems);
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 // Make functions global for HTML onclick handlers
@@ -428,8 +419,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Disable button during deletion
       this.disabled = true;
-      // this.innerHTML =
-      //   '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
       try {
         const response = await fetch(`${CONSUMABLES_API_BASE}/${itemId}`, {
@@ -458,9 +447,17 @@ document.addEventListener("DOMContentLoaded", () => {
           if (deleteBtn) {
             row.classList.add("table-danger");
             setTimeout(() => {
-              row.remove();
-              // Refresh table
-              fetchItems();
+              // Remove from pagination data and refresh
+              const allItems = Pagination.getAllItems();
+              const filteredItems = allItems.filter(
+                (item) => item.id != itemId
+              );
+              Pagination.init(filteredItems);
+              Pagination.setOnPageChange(() => {
+                renderPaginatedTable();
+              });
+              renderPaginatedTable();
+              Pagination.render();
             }, 500);
           }
         });

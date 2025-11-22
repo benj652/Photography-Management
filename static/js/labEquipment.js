@@ -19,26 +19,36 @@ async function loadEquipment() {
   try {
     const response = await fetch(`${API_BASE}/all`);
     const data = await response.json();
-    displayEquipment(data.lab_equipment || []);
+    const equipment = data.lab_equipment || [];
+
+    // Initialize pagination
+    Pagination.init(equipment);
+    Pagination.setOnPageChange(() => {
+      renderPaginatedTable();
+    });
+
+    renderPaginatedTable();
+    Pagination.render();
   } catch (error) {
     console.error("Error loading equipment:", error);
     showEmptyState("Failed to load lab equipment");
   }
 }
 
-// Display equipment in table
-function displayEquipment(equipment) {
+// Function to render table with pagination
+function renderPaginatedTable() {
   const tbody = document.getElementById("lab-equipment-table-body");
   if (!tbody) return;
 
   tbody.innerHTML = "";
+  const itemsToShow = Pagination.getCurrentPageItems();
 
-  if (equipment.length === 0) {
+  if (!itemsToShow || itemsToShow.length === 0) {
     showEmptyState('No lab equipment found. Click "Add Item" to get started.');
     return;
   }
 
-  equipment.forEach((item) => {
+  itemsToShow.forEach((item) => {
     const row = document.createElement("tr");
 
     // Format dates properly
@@ -62,7 +72,7 @@ function displayEquipment(equipment) {
             <td class="text-start">${lastUpdated}</td>
             <td class="text-end">
                 <div class="d-inline-flex gap-2 align-items-center">
-                    <button class="btn btn-sm btn-warning me-1" onclick="openEditModal(${
+                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${
                       item.id
                     })" title="Edit item">
                         Edit
@@ -77,6 +87,17 @@ function displayEquipment(equipment) {
         `;
     tbody.appendChild(row);
   });
+}
+
+// Display equipment in table
+function displayEquipment(equipment) {
+  Pagination.init(equipment || []);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
+
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 // Show empty state
@@ -163,7 +184,16 @@ function setupDeleteHandler() {
             document.getElementById("deleteConfirmModal")
           );
           if (modal) modal.hide();
-          loadEquipment();
+
+          // Remove from pagination data and refresh
+          const allItems = Pagination.getAllItems();
+          const filteredItems = allItems.filter((item) => item.id != itemId);
+          Pagination.init(filteredItems);
+          Pagination.setOnPageChange(() => {
+            renderPaginatedTable();
+          });
+          renderPaginatedTable();
+          Pagination.render();
         } else {
           throw new Error("Failed to delete equipment");
         }
@@ -179,7 +209,19 @@ function setupDeleteHandler() {
 
 // Add item to table (called from modal)
 window.addLabEquipmentToTable = function (item) {
-  loadEquipment();
+  // Get current items and add new one
+  const allItems = Pagination.getAllItems();
+  allItems.unshift(item);
+
+  // Reinitialize pagination with updated items
+  Pagination.init(allItems);
+  Pagination.setOnPageChange(() => {
+    renderPaginatedTable();
+  });
+
+  // Render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 };
 
 // Update item in table (called from modal)
@@ -198,17 +240,16 @@ function filterTable() {
   const serviceFrequencyFilter =
     document.getElementById("filter-service-frequency")?.value || "";
 
-  const rows = document.querySelectorAll("#lab-equipment-table-body tr");
+  // Get all items from pagination
+  const allItems = Pagination.getAllItems();
 
-  rows.forEach((row) => {
-    if (row.querySelector("td[colspan]")) return; // Skip empty state row
-
-    const cells = row.cells;
-    if (cells.length < 8) return;
-
-    const itemName = cells[1].textContent.toLowerCase();
-    const itemTags = cells[2].textContent.toLowerCase();
-    const itemServiceFreq = cells[3].textContent.toLowerCase();
+  // Filter items
+  const filteredItems = allItems.filter((item) => {
+    const itemName = (item.name || "").toLowerCase();
+    const itemTags = Array.isArray(item.tags)
+      ? item.tags.join(", ").toLowerCase()
+      : (item.tags || "").toLowerCase();
+    const itemServiceFreq = (item.service_frequency || "").toLowerCase();
 
     const searchMatch =
       !searchValue ||
@@ -224,12 +265,18 @@ function filterTable() {
 
     const hasSpecificFilters =
       nameFilter || tagsFilter || serviceFrequencyFilter;
-    const shouldShow =
+    return (
       searchMatch &&
-      (!hasSpecificFilters || (nameMatch && tagsMatch && serviceFreqMatch));
-
-    row.style.display = shouldShow ? "" : "none";
+      (!hasSpecificFilters || (nameMatch && tagsMatch && serviceFreqMatch))
+    );
   });
+
+  // Update pagination with filtered items
+  Pagination.setFilteredItems(filteredItems);
+
+  // Re-render table and pagination
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 function clearFilters() {
@@ -237,7 +284,12 @@ function clearFilters() {
   document.getElementById("filter-name").value = "";
   document.getElementById("filter-tags").value = "";
   document.getElementById("filter-service-frequency").value = "";
-  filterTable();
+
+  // Reset to show all items
+  const allItems = Pagination.getAllItems();
+  Pagination.setFilteredItems(allItems);
+  renderPaginatedTable();
+  Pagination.render();
 }
 
 // Make functions global
