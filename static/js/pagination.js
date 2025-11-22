@@ -52,6 +52,31 @@ const Pagination = (function () {
     currentPage = 1; // Reset to first page to show new item
   }
 
+  function updateItem(updatedItem) {
+    const itemId =
+      updatedItem.id ||
+      updatedItem.item_id ||
+      (updatedItem.item && updatedItem.item.id);
+    if (!itemId) return false;
+
+    // Update in allItems array
+    const allItemsIndex = allItems.findIndex((item) => item.id == itemId);
+    if (allItemsIndex !== -1) {
+      allItems[allItemsIndex] = { ...allItems[allItemsIndex], ...updatedItem };
+    }
+
+    // Update in filteredItems array
+    const filteredIndex = filteredItems.findIndex((item) => item.id == itemId);
+    if (filteredIndex !== -1) {
+      filteredItems[filteredIndex] = {
+        ...filteredItems[filteredIndex],
+        ...updatedItem,
+      };
+    }
+
+    return allItemsIndex !== -1 || filteredIndex !== -1;
+  }
+
   function setOnPageChange(callback) {
     onPageChangeCallback = callback;
   }
@@ -186,6 +211,7 @@ const Pagination = (function () {
     getTotalPages,
     getItemsPerPage,
     addItem,
+    updateItem,
     setOnPageChange,
     goToPage,
     resetToFirstPage,

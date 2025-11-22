@@ -101,6 +101,14 @@ async function fetchItems() {
 // Update an existing row in the table with new data (used after edit)
 window.updateItemInTable = function (data) {
   try {
+    // First, update the item in pagination data
+    if (
+      typeof Pagination !== "undefined" &&
+      typeof Pagination.updateItem === "function"
+    ) {
+      Pagination.updateItem(data);
+    }
+
     const tableBody = document.getElementById("items-table-body");
     if (!tableBody) return;
     const id = data.id || data.item_id || (data.item && data.item.id);
