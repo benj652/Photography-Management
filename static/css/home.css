@@ -118,6 +118,14 @@
   line-height: 1.2;
 }
 
+.stat-card-compact {
+  padding: 1.1rem 1.25rem;
+}
+
+.stat-card-compact .stat-card-value {
+  font-size: 1.3rem;
+}
+
 .stat-card-icon {
   font-size: 1.8rem;
   margin-bottom: 0.75rem;
@@ -129,6 +137,29 @@
   border-radius: 8px;
   background: #f2f4f7;
   color: inherit;
+}
+
+.dashboard-section + .dashboard-section {
+  margin-top: 2.5rem;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #6c757d;
 }
 
 /* Search and Filter Section */
