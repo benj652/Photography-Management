@@ -71,16 +71,16 @@ function renderPaginatedTable() {
             <td class="text-start">${item.last_serviced_by || "—"}</td>
             <td class="text-start">${lastUpdated}</td>
             <td class="text-end">
-                <div class="d-inline-flex gap-2 align-items-center">
-                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${
+                <div class="d-inline-flex gap-3 align-items-center">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${
                       item.id
                     })" title="Edit item">
-                        Edit
+                        <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteEquipment(${
                       item.id
                     })" title="Delete item">
-                        Delete
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </td>
