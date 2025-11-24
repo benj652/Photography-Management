@@ -12,22 +12,11 @@ REDIRECT home.home                 → Named route for "not found" fallback
 
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
-from models import Item, User
-from sqlalchemy.orm import joinedload
-from sqlalchemy import func
-from datetime import date
-from constants import(
+from models import Consumable, CameraGear, LabEquipment
+from constants import (
     CAMERA_GEAR_ROUTE,
     CAMERA_GEAR_TEMPLATE,
     HOME_ROUTE,
-    ITEM_FIELD_ID,
-    ITEM_FIELD_NAME,
-    ITEM_FIELD_QUANTITY,
-    ITEM_FIELD_TAGS,
-    ITEM_FIELD_LOCATION_ID,
-    ITEM_FIELD_EXPIRES,
-    ITEM_FIELD_LAST_UPDATED,
-    ITEM_FIELD_UPDATED_BY,
     HOME_TEMPLATE,
     HOME_BLUEPRINT_NAME,
     LAB_EQUIPMENT_ROUTE,
@@ -47,61 +36,25 @@ home_blueprint = Blueprint(HOME_BLUEPRINT_NAME, __name__)
 @login_required
 @require_approved
 def home():
-    """Render the home page.
+    """Render the home dashboard with aggregate stats across resource types."""
 
-    If SQLAlchemy is configured, query real items from the DB and convert them
-    into the simple dict shape expected by the template. Otherwise fall back
-    to the static mock data already used during development.
-    """
-    items_list = []
+    consumables = Consumable.query.all()
+    camera_gear = CameraGear.query.all()
+    lab_equipment = LabEquipment.query.all()
 
-    q = Item.query.options(joinedload(Item.tags), 
-                            joinedload(Item.location),
-                            joinedload(Item.updated_by_user))
-    items = q.all()
-    
-    # Calculate statistics
-    total_items = len(items)
-    today = date.today()
-    in_stock_count = sum(1 for item in items 
-                         if item.quantity > 0 
-                         and (not item.expires or item.expires >= today))
-    
-    out_of_stock_count = sum(1 for item in items 
-                             if item.quantity == 0 
-                             and (not item.expires or item.expires >= today))
-    
-    expired_count = sum(1 for item in items 
-                        if item.expires and item.expires < today)
-    
-    for it in items:
-        tags = ', '.join([t.name for t in getattr(it, ITEM_FIELD_TAGS, [])])
-        loc = getattr(it, 'location', None)
-        location_name = loc.name if loc else None
-        updater = None
-        if it.updated_by_user:
-            updater = it.updated_by_user.email
-        elif it.updated_by:
-            updater = str(it.updated_by)
+    consumables_total = sum(c.quantity or 0 for c in consumables)
+    camera_gear_total = len(camera_gear)
+    lab_equipment_total = len(lab_equipment)
+    inventory_total = consumables_total + camera_gear_total + lab_equipment_total
 
-        items_list.append({
-            ITEM_FIELD_ID: it.id,
-            ITEM_FIELD_NAME: it.name,
-            ITEM_FIELD_QUANTITY: it.quantity,
-            ITEM_FIELD_TAGS: tags,
-            'location': location_name, #unsure what to replace this magic string with. ITEM_FIELD_LOCATION_ID doesnt seem correct
-            ITEM_FIELD_EXPIRES: it.expires.isoformat() if it.expires else '—',
-            ITEM_FIELD_LAST_UPDATED: it.last_updated.strftime('%Y-%m-%d %H:%M') if it.last_updated else '—',
-            ITEM_FIELD_UPDATED_BY: updater,
-        })
-
-    current_app.logger.debug(f'Current user: {current_user}')
-    return render_template(HOME_TEMPLATE, 
-                         items=items_list,
-                         total_items=total_items,
-                         in_stock_count=in_stock_count,
-                         out_of_stock_count=out_of_stock_count,
-                         expired_count=expired_count)
+    current_app.logger.debug(f"Current user: {current_user}")
+    return render_template(
+        HOME_TEMPLATE,
+        consumables_total=consumables_total,
+        camera_gear_total=camera_gear_total,
+        lab_equipment_total=lab_equipment_total,
+        inventory_total=inventory_total,
+    )
 
 
 @home_blueprint.route(LAB_EQUIPMENT_ROUTE)

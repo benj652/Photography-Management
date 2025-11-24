@@ -118,16 +118,17 @@
   line-height: 1.2;
 }
 
-.stat-card-success .stat-card-value {
-  color: #28a745;
-}
-
-.stat-card-warning .stat-card-value {
-  color: #f3b808;
-}
-
-.stat-card-danger .stat-card-value {
-  color: #dc3545;
+.stat-card-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f2f4f7;
+  color: inherit;
 }
 
 /* Search and Filter Section */
