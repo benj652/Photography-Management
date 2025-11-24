@@ -66,6 +66,7 @@ def home():
         for c in upcoming_expirations
         if (c.expires - today).days <= 14
     )
+    out_of_stock_count = sum(1 for c in consumables if (c.quantity or 0) <= 0)
 
     current_app.logger.debug(f"Current user: {current_user}")
     return render_template(
@@ -78,6 +79,7 @@ def home():
         days_until_expiration=days_until_expiration,
         expired_count=len(expired_items),
         expiring_soon_count=expiring_soon_count,
+        out_of_stock_count=out_of_stock_count,
     )
 
 
