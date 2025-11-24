@@ -61,6 +61,11 @@ def home():
     expired_items = [
         c for c in consumables if c.expires is not None and c.expires < today
     ]
+    expiring_soon_count = sum(
+        1
+        for c in upcoming_expirations
+        if (c.expires - today).days <= 14
+    )
 
     current_app.logger.debug(f"Current user: {current_user}")
     return render_template(
@@ -72,6 +77,7 @@ def home():
         next_expiring=next_expiring,
         days_until_expiration=days_until_expiration,
         expired_count=len(expired_items),
+        expiring_soon_count=expiring_soon_count,
     )
 
 
