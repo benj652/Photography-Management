@@ -178,6 +178,28 @@
     <div class="col-md-4 col-sm-6">
       <div class="stat-card">
         <div class="stat-card-body">
+          <div class="stat-card-icon text-success">
+            <i class="fas fa-tools"></i>
+          </div>
+          <h3 class="stat-card-title">Next Service</h3>
+          {% if next_service_equipment %}
+          <p class="stat-card-value" id="stat-next-service">
+            {{ days_until_service }} days
+          </p>
+          <small class="text-muted d-block">
+            {{ next_service_equipment.name }} ({{ next_service_date.strftime("%b %d, %Y") }})
+          </small>
+          {% else %}
+          <p class="stat-card-value" id="stat-next-service">
+            No scheduled service
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-card-body">
           <div class="stat-card-icon text-danger">
             <i class="fas fa-ban"></i>
           </div>
@@ -225,6 +247,26 @@
           <p class="stat-card-value" id="stat-checked-out">
             {{ checked_out_count }} Items
           </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon text-danger">
+            <i class="fas fa-wrench"></i>
+          </div>
+          <h3 class="stat-card-title">Service Overdue</h3>
+          <p class="stat-card-value" id="stat-service-overdue">
+            {{ service_overdue|length }} Items
+          </p>
+          {% if service_overdue %}
+          <small class="text-muted d-block">
+            {{ service_overdue|map(attribute='name')|join(', ') }}
+          </small>
+          {% else %}
+          <small class="text-muted d-block">All equipment up to date</small>
+          {% endif %}
         </div>
       </div>
     </div>

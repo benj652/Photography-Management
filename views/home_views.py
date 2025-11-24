@@ -13,7 +13,7 @@ REDIRECT home.home                 → Named route for "not found" fallback
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from models import Consumable, CameraGear, LabEquipment
-from datetime import date
+from datetime import date, timedelta
 from constants import (
     CAMERA_GEAR_ROUTE,
     CAMERA_GEAR_TEMPLATE,
@@ -68,6 +68,38 @@ def home():
     )
     out_of_stock_count = sum(1 for c in consumables if (c.quantity or 0) <= 0)
     checked_out_count = sum(1 for g in camera_gear if g.is_checked_out)
+    frequency_to_days = {
+        "weekly": 7,
+        "monthly": 30,
+        "quarterly": 90,
+        "yearly": 365,
+    }
+    upcoming_service = []
+    service_overdue = []
+    for equipment in lab_equipment:
+        freq = (equipment.service_frequency or "").lower()
+        interval_days = frequency_to_days.get(freq)
+        if not interval_days:
+            continue
+        if equipment.last_serviced_on:
+            next_due = equipment.last_serviced_on + timedelta(days=interval_days)
+        else:
+            next_due = None
+
+        if next_due is None or next_due < today:
+            service_overdue.append(equipment)
+            continue
+
+        if next_due >= today:
+            upcoming_service.append((next_due, equipment))
+    next_service_equipment = None
+    days_until_service = None
+    next_service_date = None
+    if upcoming_service:
+        next_due, equipment = min(upcoming_service, key=lambda item: item[0])
+        next_service_equipment = equipment
+        days_until_service = (next_due - today).days
+        next_service_date = next_due
 
     current_app.logger.debug(f"Current user: {current_user}")
     return render_template(
@@ -82,6 +114,10 @@ def home():
         expiring_soon_count=expiring_soon_count,
         out_of_stock_count=out_of_stock_count,
         checked_out_count=checked_out_count,
+        next_service_equipment=next_service_equipment,
+        days_until_service=days_until_service,
+        next_service_date=next_service_date,
+        service_overdue=service_overdue,
     )
 
 
