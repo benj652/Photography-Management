@@ -151,6 +151,31 @@
       </div>
     </div>
   </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon text-danger">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <h3 class="stat-card-title">Next Expiration</h3>
+          {% if next_expiring %}
+          <p class="stat-card-value" id="stat-next-expiration">
+            {{ days_until_expiration }} days
+          </p>
+          <small class="text-muted d-block">
+            {{ next_expiring.name }} ({{ next_expiring.expires.strftime("%b %d, %Y") }})
+          </small>
+          {% else %}
+          <p class="stat-card-value" id="stat-next-expiration">
+            No upcoming expirations
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="/static/js/home.js"></script>

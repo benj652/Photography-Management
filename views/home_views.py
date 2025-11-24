@@ -13,6 +13,7 @@ REDIRECT home.home                 → Named route for "not found" fallback
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from models import Consumable, CameraGear, LabEquipment
+from datetime import date
 from constants import (
     CAMERA_GEAR_ROUTE,
     CAMERA_GEAR_TEMPLATE,
@@ -42,10 +43,21 @@ def home():
     camera_gear = CameraGear.query.all()
     lab_equipment = LabEquipment.query.all()
 
+    today = date.today()
     consumables_total = sum(c.quantity or 0 for c in consumables)
     camera_gear_total = len(camera_gear)
     lab_equipment_total = len(lab_equipment)
     inventory_total = consumables_total + camera_gear_total + lab_equipment_total
+
+    upcoming_expirations = [
+        c
+        for c in consumables
+        if c.expires is not None and c.expires >= today
+    ]
+    next_expiring = min(upcoming_expirations, key=lambda c: c.expires, default=None)
+    days_until_expiration = (
+        (next_expiring.expires - today).days if next_expiring else None
+    )
 
     current_app.logger.debug(f"Current user: {current_user}")
     return render_template(
@@ -54,6 +66,8 @@ def home():
         camera_gear_total=camera_gear_total,
         lab_equipment_total=lab_equipment_total,
         inventory_total=inventory_total,
+        next_expiring=next_expiring,
+        days_until_expiration=days_until_expiration,
     )
 
 
