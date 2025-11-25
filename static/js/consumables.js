@@ -1,56 +1,4 @@
 const CONSUMABLES_API_BASE = "/api/v1/consumables";
-const EMPTY_PLACEHOLDER = "&mdash;";
-
-function formatDisplayValue(value) {
-  if (value === null || value === undefined) {
-    return EMPTY_PLACEHOLDER;
-  }
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    return trimmed.length ? trimmed : EMPTY_PLACEHOLDER;
-  }
-  if (typeof value === "number") {
-    return Number.isNaN(value) ? EMPTY_PLACEHOLDER : value;
-  }
-  return value || EMPTY_PLACEHOLDER;
-}
-
-function formatDateDisplay(value, includeTime = false) {
-  if (!value) return EMPTY_PLACEHOLDER;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return EMPTY_PLACEHOLDER;
-return includeTime ? parsed.toLocaleString() : parsed.toLocaleDateString();
-  }
-
-function formatTagsDisplay(tags) {
-  if (Array.isArray(tags)) {
-    if (!tags.length) return EMPTY_PLACEHOLDER;
-    const normalized = tags
-      .map((tag) => {
-        if (typeof tag === "string") return tag;
-        if (tag && typeof tag.name === "string") return tag.name;
-        return "";
-      })
-      .filter((tag) => tag && tag.trim().length);
-    return normalized.length
-      ? normalized.join(", ")
-      : EMPTY_PLACEHOLDER;
-  }
-  if (typeof tags === "string") {
-    return formatDisplayValue(tags);
-  }
-  return EMPTY_PLACEHOLDER;
-}
-
-function getLocationDisplay(item) {
-  if (!item) return EMPTY_PLACEHOLDER;
-  const locationName =
-    typeof item.location === "object" && item.location !== null
-      ? item.location.name
-      : item.location;
-  const fallback = item.location_name || item.location_id || "";
-  return formatDisplayValue(locationName || fallback);
-}
 
 // Function to fetch consumables from the server
 async function fetchItems() {
@@ -380,6 +328,41 @@ async function deleteItem(itemId) {
 // Handle the actual deletion when confirmed
 document.addEventListener("DOMContentLoaded", () => {
   console.log("consumable.js loaded");
+  
+  // Initialize Navbar
+  if (typeof Navbar === 'function' && window.userData) {
+    const navbarContainer = document.getElementById("navbar");
+    if (navbarContainer) {
+      navbarContainer.innerHTML = Navbar({
+        profilePicture: window.userData.profilePicture,
+        firstName: window.userData.firstName,
+        role: window.userData.role,
+        homeUrl: window.userData.homeUrl
+      });
+
+      // Set up logout button handler after navbar is loaded
+      setTimeout(() => {
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", () => {
+            window.location.href = "/auth/logout";
+          });
+        }
+      }, 100);
+    }
+  }
+
+  // Initialize Breadcrumbs
+  if (typeof Breadcrumbs === 'function' && window.userData) {
+    const breadcrumbsContainer = document.getElementById("breadcrumbs");
+    if (breadcrumbsContainer) {
+      breadcrumbsContainer.innerHTML = Breadcrumbs({
+        currentPage: 'Consumables',
+        userRole: window.userData.role
+      });
+    }
+  }
+
   fetchItems();
   filterTable();
 
@@ -448,8 +431,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-document.getElementById("logoutButton").addEventListener("click", () => {
-  window.location.href = "/auth/logout";
 });

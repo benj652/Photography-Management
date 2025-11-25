@@ -1,3 +1,43 @@
+// Initialize page when DOM is loaded
+document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Navbar
+    if (typeof Navbar === 'function' && window.userData) {
+        const navbarContainer = document.getElementById("navbar");
+        if (navbarContainer) {
+            navbarContainer.innerHTML = Navbar({
+                profilePicture: window.userData.profilePicture,
+                firstName: window.userData.firstName,
+                role: window.userData.role,
+                homeUrl: window.userData.homeUrl
+            });
+
+            // Set up logout button handler after navbar is loaded
+            setTimeout(() => {
+                const logoutButton = document.getElementById("logoutButton");
+                if (logoutButton) {
+                    logoutButton.addEventListener("click", () => {
+                        window.location.href = "/auth/logout";
+                    });
+                }
+            }, 100);
+        }
+    }
+
+    // Initialize Breadcrumbs
+    if (typeof Breadcrumbs === 'function' && window.userData) {
+        const breadcrumbsContainer = document.getElementById("breadcrumbs");
+        if (breadcrumbsContainer) {
+            breadcrumbsContainer.innerHTML = Breadcrumbs({
+                currentPage: 'Admin Dashboard',
+                userRole: window.userData.role
+            });
+        }
+    }
+
+    // Fetch users after navbar is initialized
+    fetchUsers();
+});
+
 async function fetchUsers() {
     try {
         const response = await fetch("/admin/users/all");
@@ -13,8 +53,6 @@ async function fetchUsers() {
         console.error("Failed to fetch users:", error);
     }
 }
-
-fetchUsers();
 
 function populateUsers(users) {
     if (!users || users.length === 0) {

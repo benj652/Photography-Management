@@ -1,43 +1,22 @@
 <!DOCTYPE html>
 {% extends "index.html" %} {% block head %} {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<script>
+  // Make user data available to JavaScript
+  window.userData = {
+    firstName: "{{ current_user.first_name }}",
+    role: "{{ current_user.role.value|title }}",
+    profilePicture: "{{ current_user.profile_picture or '' }}",
+    homeUrl: "{{ url_for('home.home') }}"
+  };
+</script>
 {% endblock %} {% block content %}
 
 <body>
-  <!-- Breadcrumb Navigation -->
-  <nav aria-label="breadcrumb" class="bg-light border-bottom">
-    <div class="container py-2">
-      <div class="d-flex justify-content-between align-items-center">
-        <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item">
-            <a href="/home" class="text-decoration-none">
-                            Home
-            </a>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">
-                        Consumables
-          </li>
-        </ol>
-        <div class="breadcrumb-nav">
-                    <a href="/home" class="btn btn-sm btn-outline-secondary me-2">
-                        <i class="fas fa-home me-1"></i>Home
-                    </a>
-          <a href="/home/camera-gear" class="btn btn-sm btn-outline-secondary me-2">
-            <i class="fas fa-camera me-1"></i>Camera Gear
-          </a>
-          <a href="/home/lab-equipment" class="btn btn-sm btn-outline-secondary me-2">
-            <i class="fas fa-microscope me-1"></i>Lab Equipment
-          </a>
-          {% if current_user.role.value == 'admin' %}
-                    <a href="/admin/dashboard" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-user-shield me-1"></i>Admin
-          </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </nav>
-
+  <!-- NavBar -->
+  <div id="navbar"></div>
+  <!-- Breadcrumbs -->
+  <div id="breadcrumbs"></div>
   <!-- table and features  -->
   <div class="container py-4">
 
@@ -161,6 +140,9 @@
       </div>
     </div>
   </div>
+  <script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/componenets/Breadcrumbs.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/utils/index.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/static/js/pagination.js"></script>
   <script src="/static/js/consumables.js"></script>

@@ -2,6 +2,40 @@ const API_BASE = "/api/v1/camera_gear";
 
 // Load camera gear on page load
 document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Navbar
+    if (typeof Navbar === 'function' && window.userData) {
+        const navbarContainer = document.getElementById("navbar");
+        if (navbarContainer) {
+            navbarContainer.innerHTML = Navbar({
+                profilePicture: window.userData.profilePicture,
+                firstName: window.userData.firstName,
+                role: window.userData.role,
+                homeUrl: window.userData.homeUrl
+            });
+
+            // Set up logout button handler after navbar is loaded
+            setTimeout(() => {
+                const logoutButton = document.getElementById("logoutButton");
+                if (logoutButton) {
+                    logoutButton.addEventListener("click", () => {
+                        window.location.href = "/auth/logout";
+                    });
+                }
+            }, 100);
+        }
+    }
+
+    // Initialize Breadcrumbs
+    if (typeof Breadcrumbs === 'function' && window.userData) {
+        const breadcrumbsContainer = document.getElementById("breadcrumbs");
+        if (breadcrumbsContainer) {
+            breadcrumbsContainer.innerHTML = Breadcrumbs({
+                currentPage: 'Camera Gear',
+                userRole: window.userData.role
+            });
+        }
+    }
+
     loadCameraGear();
     setupDeleteHandler();
 });
@@ -55,15 +89,10 @@ function renderPaginatedTable() {
         }
 
         // Use location name directly from API response
-        const locationName = item.location || "—";
-        const tags = Array.isArray(item.tags)
-            ? (item.tags.length ? item.tags.join(", ") : "—")
-            : (item.tags || "—");
-
-        const checkedOutBy = item.checked_out_by || '—';
-        const lastUpdated = item.last_updated
-            ? new Date(item.last_updated).toLocaleString()
-            : "—";
+        const locationName = formatDisplayValue(item.location);
+        const tags = formatTagsDisplay(item.tags);
+        const checkedOutBy = formatDisplayValue(item.checked_out_by);
+        const lastUpdated = formatDateDisplay(item.last_updated, true);
 
         const editButton = `
             <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="openEditModal(${item.id})" title="Edit item">
@@ -87,7 +116,7 @@ function renderPaginatedTable() {
 
         row.innerHTML = `
             <td>${item.id}</td>
-            <td>${item.name}</td>
+            <td>${formatDisplayValue(item.name)}</td>
             <td>${tags}</td>
             <td>${locationName}</td>
             <td>${status}</td>
