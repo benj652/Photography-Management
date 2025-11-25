@@ -5,55 +5,18 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/home.css') }}"
 />
+<script>
+  // Make user data available to JavaScript
+  window.userData = {
+    firstName: "{{ current_user.first_name }}",
+    role: "{{ current_user.role.value|title }}",
+    profilePicture: "{{ current_user.profile_picture or '' }}",
+    homeUrl: "{{ url_for('home.home') }}"
+  };
+</script>
 {% endblock %} {% block content %}
 <!-- NavBar -->
-<nav
-  class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top"
->
-  <div class="container-fluid px-4">
-    <!-- Logo-->
-    <a
-      class="navbar-brand d-flex align-items-center"
-      href="{{ url_for('home.home') }}"
-    >
-      <div class="landing-logo">
-        <span class="logo-icon">📸</span>
-        <span class="logo-text">PhotoInventory</span>
-      </div>
-    </a>
-
-    <!-- User profile and logout-->
-    <div class="d-flex align-items-center">
-      <div class="user-profile d-flex align-items-center me-4">
-        {% if current_user.profile_picture %}
-        <img
-          src="{{ current_user.profile_picture }}"
-          alt="Profile"
-          class="user-avatar rounded-circle me-2"
-          height="45"
-          width="45"
-        />
-        {% else %}
-        <div
-          class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center me-2"
-        >
-          {{ current_user.first_name[0]|upper }}
-        </div>
-        {% endif %}
-        <div class="d-flex flex-column align-items-start">
-          <span class="fw-semibold text-dark"
-            >{{ current_user.first_name }}</span
-          >
-          <small class="text-muted">{{ current_user.role.value|title }}</small>
-        </div>
-      </div>
-      <button id="logoutButton" class="btn btn-outline-dark btn-sm">
-        <i class="fas fa-sign-out-alt me-1"></i>Log Out
-      </button>
-    </div>
-  </div>
-</nav>
-
+<div id="navbar"></div>
 <!-- Breadcrumb Navigation -->
 <nav aria-label="breadcrumb" class="bg-light border-bottom">
   <div class="container py-2">
@@ -309,6 +272,6 @@
     </div>
   </div>
 </div>
-
+<script src="/static/js/componenets/Navbar.js"></script>
 <script src="/static/js/home.js"></script>
 {% endblock %}

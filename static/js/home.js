@@ -1,4 +1,5 @@
 const API_PREFIX = "/api/v1";
+window.API_PREFIX = API_PREFIX; // Make it available globally
 
 // Add a helper function at the top of the file
 function formatDateOnly(dateString) {
@@ -419,9 +420,50 @@ async function deleteItem(itemId) {
 
 // Handle the actual deletion when confirmed
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Home.js loaded");
+  console.log("Home.js loaded - DOMContentLoaded event fired");
+  console.log("Navbar function available:", typeof Navbar);
+  console.log("Window userData:", window.userData);
+  
   fetchItems();
   filterTable();
+
+  // Initialize Navbar using the global Navbar function (loaded via script tag)
+  const navbarContainer = document.getElementById("navbar");
+  console.log("Navbar container element:", navbarContainer);
+  
+  if (typeof Navbar === 'function' && window.userData) {
+    console.log("Attempting to render navbar with data:", window.userData);
+    const navbarHTML = Navbar({
+      profilePicture: window.userData.profilePicture,
+      firstName: window.userData.firstName,
+      role: window.userData.role,
+      homeUrl: window.userData.homeUrl
+    });
+    console.log("Generated navbar HTML:", navbarHTML);
+    
+    if (navbarContainer) {
+      navbarContainer.innerHTML = navbarHTML;
+      console.log("Navbar HTML inserted into container");
+    } else {
+      console.error("Navbar container element not found!");
+    }
+
+    // Set up logout button handler after navbar is loaded
+    setTimeout(() => {
+      const logoutButton = document.getElementById("logoutButton");
+      console.log("Logout button found:", logoutButton);
+      if (logoutButton) {
+        logoutButton.addEventListener("click", () => {
+          window.location.href = "/auth/logout";
+        });
+        console.log("Logout button click handler added");
+      }
+    }, 100);
+  } else {
+    console.error("Navbar function not available or user data missing");
+    console.error("Navbar function type:", typeof Navbar);
+    console.error("User data:", window.userData);
+  }
 
   // Set up delete confirmation button handler
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
@@ -483,8 +525,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-document.getElementById("logoutButton").addEventListener("click", () => {
-  window.location.href = "/auth/logout";
 });

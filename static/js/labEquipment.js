@@ -2,16 +2,31 @@ const API_BASE = "/api/v1/lab_equipment";
 
 // Load equipment on page load
 document.addEventListener("DOMContentLoaded", function () {
+  // Initialize Navbar
+  if (typeof Navbar === 'function' && window.userData) {
+    const navbarContainer = document.getElementById("navbar");
+    if (navbarContainer) {
+      navbarContainer.innerHTML = Navbar({
+        profilePicture: window.userData.profilePicture,
+        firstName: window.userData.firstName,
+        role: window.userData.role,
+        homeUrl: window.userData.homeUrl
+      });
+
+      // Set up logout button handler after navbar is loaded
+      setTimeout(() => {
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", () => {
+            window.location.href = "/auth/logout";
+          });
+        }
+      }, 100);
+    }
+  }
+
   loadEquipment();
   setupDeleteHandler();
-
-  // Logout button
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      window.location.href = "/auth/logout";
-    });
-  }
 });
 
 // Load all equipment

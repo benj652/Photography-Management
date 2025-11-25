@@ -1,8 +1,19 @@
 {% extends "index.html" %} {% block head %} {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<script>
+  // Make user data available to JavaScript
+  window.userData = {
+    firstName: "{{ current_user.first_name }}",
+    role: "{{ current_user.role.value|title }}",
+    profilePicture: "{{ current_user.profile_picture or '' }}",
+    homeUrl: "{{ url_for('home.home') }}"
+  };
+</script>
 {% endblock %} {% block content %}
 
 <body>
+    <!-- NavBar -->
+    <div id="navbar"></div>
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="bg-light border-bottom">
         <div class="container py-2">
@@ -172,6 +183,7 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
     <script src="/static/js/pagination.js"></script>
     <script src="/static/js/cameraGear.js"></script>
 </body>

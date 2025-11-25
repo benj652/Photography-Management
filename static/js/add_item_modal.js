@@ -19,8 +19,6 @@
 //     });
 // });
 
-const API_PREFIX = "/api/v1";
-
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Modal script loaded");
 
@@ -121,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedLocation = null;
 
   function updateItem(itemId, updatedData, endpoint) {
-    const updateEndpoint = endpoint || `${API_PREFIX}/items/${itemId}`;
+    const updateEndpoint = endpoint || `${window.API_PREFIX || "/api/v1"}/items/${itemId}`;
     fetch(updateEndpoint, {
       method: "PUT",
       headers: {
@@ -147,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Fetch all tags from the database
   async function fetchTags() {
     try {
-      const response = await fetch(API_PREFIX + "/tags/all");
+      const response = await fetch((window.API_PREFIX || "/api/v1") + "/tags/all");
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
       }
@@ -163,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Fetch all locations from the database
   async function fetchLocations() {
     try {
-      const response = await fetch(API_PREFIX + "/location/all");
+      const response = await fetch((window.API_PREFIX || "/api/v1") + "/location/all");
       if (!response.ok) {
         throw new Error("Failed to fetch locations");
       }
@@ -511,7 +509,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      const response = await fetch(API_PREFIX + "/tags", {
+      const response = await fetch((window.API_PREFIX || "/api/v1") + "/tags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -547,7 +545,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!newLocationName) return;
 
     try {
-      const response = await fetch(API_PREFIX + "/location", {
+      const response = await fetch((window.API_PREFIX || "/api/v1") + "/location", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -658,23 +656,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const editingId = window.editingItemId;
     const apiEndpoint =
       pageType === "home"
-        ? API_PREFIX + "/items"
+        ? (window.API_PREFIX || "/api/v1") + "/items"
         : pageType === "consumables"
-        ? API_PREFIX + "/consumables/"
+        ? (window.API_PREFIX || "/api/v1") + "/consumables/"
         : pageType === "camera-gear"
-        ? API_PREFIX + "/camera_gear/"
-        : API_PREFIX + "/lab_equipment/";
+        ? (window.API_PREFIX || "/api/v1") + "/camera_gear/"
+        : (window.API_PREFIX || "/api/v1") + "/lab_equipment/";
 
     if (editingId) {
       console.log("Editing item with ID:", editingId);
       const updateEndpoint =
         pageType === "home"
-          ? `${API_PREFIX}/items/${editingId}`
+          ? `${window.API_PREFIX || "/api/v1"}/items/${editingId}`
           : pageType === "consumables"
-          ? `${API_PREFIX}/consumables/${editingId}`
+          ? `${window.API_PREFIX || "/api/v1"}/consumables/${editingId}`
           : pageType === "camera-gear"
-          ? `${API_PREFIX}/camera_gear/${editingId}`
-          : `${API_PREFIX}/lab_equipment/${editingId}`;
+          ? `${window.API_PREFIX || "/api/v1"}/camera_gear/${editingId}`
+          : `${window.API_PREFIX || "/api/v1"}/lab_equipment/${editingId}`;
 
       updateItem(editingId, data, updateEndpoint);
       showAlert("Item updated successfully!", "success");

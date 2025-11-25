@@ -380,6 +380,30 @@ async function deleteItem(itemId) {
 // Handle the actual deletion when confirmed
 document.addEventListener("DOMContentLoaded", () => {
   console.log("consumable.js loaded");
+  
+  // Initialize Navbar
+  if (typeof Navbar === 'function' && window.userData) {
+    const navbarContainer = document.getElementById("navbar");
+    if (navbarContainer) {
+      navbarContainer.innerHTML = Navbar({
+        profilePicture: window.userData.profilePicture,
+        firstName: window.userData.firstName,
+        role: window.userData.role,
+        homeUrl: window.userData.homeUrl
+      });
+
+      // Set up logout button handler after navbar is loaded
+      setTimeout(() => {
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", () => {
+            window.location.href = "/auth/logout";
+          });
+        }
+      }, 100);
+    }
+  }
+
   fetchItems();
   filterTable();
 
@@ -448,8 +472,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-document.getElementById("logoutButton").addEventListener("click", () => {
-  window.location.href = "/auth/logout";
 });
