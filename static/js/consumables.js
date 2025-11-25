@@ -17,31 +17,10 @@ function formatDisplayValue(value) {
 
 function formatDateDisplay(value, includeTime = false) {
   if (!value) return EMPTY_PLACEHOLDER;
-
-  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-    if (Number.isNaN(date.getTime())) return EMPTY_PLACEHOLDER;
-    return includeTime ? date.toLocaleString() : date.toLocaleDateString();
-  }
-
-  // For ISO datetime strings, parse and handle timezone correctly
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return EMPTY_PLACEHOLDER;
-
-  if (includeTime) {
-    return parsed.toLocaleString();
-  } else {
-    // Extract date parts from the parsed date to avoid timezone issues
-    const year = parsed.getFullYear();
-    const month = String(parsed.getMonth() + 1).padStart(2, "0");
-    const day = String(parsed.getDate()).padStart(2, "0");
-    // Create a local date object from the components
-    const localDate = new Date(year, parsed.getMonth(), parsed.getDate());
-    return localDate.toLocaleDateString();
+return includeTime ? parsed.toLocaleString() : parsed.toLocaleDateString();
   }
-}
 
 function formatTagsDisplay(tags) {
   if (Array.isArray(tags)) {
@@ -53,7 +32,9 @@ function formatTagsDisplay(tags) {
         return "";
       })
       .filter((tag) => tag && tag.trim().length);
-    return normalized.length ? normalized.join(", ") : EMPTY_PLACEHOLDER;
+    return normalized.length
+      ? normalized.join(", ")
+      : EMPTY_PLACEHOLDER;
   }
   if (typeof tags === "string") {
     return formatDisplayValue(tags);
@@ -153,13 +134,9 @@ window.updateItemInTable = function (data) {
         <td>${lastUpdated}</td>
         <td>${updatedByText}</td>
         <td class="text-end">
-          <div class="d-inline-flex gap-3 align-items-center">
-            <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item">
-              <i class="fas fa-trash"></i>
-            </button>
+        <div class="d-inline-flex gap-2 align-items-center">
+          <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${id})" title="Edit item"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteItem(${id})" title="Delete item"><i class="fas fa-trash"></i></button>
           </div>
         </td>
       `;
