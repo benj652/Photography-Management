@@ -117,6 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("User data:", window.userData);
   }
 
+document.addEventListener("DOMContentLoaded", () => {
+  updateStats();
+  // optional: setInterval(updateStats, 60000);
+});
+
   // Initialize Breadcrumbs
   if (typeof Breadcrumbs === 'function' && window.userData) {
     const breadcrumbsContainer = document.getElementById("breadcrumbs");
