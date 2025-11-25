@@ -53,7 +53,7 @@ function renderPaginatedTable() {
 
     // Format dates properly
     const lastServiced = item.last_serviced_on
-      ? formatDateOnly(item.last_serviced_on)
+      ? new Date(item.last_serviced_on).toLocaleDateString()
       : "—";
     const lastUpdated = item.last_updated
       ? new Date(item.last_updated).toLocaleString()
@@ -72,14 +72,12 @@ function renderPaginatedTable() {
             <td class="text-start">${lastUpdated}</td>
             <td class="text-end">
                 <div class="d-inline-flex gap-3 align-items-center">
-                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${
-                      item.id
-                    })" title="Edit item">
+                    <button class="btn btn-sm btn-link text-primary p-0" onclick="openEditModal(${item.id
+      })" title="Edit item">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteEquipment(${
-                      item.id
-                    })" title="Delete item">
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteEquipment(${item.id
+      })" title="Delete item">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -148,7 +146,7 @@ async function openEditModal(itemId) {
     modal.show();
   } catch (error) {
     console.error("Error opening edit modal:", error);
-    alert("Failed to load equipment for editing");
+    alert("Failed to load equipment for editing:" + error.message);
   }
 }
 
@@ -199,7 +197,7 @@ function setupDeleteHandler() {
         }
       } catch (error) {
         console.error("Error deleting equipment:", error);
-        alert("Failed to delete equipment");
+        alert("Failed to delete equipment:"  + error.message);
       } finally {
         this.disabled = false;
       }
@@ -298,21 +296,3 @@ window.deleteEquipment = deleteEquipment;
 window.filterTable = filterTable;
 window.clearFilters = clearFilters;
 
-// Add helper function at the top
-function formatDateOnly(dateString) {
-  if (!dateString) return "—";
-  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    const [year, month, day] = dateString.split("-").map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-    return date.toLocaleDateString();
-  }
-  // For ISO datetime strings, extract date components
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return "—";
-  const year = parsed.getFullYear();
-  const month = parsed.getMonth();
-  const day = parsed.getDate();
-  const localDate = new Date(year, month, day);
-  return localDate.toLocaleDateString();
-}
