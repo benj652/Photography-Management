@@ -29,7 +29,7 @@ async function loadCameraGear() {
 
 // Function to render table with pagination
 function renderPaginatedTable() {
-    const tbody = document.getElementById("camera-gear-table-body");
+    const tbody = document.getElementById("items-table-body");
     if (!tbody) return;
 
     tbody.innerHTML = "";
@@ -46,8 +46,8 @@ function renderPaginatedTable() {
         // Determine checkout status
         const isCheckedOut = item.checked_out_by;
         const status = isCheckedOut
-            ? '<span class="badge bg-warning">Checked Out</span>'
-            : '<span class="badge bg-success">Available</span>';
+            ? '<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle">Checked Out</span>'
+            : '<span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">Available</span>';
 
         // Add checked-out styling
         if (isCheckedOut) {
@@ -65,32 +65,39 @@ function renderPaginatedTable() {
             ? new Date(item.last_updated).toLocaleString()
             : "—";
 
+        const editButton = `
+            <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="openEditModal(${item.id})" title="Edit item">
+                <i class="fas fa-edit"></i>
+            </button>`;
+
+        const toggleCheckoutButton = isCheckedOut
+            ? `
+            <button class="btn btn-sm btn-link text-info p-0 me-2" onclick="checkInGear(${item.id})" title="Check In">
+                <i class="fas fa-sign-in-alt"></i>
+            </button>`
+            : `
+            <button class="btn btn-sm btn-link text-success p-0 me-2" onclick="checkOutGear(${item.id})" title="Check Out">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>`;
+
+        const deleteButton = `
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteCameraGear(${item.id})" title="Delete item">
+                <i class="fas fa-trash"></i>
+            </button>`;
+
         row.innerHTML = `
-            <td class="text-center">${item.id}</td>
-            <td class="text-start">${item.name}</td>
-            <td class="text-start">${tags}</td>
-            <td class="text-start">${locationName}</td>
-            <td class="text-center">${status}</td>
-            <td class="text-center">${checkedOutBy}</td>
-            <td class="text-center">${lastUpdated}</td>
+            <td>${item.id}</td>
+            <td>${item.name}</td>
+            <td>${tags}</td>
+            <td>${locationName}</td>
+            <td>${status}</td>
+            <td>${checkedOutBy}</td>
+            <td>${lastUpdated}</td>
             <td class="text-end">
                 <div class="d-inline-flex gap-2 align-items-center">
-                    <button class="btn btn-sm btn-warning" onclick="openEditModal(${item.id
-            })" title="Edit item">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    ${isCheckedOut
-                ? `<button class="btn btn-sm btn-info" onclick="checkInGear(${item.id})" title="Check In">
-                            Check In
-                        </button>`
-                : `<button class="btn btn-sm btn-success" onclick="checkOutGear(${item.id})" title="Check Out">
-                            Check Out
-                        </button>`
-            }
-                    <button class="btn btn-sm btn-danger" onclick="deleteCameraGear(${item.id
-            })" title="Delete item">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    ${editButton}
+                    ${toggleCheckoutButton}
+                    ${deleteButton}
                 </div>
             </td>
         `;
@@ -111,7 +118,7 @@ function displayCameraGear(gear) {
 
 // Show empty state
 function showEmptyState(message) {
-    const tbody = document.getElementById("camera-gear-table-body");
+    const tbody = document.getElementById("items-table-body");
     if (!tbody) return;
     const row = document.createElement("tr");
     row.innerHTML = `
