@@ -89,15 +89,10 @@ function renderPaginatedTable() {
         }
 
         // Use location name directly from API response
-        const locationName = item.location || "—";
-        const tags = Array.isArray(item.tags)
-            ? (item.tags.length ? item.tags.join(", ") : "—")
-            : (item.tags || "—");
-
-        const checkedOutBy = item.checked_out_by || '—';
-        const lastUpdated = item.last_updated
-            ? new Date(item.last_updated).toLocaleString()
-            : "—";
+        const locationName = formatDisplayValue(item.location);
+        const tags = formatTagsDisplay(item.tags);
+        const checkedOutBy = formatDisplayValue(item.checked_out_by);
+        const lastUpdated = formatDateDisplay(item.last_updated, true);
 
         const editButton = `
             <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="openEditModal(${item.id})" title="Edit item">
@@ -121,7 +116,7 @@ function renderPaginatedTable() {
 
         row.innerHTML = `
             <td>${item.id}</td>
-            <td>${item.name}</td>
+            <td>${formatDisplayValue(item.name)}</td>
             <td>${tags}</td>
             <td>${locationName}</td>
             <td>${status}</td>

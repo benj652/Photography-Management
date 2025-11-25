@@ -1,25 +1,6 @@
 const API_PREFIX = "/api/v1";
 window.API_PREFIX = API_PREFIX; // Make it available globally
 
-// Add a helper function at the top of the file
-function formatDateOnly(dateString) {
-  if (!dateString) return "";
-  // For date-only strings (YYYY-MM-DD), parse without timezone conversion
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    const [year, month, day] = dateString.split("-").map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-    return date.toLocaleDateString();
-  }
-  // For ISO datetime strings, extract date components
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return "";
-  const year = parsed.getFullYear();
-  const month = parsed.getMonth();
-  const day = parsed.getDate();
-  const localDate = new Date(year, month, day);
-  return localDate.toLocaleDateString();
-}
-
 // Function to fetch items from the server
 async function fetchItems() {
   try {
