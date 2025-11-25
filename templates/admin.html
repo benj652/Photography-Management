@@ -13,43 +13,8 @@
 {% endblock %} {% block content %}
 <!-- NavBar -->
 <div id="navbar"></div>
-<!-- Breadcrumb Navigation -->
-<nav aria-label="breadcrumb" class="bg-light border-bottom">
-  <div class="container py-2">
-    <div class="d-flex justify-content-between align-items-center">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item">
-          <a href="{{ url_for('home.home') }}" class="text-decoration-none">
-            <i class="fas fa-home me-1"></i>Home
-          </a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">
-          <i class="fas fa-user-shield me-1"></i>Admin Dashboard
-        </li>
-      </ol>
-      <div class="breadcrumb-nav">
-        <a
-          href="{{ url_for('home.lab_equipment') }}"
-          class="btn btn-sm btn-outline-secondary me-2"
-        >
-          <i class="fas fa-microscope me-1"></i>Lab Equipment
-        </a>
-        <a
-          href="{{ url_for('home.camera_gear') }}"
-          class="btn btn-sm btn-outline-secondary"
-        >
-          <i class="fas fa-camera me-1"></i>Camera Gear
-        </a>
-        <a
-          href="{{ url_for('home.consumables') }}"
-          class="btn btn-sm btn-outline-secondary"
-        >
-          <i class="fas fa-flask me-1"></i>Consumables
-        </a>
-      </div>
-    </div>
-  </div>
-</nav>
+<!-- Breadcrumbs -->
+<div id="breadcrumbs"></div>
 
 <div class="container py-4">
   <div class="d-flex align-items-center mb-4">
@@ -84,5 +49,6 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/componenets/Breadcrumbs.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}

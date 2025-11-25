@@ -465,6 +465,17 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("User data:", window.userData);
   }
 
+  // Initialize Breadcrumbs
+  if (typeof Breadcrumbs === 'function' && window.userData) {
+    const breadcrumbsContainer = document.getElementById("breadcrumbs");
+    if (breadcrumbsContainer) {
+      breadcrumbsContainer.innerHTML = Breadcrumbs({
+        currentPage: 'Home',
+        userRole: window.userData.role
+      });
+    }
+  }
+
   // Set up delete confirmation button handler
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
   if (confirmDeleteBtn) {

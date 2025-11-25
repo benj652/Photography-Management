@@ -23,6 +23,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Initialize Breadcrumbs
+    if (typeof Breadcrumbs === 'function' && window.userData) {
+        const breadcrumbsContainer = document.getElementById("breadcrumbs");
+        if (breadcrumbsContainer) {
+            breadcrumbsContainer.innerHTML = Breadcrumbs({
+                currentPage: 'Admin Dashboard',
+                userRole: window.userData.role
+            });
+        }
+    }
+
     // Fetch users after navbar is initialized
     fetchUsers();
 });

@@ -1,5 +1,5 @@
 function Navbar({ profilePicture, firstName, role, homeUrl }) {
-  console.log("Navbar function called with:", { profilePicture, firstName, role, homeUrl });
+  // console.log("Navbar function called with:", { profilePicture, firstName, role, homeUrl });
   
   const navbarHTML = `
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
@@ -38,9 +38,9 @@ function Navbar({ profilePicture, firstName, role, homeUrl }) {
     </nav>
   `;
   
-  console.log("Navbar function returning HTML of length:", navbarHTML.length);
+
   return navbarHTML;
 }
 
-console.log("Navbar.js loaded - Navbar function defined");
+
 

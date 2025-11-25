@@ -25,6 +25,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Initialize Breadcrumbs
+    if (typeof Breadcrumbs === 'function' && window.userData) {
+        const breadcrumbsContainer = document.getElementById("breadcrumbs");
+        if (breadcrumbsContainer) {
+            breadcrumbsContainer.innerHTML = Breadcrumbs({
+                currentPage: 'Camera Gear',
+                userRole: window.userData.role
+            });
+        }
+    }
+
     loadCameraGear();
     setupDeleteHandler();
 });
