@@ -11,7 +11,7 @@ DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by
 """
 
 from flask import Blueprint, request
-from flask_login import current_user, login_required
+from flask_login import current_user
 from datetime import datetime
 
 from constants import (
@@ -32,14 +32,13 @@ from constants import (
     ITEM_FIELD_EXPIRES,
 )
 from models import Consumable, Location, Tag, db
-from utils.role_decorators import require_approved
+from utils import require_approved, require_ta
 
 
 consumables_blueprint = Blueprint(CONSUMABLES_DEFAULT_NAME, __name__)
 
 
 @consumables_blueprint.route(CONSUMABLES_ALL_ROUTE, methods=[GET])
-@login_required
 @require_approved
 def get_all_consumables():
     all_consumables = Consumable.query.all()
@@ -51,16 +50,14 @@ def get_all_consumables():
 
 
 @consumables_blueprint.route(CONSUMABLES_GET_ONE_ROUTE, methods=[GET])
-@login_required
-@require_approved
+@require_ta
 def get_consumable(consumable_id):
     consumable = Consumable.query.get_or_404(consumable_id)
     return consumable.to_dict()
 
 
 @consumables_blueprint.route(CONSUMABLES_CREATE_ROUTE, methods=[POST])
-@login_required
-@require_approved
+@require_ta
 def create_consumable():
     data = request.get_json()
     name = data.get(ITEM_FIELD_NAME)
@@ -110,8 +107,7 @@ def create_consumable():
 
 
 @consumables_blueprint.route(CONSUMABLES_UPDATE_ROUTE, methods=[PUT])
-@login_required
-@require_approved
+@require_ta
 def update_consumable(consumable_id):
     consumable = Consumable.query.get_or_404(consumable_id)
     data = request.get_json()
@@ -163,8 +159,7 @@ def update_consumable(consumable_id):
 
 
 @consumables_blueprint.route(CONSUMABLES_DELETE_ROUTE, methods=[DELETE])
-@login_required
-@require_approved
+@require_ta
 def delete_consumable(consumable_id):
     consumable = Consumable.query.get_or_404(consumable_id)
     db.session.delete(consumable)

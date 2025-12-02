@@ -1,16 +1,63 @@
 const API_BASE = "/api/v1/camera_gear";
 
+function renderRow(
+    id,
+    name,
+    tags,
+    locationName,
+    status,
+    checkedOutBy,
+    lastUpdated,
+    editButton,
+    toggleCheckoutButton,
+    deleteButton,
+) {
+    const canEditOrDelete =
+        window.userData &&
+        (window.userData.role === "Admin" || window.userData.role === "Manager");
+    return canEditOrDelete
+        ? `
+            <td>${id}</td>
+            <td>${formatDisplayValue(name)}</td>
+            <td>${tags}</td>
+            <td>${locationName}</td>
+            <td>${status}</td>
+            <td>${checkedOutBy}</td>
+            <td>${lastUpdated}</td>
+            <td class="text-end">
+                <div class="d-inline-flex gap-2 align-items-center">
+                    ${editButton}
+                    ${toggleCheckoutButton}
+                    ${deleteButton}
+                </div>
+            </td>
+        `
+        : `<td>${id}</td>
+            <td>${formatDisplayValue(name)}</td>
+            <td>${tags}</td>
+            <td>${locationName}</td>
+            <td>${status}</td>
+            <td>${checkedOutBy}</td>
+            <td>${lastUpdated}</td>
+            <td class="text-end">
+                <div class="d-inline-flex gap-2 align-items-center">
+                    ${toggleCheckoutButton}
+                </div>
+            </td>
+        `;
+}
+
 // Load camera gear on page load
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
     // Initialize Navbar
-    if (typeof Navbar === 'function' && window.userData) {
+    if (typeof Navbar === "function" && window.userData) {
         const navbarContainer = document.getElementById("navbar");
         if (navbarContainer) {
             navbarContainer.innerHTML = Navbar({
                 profilePicture: window.userData.profilePicture,
                 firstName: window.userData.firstName,
                 role: window.userData.role,
-                homeUrl: window.userData.homeUrl
+                homeUrl: window.userData.homeUrl,
             });
 
             // Set up logout button handler after navbar is loaded
@@ -26,12 +73,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Initialize Breadcrumbs
-    if (typeof Breadcrumbs === 'function' && window.userData) {
+    if (typeof Breadcrumbs === "function" && window.userData) {
         const breadcrumbsContainer = document.getElementById("breadcrumbs");
         if (breadcrumbsContainer) {
             breadcrumbsContainer.innerHTML = Breadcrumbs({
-                currentPage: 'Camera Gear',
-                userRole: window.userData.role
+                currentPage: "Camera Gear",
+                userRole: window.userData.role,
             });
         }
     }
@@ -114,22 +161,18 @@ function renderPaginatedTable() {
                 <i class="fas fa-trash"></i>
             </button>`;
 
-        row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${formatDisplayValue(item.name)}</td>
-            <td>${tags}</td>
-            <td>${locationName}</td>
-            <td>${status}</td>
-            <td>${checkedOutBy}</td>
-            <td>${lastUpdated}</td>
-            <td class="text-end">
-                <div class="d-inline-flex gap-2 align-items-center">
-                    ${editButton}
-                    ${toggleCheckoutButton}
-                    ${deleteButton}
-                </div>
-            </td>
-        `;
+        row.innerHTML = renderRow(
+            item.id,
+            item.name,
+            tags,
+            locationName,
+            status,
+            checkedOutBy,
+            lastUpdated,
+            editButton,
+            toggleCheckoutButton,
+            deleteButton,
+        );
         tbody.appendChild(row);
     });
 }
@@ -192,61 +235,60 @@ async function openEditModal(itemId) {
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
     } catch (error) {
-        console.error('Error loading camera gear for edit:', error);
-        alert('Failed to load camera gear for editing: ' + error.message);
+        console.error("Error loading camera gear for edit:", error);
+        alert("Failed to load camera gear for editing: " + error.message);
     }
 }
 
-
 // Check out camera gear
 async function checkOutGear(id) {
-    if (!confirm('Are you sure you want to check out this camera gear?')) {
+    if (!confirm("Are you sure you want to check out this camera gear?")) {
         return;
     }
 
     try {
         const response = await fetch(`${API_BASE}/checkout/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
         });
 
         if (response.ok) {
             // Reload data from server to get updated checkout status
             loadCameraGear();
-            alert('Camera gear checked out successfully!');
+            alert("Camera gear checked out successfully!");
         } else {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to check out camera gear');
+            throw new Error(errorData.error || "Failed to check out camera gear");
         }
     } catch (error) {
-        console.error('Error checking out camera gear:', error);
-        alert('Failed to check out camera gear: ' + error.message);
+        console.error("Error checking out camera gear:", error);
+        alert("Failed to check out camera gear: " + error.message);
     }
 }
 
 // Check in camera gear
 async function checkInGear(id) {
-    if (!confirm('Are you sure you want to check in this camera gear?')) {
+    if (!confirm("Are you sure you want to check in this camera gear?")) {
         return;
     }
 
     try {
         const response = await fetch(`${API_BASE}/checkin/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
         });
 
         if (response.ok) {
             // Reload data from server to get updated checkout status
             loadCameraGear();
-            alert('Camera gear checked in successfully!');
+            alert("Camera gear checked in successfully!");
         } else {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to check in camera gear');
+            throw new Error(errorData.error || "Failed to check in camera gear");
         }
     } catch (error) {
-        console.error('Error checking in camera gear:', error);
-        alert('Failed to check in camera gear: ' + error.message);
+        console.error("Error checking in camera gear:", error);
+        alert("Failed to check in camera gear: " + error.message);
     }
 }
 
@@ -256,7 +298,7 @@ async function deleteCameraGear(id) {
     if (confirmBtn) {
         confirmBtn.setAttribute("data-item-id", id);
         const modal = new bootstrap.Modal(
-            document.getElementById("deleteConfirmModal")
+            document.getElementById("deleteConfirmModal"),
         );
         modal.show();
     }
@@ -266,7 +308,7 @@ async function deleteCameraGear(id) {
 function setupDeleteHandler() {
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
     if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener("click", async function () {
+        confirmDeleteBtn.addEventListener("click", async function() {
             const itemId = this.getAttribute("data-item-id");
             if (!itemId) return;
 
@@ -279,7 +321,7 @@ function setupDeleteHandler() {
 
                 if (response.ok) {
                     const modal = bootstrap.Modal.getInstance(
-                        document.getElementById("deleteConfirmModal")
+                        document.getElementById("deleteConfirmModal"),
                     );
                     if (modal) modal.hide();
 
@@ -297,15 +339,15 @@ function setupDeleteHandler() {
                     throw new Error(`Failed to delete camera gear: ${errorText}`);
                 }
             } catch (error) {
-                console.error('Error deleting camera gear:', error);
-                alert('Failed to delete camera gear: ' + error.message);
+                console.error("Error deleting camera gear:", error);
+                alert("Failed to delete camera gear: " + error.message);
             }
         });
     }
 }
 
 // Add item to table (called from modal)
-window.addCameraGearToTable = function (item) {
+window.addCameraGearToTable = function(item) {
     // Get current items and add new one
     const allItems = Pagination.getAllItems();
     allItems.unshift(item);
@@ -322,7 +364,7 @@ window.addCameraGearToTable = function (item) {
 };
 
 // Update item in table (called from modal)
-window.updateCameraGearInTable = function (data) {
+window.updateCameraGearInTable = function(data) {
     loadCameraGear();
 };
 
