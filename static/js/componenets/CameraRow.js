@@ -12,7 +12,7 @@ function CameraRow(
 ) {
     const canEditOrDelete =
         window.userData &&
-        (window.userData.role === "Admin" || window.userData.role === "Manager");
+        (window.userData.role === "Admin" || window.userData.role === "Ta");
     return canEditOrDelete
         ? `
             <td>${id}</td>
