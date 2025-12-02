@@ -23,20 +23,18 @@ from constants import (
     CAMERA_GEAR_DEAFULT_NAME,
     CAMERA_GEAR_DELETE_ROUTE,
     CAMERA_GEAR_GET_ONE_ROUTE,
-    CAMERA_GEAR_LOCATION_FIELD,
     CAMERA_GEAR_CHECK_OUT_ROUTE,
     CAMERA_GEAR_CHECK_IN_ROUTE,
     CAMERA_GEAR_NAME_FIELD,
     CAMERA_GEAR_TAGS_FIELD,
     CAMERA_GEAR_UPDATE_ROUTE,
     DELETE,
-    ERROR_NOT_FOUND,
     GET,
     POST,
     PUT,
 )
 from models import CameraGear, Location, Tag, db
-from utils.role_decorators import require_approved
+from utils import require_ta, require_approved
 
 
 camera_gear_blueprint = Blueprint(CAMERA_GEAR_DEAFULT_NAME, __name__)
@@ -55,7 +53,7 @@ def get_all_camera_gear():
 
 
 @camera_gear_blueprint.route(CAMERA_GEAR_GET_ONE_ROUTE, methods=[GET])
-@require_approved
+@require_ta
 @login_required
 def get_camera_gear(gear_id):
     gear_item = CameraGear.query.get_or_404(gear_id)
@@ -63,7 +61,7 @@ def get_camera_gear(gear_id):
 
 
 @camera_gear_blueprint.route(CAMERA_GEAR_CREATE_ROUTE, methods=[POST])
-@require_approved
+@require_ta
 @login_required
 def create_camera_gear():
     data = request.get_json()
@@ -95,7 +93,7 @@ def create_camera_gear():
 
 
 @camera_gear_blueprint.route(CAMERA_GEAR_UPDATE_ROUTE, methods=[PUT])
-@require_approved
+@require_ta
 @login_required
 def update_camera_gear(gear_id):
     gear_item = CameraGear.query.get_or_404(gear_id)
@@ -172,7 +170,7 @@ def check_in_camera_gear(gear_id):
 
 
 @camera_gear_blueprint.route(CAMERA_GEAR_DELETE_ROUTE, methods=[DELETE])
-@require_approved
+@require_ta
 @login_required
 def delete_camera_gear(gear_id):
     gear_item = CameraGear.query.get_or_404(gear_id)

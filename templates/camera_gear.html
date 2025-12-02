@@ -44,10 +44,12 @@
                 </button>
 
                 <!-- Add Item Button -->
+{% if current_user.role.value != 'student' %}
                 <button id="openAddItemBtn" class="btn btn-primary add-item-btn" data-bs-toggle="modal"
                     data-bs-target="#addItemModal">
                     <i class="fas fa-plus me-2"></i>Add Item
                 </button>
+                {% endif %}
             </div>
 
             <!-- Collapsible Filter Section -->
@@ -152,6 +154,7 @@
 
     <script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/componenets/Breadcrumbs.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/componenets/CameraRow.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils/index.js') }}"></script>
     <script src="/static/js/pagination.js"></script>
     <script src="/static/js/cameraGear.js"></script>

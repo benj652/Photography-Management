@@ -10,7 +10,6 @@ PUT     /api/v1/items/<int:item_id>         → Update an existing item
 DELETE  /api/v1/items/<int:item_id>         → Delete an item by ID
 """
 
-from flask_login import login_required
 from flask import Blueprint, request
 from constants import (
     DELETE,
@@ -30,26 +29,27 @@ from constants import (
     ERROR_BAD_REQUEST
 )
 from models import Tag, db
+from utils import require_ta, require_approved
 
 tags_blueprint = Blueprint(TAG_DEFAULT_NAME, __name__)
 
 
 @tags_blueprint.route(TAG_ALL_ROUTE, methods=[GET])
-@login_required
+@require_approved
 def get_tags():
     db_tags = Tag.query.all()
     return {TAG_DEFAULT_NAME: [t.to_dict() for t in db_tags]}
 
 
 @tags_blueprint.route(TAG_GET_ONE_ROUTE, methods=[GET])
-@login_required
+@require_ta
 def get_tag(tag_id):
     db_tag = Tag.query.get_or_404(tag_id)
     return db_tag.to_dict()
 
 
 @tags_blueprint.route(TAG_CREATE_ROUTE, methods=[POST])
-@login_required
+@require_ta
 def create_tag():
     data = request.get_json()
     name = data.get(TAG_NAME)
@@ -62,7 +62,7 @@ def create_tag():
 
 
 @tags_blueprint.route(TAG_UPDATE_ROUTE, methods=[PUT])
-@login_required
+@require_ta
 def update_tag(tag_id):
     data = request.get_json()
     name = data.get(TAG_NAME)
@@ -75,7 +75,7 @@ def update_tag(tag_id):
 
 
 @tags_blueprint.route(TAG_DELETE_ROUTE, methods=[DELETE])
-@login_required
+@require_ta
 def delete_tag(tag_id):
     tag_to_delete = Tag.query.get_or_404(tag_id)
     db.session.delete(tag_to_delete)
