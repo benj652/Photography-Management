@@ -1,6 +1,6 @@
 const API_BASE = "/api/v1/camera_gear";
 
-function renderRow(
+function renderCameraRow(
     id,
     name,
     tags,
@@ -161,7 +161,7 @@ function renderPaginatedTable() {
                 <i class="fas fa-trash"></i>
             </button>`;
 
-        row.innerHTML = renderRow(
+        row.innerHTML = CameraRow(
             item.id,
             item.name,
             tags,
