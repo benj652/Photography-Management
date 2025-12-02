@@ -209,17 +209,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("name").value = item.name || "";
 
         // Page-specific fields
-        if (pageType === "home") {
-          // General items and consumables
-          document.getElementById("quantity").value = item.quantity || 1;
-          document.getElementById("expires").value = item.expires
-            ? typeof item.expires === "string"
-              ? item.expires.split("T")[0]
-              : item.expires.split("T")[0]
-            : "";
-        } else if (pageType === "consumables") {
+        if (pageType === "consumables") {
           // Consumables
-          document.getElementById("quantity").value = item.quantity || 1;
+          document.getElementById("quantity").value = item.quantity;
           document.getElementById("expires").value = item.expires
             ? typeof item.expires === "string"
               ? item.expires.split("T")[0]
@@ -609,23 +601,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Build data object
     let data = {};
 
-    if (pageType === "home") {
-      // General items
-      data = {
-        name: formData.get("name"),
-        quantity: parseInt(formData.get("quantity")) || 1,
-        tags: selectedTags,
-        location_id: formData.get("location_id")
-          ? parseInt(formData.get("location_id"))
-          : null,
-        expires: formData.get("expires") || null,
-      };
-    } else if (pageType === "consumables") {
+    if (pageType === "consumables") {
       // Consumables
       data = {
         name: formData.get("name"),
-        quantity: parseInt(formData.get("quantity")) || 1,
-        tags: selectedTags,
+        quantity: parseInt(formData.get("quantity")),
         location_id: formData.get("location_id")
           ? parseInt(formData.get("location_id"))
           : null,

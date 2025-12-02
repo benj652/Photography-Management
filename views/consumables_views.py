@@ -13,6 +13,7 @@ DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by
 from flask import Blueprint, request
 from flask_login import current_user
 from datetime import datetime
+from utils.mail import send_low_stock_alert
 
 from constants import (
     DELETE,
@@ -103,6 +104,13 @@ def create_consumable():
     db.session.add(new_consumable)
     db.session.commit()
 
+    # After creating, check for low stock and notify admins if configured
+    try:
+        send_low_stock_alert(new_consumable)
+    except Exception:
+        # do not break the create flow if email sending fails
+        pass
+
     return new_consumable.to_dict()
 
 
@@ -155,6 +163,14 @@ def update_consumable(consumable_id):
     consumable.updated_by = current_user.id
 
     db.session.commit()
+
+        # After updating, check for low stock and notify admins if configured
+    try:
+        send_low_stock_alert(consumable)
+    except Exception:
+        # do not break the create flow if email sending fails
+        pass
+
     return consumable.to_dict()
 
 
