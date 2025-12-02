@@ -44,10 +44,12 @@
                 </button>
 
                 <!-- Add Item Button -->
+{% if current_user.role.value != 'student' %}
                 <button id="openAddItemBtn" class="btn btn-primary add-item-btn" data-bs-toggle="modal"
                     data-bs-target="#addItemModal">
                     <i class="fas fa-plus me-2"></i>Add Item
                 </button>
+                {% endif %}
             </div>
 
             <!-- Collapsible Filter Section -->
