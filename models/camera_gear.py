@@ -1,10 +1,10 @@
-from .base import db
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_TAGS,
     ITEM_FIELD_LOCATION_ID,
     ITEM_FIELD_UPDATED_BY,
 )
+from .base import db
 
 
 class CameraGear(db.Model):

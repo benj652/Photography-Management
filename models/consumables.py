@@ -1,4 +1,3 @@
-from .base import db
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_QUANTITY,
@@ -7,6 +6,7 @@ from constants import (
     ITEM_FIELD_EXPIRES,
     ITEM_FIELD_UPDATED_BY,
 )
+from .base import db
 
 
 class Consumable(db.Model):
@@ -23,7 +23,9 @@ class Consumable(db.Model):
         return f"<Consumable {self.name}>"
 
     # relationship to Location so templates and views can use `consumable.location`
-    location = db.relationship("Location", backref="consumables", foreign_keys=[location_id])
+    location = db.relationship(
+        "Location", backref="consumables", foreign_keys=[location_id]
+    )
 
     # optional convenience relationship to the User who last updated the consumable
     updated_by_user = db.relationship(

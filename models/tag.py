@@ -1,5 +1,5 @@
-from .base import db
 from constants import TAG_ID, TAG_NAME
+from .base import db
 
 
 class Tag(db.Model):
