@@ -79,7 +79,7 @@ function populateUsers(users) {
                     <strong>Email:</strong> ${user.email || ""}
                 </div>
                 <div class="col-md-2">
-                    <img src="${user.profile_picture || ''}" alt="Profile" class="img-thumbnail" style="max-width: 50px; max-height: 50px;" />
+                    <img src="${user.profile_picture || ''}" alt="Profile" class="img-thumbnail" style="max-width: 50px; max-height: 50px;" crossorigin="anonymous" referrerpolicy="no-referrer" />
                 </div>
                 <div class="col-md-3">
                     <strong>Role:</strong>
