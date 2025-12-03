@@ -37,6 +37,7 @@ tags_blueprint = Blueprint(TAG_DEFAULT_NAME, __name__)
 @tags_blueprint.route(TAG_ALL_ROUTE, methods=[GET])
 @require_approved
 def get_tags():
+    """Return all tags as JSON-serializable dicts."""
     db_tags = Tag.query.all()
     return {TAG_DEFAULT_NAME: [t.to_dict() for t in db_tags]}
 
@@ -44,6 +45,7 @@ def get_tags():
 @tags_blueprint.route(TAG_GET_ONE_ROUTE, methods=[GET])
 @require_ta
 def get_tag(tag_id):
+    """Return a single tag by ID as a dict."""
     db_tag = Tag.query.get_or_404(tag_id)
     return db_tag.to_dict()
 
@@ -51,6 +53,7 @@ def get_tag(tag_id):
 @tags_blueprint.route(TAG_CREATE_ROUTE, methods=[POST])
 @require_ta
 def create_tag():
+    """Create a new tag from JSON body and return the created tag."""
     data = request.get_json()
     name = data.get(TAG_NAME)
     if not name:
@@ -64,6 +67,7 @@ def create_tag():
 @tags_blueprint.route(TAG_UPDATE_ROUTE, methods=[PUT])
 @require_ta
 def update_tag(tag_id):
+    """Update the tag's name and return the updated tag."""
     data = request.get_json()
     name = data.get(TAG_NAME)
     if not name:
@@ -77,6 +81,7 @@ def update_tag(tag_id):
 @tags_blueprint.route(TAG_DELETE_ROUTE, methods=[DELETE])
 @require_ta
 def delete_tag(tag_id):
+    """Delete the tag identified by ID and return a confirmation message."""
     tag_to_delete = Tag.query.get_or_404(tag_id)
     db.session.delete(tag_to_delete)
     db.session.commit()

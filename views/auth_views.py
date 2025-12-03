@@ -10,7 +10,10 @@ GET     /auth/authorize            → OAuth2 / SSO authorization endpoint
 REDIRECT auth.authorize            → Internal redirect URI name
 """
 
+import os
+from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, render_template, session, redirect, url_for
+from flask_login import login_required, login_user, logout_user
 from constants import (
     AUTH_PREFIX,
     AUTH_REDIRECT_URI,
@@ -36,9 +39,6 @@ from constants import (
     USER_KEY,
     UserRole,
 )
-from authlib.integrations.flask_client import OAuth
-import os
-from flask_login import login_required, login_user, logout_user
 from models import User, db
 
 oauth = OAuth()
@@ -64,6 +64,7 @@ auth_blueprint = Blueprint(AUTH_BLUEPRINT_NAME, __name__)
 
 @auth_blueprint.route(LOGIN_ROUTE)
 def login():
+    """Start the OAuth login flow by redirecting to Google's authorize URL."""
     redirect_uri = url_for(AUTH_REDIRECT_URI, _external=True)
     return google.authorize_redirect(redirect_uri)
 
@@ -101,6 +102,7 @@ def authorize():
 @auth_blueprint.route(LOGOUT_ROUTE)
 @login_required
 def logout():
+    """Log the current user out and clear their session key."""
     session.pop(USER_KEY, None)
     logout_user()
     return redirect(AUTH_PREFIX)
@@ -108,6 +110,7 @@ def logout():
 
 @auth_blueprint.route(LOGIN_PAGE_ROUTE)
 def login_page():
+    """Render the login landing page template."""
     return render_template(LOGIN_TEMPLATE)
 
 

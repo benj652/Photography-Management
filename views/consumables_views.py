@@ -10,11 +10,9 @@ PUT     /api/v1/consumables/<int:consumable_id>       → Update an existing con
 DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by ID
 """
 
+from datetime import datetime
 from flask import Blueprint, request
 from flask_login import current_user
-from datetime import datetime
-from utils.mail import send_low_stock_alert
-
 from constants import (
     DELETE,
     GET,
@@ -33,8 +31,11 @@ from constants import (
     ITEM_FIELD_EXPIRES,
 )
 from models import Consumable, Location, Tag, db
-from utils import require_approved, require_ta
-
+from utils import (
+    require_approved,
+    require_ta,
+    send_low_stock_alert
+)
 
 consumables_blueprint = Blueprint(CONSUMABLES_DEFAULT_NAME, __name__)
 
@@ -42,17 +43,15 @@ consumables_blueprint = Blueprint(CONSUMABLES_DEFAULT_NAME, __name__)
 @consumables_blueprint.route(CONSUMABLES_ALL_ROUTE, methods=[GET])
 @require_approved
 def get_all_consumables():
+    """Return all consumable items as JSON-serializable dicts."""
     all_consumables = Consumable.query.all()
-    return {
-        CONSUMABLES_DEFAULT_NAME: [
-            consumable.to_dict() for consumable in all_consumables
-        ]
-    }
+    return {CONSUMABLES_DEFAULT_NAME: [consumable.to_dict() for consumable in all_consumables]}
 
 
 @consumables_blueprint.route(CONSUMABLES_GET_ONE_ROUTE, methods=[GET])
 @require_ta
 def get_consumable(consumable_id):
+    """Return a single consumable item by ID."""
     consumable = Consumable.query.get_or_404(consumable_id)
     return consumable.to_dict()
 
@@ -60,6 +59,7 @@ def get_consumable(consumable_id):
 @consumables_blueprint.route(CONSUMABLES_CREATE_ROUTE, methods=[POST])
 @require_ta
 def create_consumable():
+    """Create a consumable from JSON body and return the created object."""
     data = request.get_json()
     name = data.get(ITEM_FIELD_NAME)
     quantity = data.get(ITEM_FIELD_QUANTITY, 1)
@@ -117,6 +117,7 @@ def create_consumable():
 @consumables_blueprint.route(CONSUMABLES_UPDATE_ROUTE, methods=[PUT])
 @require_ta
 def update_consumable(consumable_id):
+    """Update an existing consumable with the provided JSON fields."""
     consumable = Consumable.query.get_or_404(consumable_id)
     data = request.get_json()
     name = data.get(ITEM_FIELD_NAME)
@@ -177,6 +178,7 @@ def update_consumable(consumable_id):
 @consumables_blueprint.route(CONSUMABLES_DELETE_ROUTE, methods=[DELETE])
 @require_ta
 def delete_consumable(consumable_id):
+    """Delete the specified consumable and return a confirmation message."""
     consumable = Consumable.query.get_or_404(consumable_id)
     db.session.delete(consumable)
     db.session.commit()

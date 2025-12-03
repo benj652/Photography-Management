@@ -12,10 +12,10 @@ PUT     /api/v1/camera_gear/checkin/<int:gear_id>  → Check in a camera gear it
 DELETE  /api/v1/camera_gear/<int:gear_id>       → Delete a camera gear item by ID
 """
 
+from datetime import datetime
 from flask import Blueprint, request
 from flask_login import current_user
 from flask_login.utils import login_required
-from datetime import datetime
 
 from constants import (
     CAMERA_GEAR_ALL_ROUTE,
@@ -44,18 +44,16 @@ camera_gear_blueprint = Blueprint(CAMERA_GEAR_DEAFULT_NAME, __name__)
 @login_required
 @require_approved
 def get_all_camera_gear():
+    """Return all camera gear items as a list of dicts."""
     all_gear = CameraGear.query.all()
-    return {
-        CAMERA_GEAR_DEAFULT_NAME: [
-            all_gear_item.to_dict() for all_gear_item in all_gear
-        ]
-    }
+    return {CAMERA_GEAR_DEAFULT_NAME: [all_gear_item.to_dict() for all_gear_item in all_gear]}
 
 
 @camera_gear_blueprint.route(CAMERA_GEAR_GET_ONE_ROUTE, methods=[GET])
 @require_ta
 @login_required
 def get_camera_gear(gear_id):
+    """Return a single camera gear item by ID."""
     gear_item = CameraGear.query.get_or_404(gear_id)
     return gear_item.to_dict()
 
@@ -64,6 +62,7 @@ def get_camera_gear(gear_id):
 @require_ta
 @login_required
 def create_camera_gear():
+    """Create a new camera gear item from the provided JSON body."""
     data = request.get_json()
     name = data.get(CAMERA_GEAR_NAME_FIELD)
     tag_names = data.get(CAMERA_GEAR_TAGS_FIELD, [])
@@ -96,6 +95,7 @@ def create_camera_gear():
 @require_ta
 @login_required
 def update_camera_gear(gear_id):
+    """Update an existing camera gear item based on the provided JSON body."""
     gear_item = CameraGear.query.get_or_404(gear_id)
     data = request.get_json()
     name = data.get(CAMERA_GEAR_NAME_FIELD)
@@ -136,6 +136,7 @@ def update_camera_gear(gear_id):
 @require_approved
 @login_required
 def check_out_camera_gear(gear_id):
+    """Mark the specified camera gear item as checked out by current user."""
     gear_item = CameraGear.query.get_or_404(gear_id)
     if gear_item.checked_out_by is not None:
         return {"error": "Camera gear is already checked out"}, 400
@@ -154,6 +155,7 @@ def check_out_camera_gear(gear_id):
 @require_approved
 @login_required
 def check_in_camera_gear(gear_id):
+    """Mark the specified camera gear item as checked in (returned)."""
     gear_item = CameraGear.query.get_or_404(gear_id)
     if gear_item.checked_out_by is None:
         return {"error": "Camera gear is not checked out"}, 400
@@ -173,6 +175,7 @@ def check_in_camera_gear(gear_id):
 @require_ta
 @login_required
 def delete_camera_gear(gear_id):
+    """Delete the camera gear item identified by ID."""
     gear_item = CameraGear.query.get_or_404(gear_id)
     db.session.delete(gear_item)
     db.session.commit()
