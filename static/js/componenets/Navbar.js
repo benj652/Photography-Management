@@ -19,7 +19,10 @@ function Navbar({ profilePicture, firstName, role, homeUrl }) {
 
             ${
               profilePicture
-                ? `<img src="${profilePicture}" alt="Profile" class="user-avatar rounded-circle me-2" height="45" width="45" />`
+                ? `<img src="${profilePicture}" alt="Profile" class="user-avatar rounded-circle me-2" height="45" width="45" 
+ crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>`
                 : `<div class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center me-2">${firstName[0].toUpperCase()}</div>`
             }
 
