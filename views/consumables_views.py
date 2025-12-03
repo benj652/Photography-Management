@@ -164,11 +164,11 @@ def update_consumable(consumable_id):
 
     db.session.commit()
 
-        # After updating, check for low stock and notify admins if configured
+    # After updating, check for low stock and notify admins if configured
     try:
         send_low_stock_alert(consumable)
     except Exception:
-        # do not break the create flow if email sending fails
+        # do not break the update flow if email sending fails
         pass
 
     return consumable.to_dict()
