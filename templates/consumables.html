@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "index.html" %} {% block head %} {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
 <script>
@@ -16,12 +17,10 @@
   <div id="navbar"></div>
   <!-- Breadcrumbs -->
   <div id="breadcrumbs"></div>
-
   <!-- table and features  -->
   <div class="container py-4">
 
-    <h1>Lab Equipment</h1>
-
+    <h1>Consumables</h1>
 
     <!-- search and filters -->
     <div class="search-filter-section mb-4">
@@ -32,8 +31,8 @@
             <span class="input-group-text search-icon">
               <i class="fas fa-search"></i>
             </span>
-            <input type="text" id="search-input" class="form-control search-input" placeholder="Search by name, tags..."
-              oninput="filterTable()" />
+            <input type="text" id="search-input" class="form-control search-input"
+              placeholder="Search by name, tags, location..." oninput="filterTable()" />
           </div>
         </div>
 
@@ -45,14 +44,12 @@
 
         <!-- Add Item Button -->
 {% if current_user.role.value != 'student' %}
-<button id="openAddItemBtn"
-        class="btn btn-primary add-item-btn"
-        data-bs-toggle="modal"
-        data-bs-target="#addItemModal">
-    <i class="fas fa-plus me-2"></i>Add Item
-</button>
+        <button id="openAddItemBtn" class="btn btn-primary add-item-btn" data-bs-toggle="modal"
+          data-bs-target="#addItemModal">
+          <i class="fas fa-plus me-2"></i>Add Item
+        </button>
 {% endif %}
-      </div>
+            </div>
 
       <!-- Collapsible Filter Section -->
       <div class="collapse mt-3" id="filterCollapse">
@@ -69,16 +66,9 @@
                 oninput="filterTable()" />
             </div>
             <div class="col-md-4">
-              <label for="filter-service-frequency" class="form-label small fw-semibold">Service Frequency</label>
-              <select id="filter-service-frequency" class="form-select" onchange="filterTable()">
-                <option value="">All</option>
-                <option value="weekly">Weekly</option>
-                <option value="bi-weekly">Bi-Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-                <option value="as-needed">As Needed</option>
-              </select>
+              <label for="filter-location" class="form-label small fw-semibold">Location</label>
+              <input type="text" id="filter-location" class="form-control" placeholder="Location"
+                oninput="filterTable()" />
             </div>
             <div class="col-12">
               <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
@@ -101,17 +91,18 @@
                   <tr>
                     <th scope="col">ID</th>
                     <th scope="col">Name</th>
+                    <th scope="col">Quantity</th>
                     <th scope="col">Tags</th>
-                    <th scope="col">Service Frequency</th>
-                    <th scope="col">Last Serviced</th>
-                    <th scope="col">Last Serviced By</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Expires</th>
                     <th scope="col">Last updated</th>
-                    <th scope="col" class="text-end" style="width: 60px">
+                    <th scope="col">Updated by</th>
+                                        <th scope="col" class="text-end" style="width: 60px">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody id="lab-equipment-table-body"></tbody>
+                <tbody id="items-table-body"></tbody>
               </table>
             </div>
             <div id="pagination-container"></div>
@@ -120,7 +111,6 @@
       </div>
     </div>
   </div>
-
   {% include 'add_item_modal.html' %}
 
   <!-- Delete Confirmation Modal -->
@@ -152,12 +142,13 @@
       </div>
     </div>
   </div>
-
   <script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
   <script src="{{ url_for('static', filename='js/componenets/Breadcrumbs.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/componenets/LabRow.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/componenets/NormalRow.js') }}"></script>
   <script src="{{ url_for('static', filename='js/utils/index.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/static/js/pagination.js"></script>
-  <script src="/static/js/labEquipment.js"></script>
+  <script src="/static/js/consumables.js"></script>
 </body>
+
   {% endblock %}

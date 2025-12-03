@@ -10,7 +10,7 @@ GET     /auth/authorize            → OAuth2 / SSO authorization endpoint
 REDIRECT auth.authorize            → Internal redirect URI name
 """
 
-from flask import Blueprint, json, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for
 from constants import (
     AUTH_PREFIX,
     AUTH_REDIRECT_URI,

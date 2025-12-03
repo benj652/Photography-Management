@@ -1,6 +1,14 @@
-'''
-Decorator functions for roles
-'''
+"""
+=========================================
+Standard user roles promissions.
+=========================================
+
+ADMIN: Below permissions and Has full access to all resources and can manage other users.
+TA: Below permissions Can view and modify resources but cannot manage users.
+STUDENT: Below permissions can only view resources and check out equipment.
+INVALID: Student not in Photography who can not see or edit the database at all.
+"""
+
 
 from functools import wraps
 

@@ -27,28 +27,28 @@ from constants import (
     PUT,
 )
 from flask import Blueprint, request
-from flask_login import login_required
 from models import Location, db
+from utils import require_approved, require_ta
 
 location_blueprint = Blueprint(LOCATION_DEFAULT_NAME, __name__)
 
 
 @location_blueprint.route(LOCATION_ALL_ROUTE, methods=[GET])
-@login_required
+@require_approved
 def get_locations():
     locations = Location.query.all()
     return {LOCATION_DEFAULT_NAME: [loc.to_dict() for loc in locations]}
 
 
 @location_blueprint.route(LOCATION_GET_ONE_ROUTE, methods=[GET])
-@login_required
+@require_ta
 def get_location(location_id):
     location = Location.query.get_or_404(location_id)
     return location.to_dict()
 
 
 @location_blueprint.route(LOCATION_CREATE_ROUTE, methods=[POST])
-@login_required
+@require_ta
 def create_location():
     data = request.get_json()
     name = data.get(LOCATION_NAME)
@@ -61,7 +61,7 @@ def create_location():
 
 
 @location_blueprint.route(LOCATION_CREATE_ROUTE, methods=[PUT])
-@login_required
+@require_ta
 def update_location(location_id):
     data = request.get_json()
     name = data.get(LOCATION_NAME)
@@ -74,7 +74,7 @@ def update_location(location_id):
 
 
 @location_blueprint.route(LOCATION_DELETE_ROUTE, methods=[DELETE])
-@login_required
+@require_ta
 def delete_location(location_id):
     location = Location.query.get_or_404(location_id)
     db.session.delete(location)

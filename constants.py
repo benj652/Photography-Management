@@ -87,6 +87,7 @@ NOT_FOUND_ROUTE = "home.home"
 UNAUTHORIZED_ROUTE = "/unauthorized"
 LAB_EQUIPMENT_ROUTE = "/lab-equipment"
 CAMERA_GEAR_ROUTE = "/camera-gear"
+CONSUMABLES_ROUTE = "/consumables"
 
 # item routes
 ITEM_PREFIX = "/items"
@@ -196,6 +197,28 @@ LAB_EQUIPMENT_CREATE_ROUTE = "/"
 LAB_EQUIPMENT_UPDATE_ROUTE = "/<int:equipment_id>"
 LAB_EQUIPMENT_DELETE_ROUTE = "/<int:equipment_id>"
 
+
+"""
+=====================================================
+ Consumables Routes (prefixed with "/consumables")
+=====================================================
+
+GET     /api/v1/consumables/all                → Retrieve all consumables
+GET     /api/v1/consumables/one/<int:consumable_id>   → Retrieve a specific consumable by ID
+POST    /api/v1/consumables/                   → Create a new consumable
+PUT     /api/v1/consumables/<int:consumable_id>       → Update an existing consumable
+DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by ID
+"""
+
+CONSUMABLES_PREFIX = "/consumables"
+CONSUMABLES_ALL_ROUTE = "/all"
+CONSUMABLES_GET_ONE_ROUTE = "/one/<int:consumable_id>"
+CONSUMABLES_CREATE_ROUTE = "/"
+CONSUMABLES_UPDATE_ROUTE = "/<int:consumable_id>"
+CONSUMABLES_DELETE_ROUTE = "/<int:consumable_id>"
+
+CONSUMABLES_DEFAULT_NAME = "consumables"
+
 # tags fields
 TAG_PREFIX = "/tags"
 TAG_ID = "id"
@@ -265,6 +288,8 @@ UNAUTHORIZED_TEMPLATE = "unauthorized.html"
 ADMIN_TEMPLATE = "admin.html"
 CAMERA_GEAR_TEMPLATE = "camera_gear.html"
 LAB_EQUIPMENT_TEMPLATE = "lab_equipment.html"
+CONSUMABLES_TEMPLATE = "consumables.html"
+
 
 """
 =========================================

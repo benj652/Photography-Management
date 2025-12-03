@@ -29,14 +29,13 @@ from constants import (
     PUT,
 )
 from models import LabEquipment, Tag, db
-from utils import require_approved
+from utils import require_approved, require_ta
 
 
 lab_equipment_blueprint = Blueprint(LAB_EQUIPMENT_DEFAULT_NAME, __name__)
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_ALL_ROUTE, methods=[GET])
-@login_required
 @require_approved
 def get_all_lab_equipment():
     all_equipment = LabEquipment.query.all()
@@ -48,16 +47,14 @@ def get_all_lab_equipment():
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_GET_ONE_ROUTE, methods=[GET])
-@login_required
-@require_approved
+@require_ta
 def get_lab_equipment(equipment_id):
     equipment_item = LabEquipment.query.get_or_404(equipment_id)
     return equipment_item.to_dict()
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_CREATE_ROUTE, methods=[POST])
-@login_required
-@require_approved
+@require_ta
 def create_lab_equipment():
     data = request.get_json()
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
@@ -102,8 +99,7 @@ def create_lab_equipment():
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_UPDATE_ROUTE, methods=[PUT])
-@login_required
-@require_approved
+@require_ta
 def update_lab_equipment(equipment_id):
     target_equipment = LabEquipment.query.get_or_404(equipment_id)
     data = request.get_json()
@@ -149,8 +145,7 @@ def update_lab_equipment(equipment_id):
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_DELETE_ROUTE, methods=[DELETE])
-@login_required
-@require_approved
+@require_ta
 def delete_lab_equipment(equipment_id):
     target_equipment = LabEquipment.query.get_or_404(equipment_id)
     db.session.delete(target_equipment)

@@ -1,16 +1,43 @@
-const API_BASE = '/api/v1/lab_equipment';
-
-let isEditing = false;
-let editingId = null;
-let allTags = [];
-let selectedTags = [];
+const API_BASE = "/api/v1/lab_equipment";
 
 // Load equipment on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize Navbar
+    if (typeof Navbar === "function" && window.userData) {
+        const navbarContainer = document.getElementById("navbar");
+        if (navbarContainer) {
+            navbarContainer.innerHTML = Navbar({
+                profilePicture: window.userData.profilePicture,
+                firstName: window.userData.firstName,
+                role: window.userData.role,
+                homeUrl: window.userData.homeUrl,
+            });
+
+            // Set up logout button handler after navbar is loaded
+            setTimeout(() => {
+                const logoutButton = document.getElementById("logoutButton");
+                if (logoutButton) {
+                    logoutButton.addEventListener("click", () => {
+                        window.location.href = "/auth/logout";
+                    });
+                }
+            }, 100);
+        }
+    }
+
+    // Initialize Breadcrumbs
+    if (typeof Breadcrumbs === "function" && window.userData) {
+        const breadcrumbsContainer = document.getElementById("breadcrumbs");
+        if (breadcrumbsContainer) {
+            breadcrumbsContainer.innerHTML = Breadcrumbs({
+                currentPage: "Lab Equipment",
+                userRole: window.userData.role,
+            });
+        }
+    }
+
     loadEquipment();
-    loadTags();
-    setupForm();
-    setupTagInput();
+    setupDeleteHandler();
 });
 
 // Load all equipment
@@ -18,315 +45,267 @@ async function loadEquipment() {
     try {
         const response = await fetch(`${API_BASE}/all`);
         const data = await response.json();
-        displayEquipment(data.lab_equipment || []);
+        const equipment = data.lab_equipment || [];
+
+        // Initialize pagination
+        Pagination.init(equipment);
+        Pagination.setOnPageChange(() => {
+            renderPaginatedTable();
+        });
+
+        renderPaginatedTable();
+        Pagination.render();
     } catch (error) {
-        console.error('Error loading equipment:', error);
-        alert('Failed to load equipment');
+        console.error("Error loading equipment:", error);
+        showEmptyState("Failed to load lab equipment");
     }
 }
 
-// Load all tags
-async function loadTags() {
-    try {
-        const response = await fetch('/api/v1/tags/all');
-        const data = await response.json();
-        allTags = data.tags || [];
-    } catch (error) {
-        console.error('Error loading tags:', error);
-    }
-}
+// Function to render table with pagination
+function renderPaginatedTable() {
+    const tbody = document.getElementById("lab-equipment-table-body");
+    if (!tbody) return;
 
-// Display equipment in table
-function displayEquipment(equipment) {
-    const tbody = document.getElementById('equipmentTableBody');
-    tbody.innerHTML = '';
-    
-    equipment.forEach(item => {
-        const row = document.createElement('tr');
-        
-        // Format dates properly
+    tbody.innerHTML = "";
+    const itemsToShow = Pagination.getCurrentPageItems();
+
+    if (!itemsToShow || itemsToShow.length === 0) {
+        showEmptyState('No lab equipment found. Click "Add Item" to get started.');
+        return;
+    }
+
+    itemsToShow.forEach((item) => {
+        const row = document.createElement("tr");
+
+        // Format dates and values using centralized functions
         const lastServiced = item.last_serviced_on
-            ? new Date(item.last_serviced_on).toLocaleDateString()
-            : '—';
-        
-        row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.name}</td>
-            <td>${Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || ''}</td>
-            <td>${item.service_frequency || '—'}</td>
-            <td>${lastServiced}</td>
-            <td>${item.last_serviced_by || '—'}</td>
-            <td>
-                <button class="btn btn-sm btn-warning" onclick="editEquipment(${item.id})">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteEquipment(${item.id})">Delete</button>
-            </td>
-        `;
+            ? formatDateDisplay(item.last_serviced_on)
+            : EMPTY_PLACEHOLDER;
+        const lastUpdated = formatDateDisplay(item.last_updated, true);
+        const tags = formatTagsDisplay(item.tags);
+        const name = formatDisplayValue(item.name);
+        const serviceFreq = formatDisplayValue(item.service_frequency);
+        const lastServicedBy = formatDisplayValue(item.last_serviced_by);
+
+        row.innerHTML = LabRow(
+            item.id,
+            name,
+            tags,
+            serviceFreq,
+            lastServiced,
+            lastServicedBy,
+            lastUpdated,
+            item,
+        );
         tbody.appendChild(row);
     });
 }
 
-// Setup tag input functionality
-function setupTagInput() {
-    const tagsInput = document.getElementById('tags');
-    const tagsContainer = document.createElement('div');
-    tagsContainer.className = 'tags-container mb-2';
-    tagsInput.parentNode.insertBefore(tagsContainer, tagsInput);
-    
-    // Create tag input wrapper
-    const tagInputWrapper = document.createElement('div');
-    tagInputWrapper.className = 'tag-input-wrapper';
-    tagInputWrapper.innerHTML = `
-        <input type="text" class="form-control" id="tagInput" placeholder="Type to search or add tags...">
-        <div id="tagDropdown" class="tag-dropdown" style="display: none;"></div>
+// Display equipment in table
+function displayEquipment(equipment) {
+    Pagination.init(equipment || []);
+    Pagination.setOnPageChange(() => {
+        renderPaginatedTable();
+    });
+
+    renderPaginatedTable();
+    Pagination.render();
+}
+
+// Show empty state
+function showEmptyState(message) {
+    const tbody = document.getElementById("lab-equipment-table-body");
+    if (!tbody) return;
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td colspan="8" class="text-center text-muted py-4">
+            ${message}
+        </td>
     `;
-    tagsInput.parentNode.insertBefore(tagInputWrapper, tagsInput);
-    
-    // Hide original tags input
-    tagsInput.style.display = 'none';
-    
-    const tagInput = document.getElementById('tagInput');
-    const tagDropdown = document.getElementById('tagDropdown');
-    
-    // Handle tag input
-    tagInput.addEventListener('input', function(e) {
-        const query = e.target.value.trim().toLowerCase();
-        
-        if (query === '') {
-            tagDropdown.style.display = 'none';
-            return;
-        }
-        
-        // Filter tags that match query and aren't selected
-        const matchingTags = allTags.filter(tag => 
-            tag.name.toLowerCase().includes(query) && 
-            !selectedTags.includes(tag.name)
-        );
-        
-        if (matchingTags.length > 0) {
-            tagDropdown.innerHTML = matchingTags.map(tag => `
-                <div class="tag-dropdown-item" onclick="selectTag('${tag.name}')">
-                    ${tag.name}
-                </div>
-            `).join('');
-            tagDropdown.style.display = 'block';
-        } else {
-            // Show option to create new tag
-            tagDropdown.innerHTML = `
-                <div class="tag-dropdown-item" onclick="createAndSelectTag('${query}')">
-                    Create "${query}"
-                </div>
-            `;
-            tagDropdown.style.display = 'block';
-        }
-    });
-    
-    // Handle Enter key to add tag
-    tagInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const query = e.target.value.trim();
-            if (query) {
-                createAndSelectTag(query);
-            }
-        }
-    });
-    
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!tagInputWrapper.contains(e.target)) {
-            tagDropdown.style.display = 'none';
-        }
-    });
+    tbody.appendChild(row);
 }
 
-// Select existing tag
-function selectTag(tagName) {
-    if (!selectedTags.includes(tagName)) {
-        selectedTags.push(tagName);
-        updateTagDisplay();
-    }
-    document.getElementById('tagInput').value = '';
-    document.getElementById('tagDropdown').style.display = 'none';
-}
-
-// Create and select new tag
-async function createAndSelectTag(tagName) {
+// Open edit modal
+async function openEditModal(itemId) {
     try {
-        // Check if tag already exists
-        const existingTag = allTags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
-        if (existingTag) {
-            selectTag(existingTag.name);
-            return;
-        }
-        
-        // Create new tag
-        const response = await fetch('/api/v1/tags/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: tagName })
-        });
-        
-        if (response.ok) {
-            const newTag = await response.json();
-            allTags.push(newTag);
-            selectTag(newTag.name);
-        }
-    } catch (error) {
-        console.error('Error creating tag:', error);
-        // Still allow selection even if creation failed
-        selectTag(tagName);
-    }
-}
-
-// Remove tag
-function removeTag(tagName) {
-    selectedTags = selectedTags.filter(tag => tag !== tagName);
-    updateTagDisplay();
-}
-
-// Update tag display
-function updateTagDisplay() {
-    const container = document.querySelector('.tags-container');
-    const hiddenInput = document.getElementById('tags');
-    
-    container.innerHTML = selectedTags.map(tag => `
-        <span class="badge bg-primary me-1 mb-1">
-            ${tag}
-            <button type="button" class="btn-close btn-close-white ms-1" onclick="removeTag('${tag}')" aria-label="Remove"></button>
-        </span>
-    `).join('');
-    
-    // Update hidden input
-    hiddenInput.value = selectedTags.join(',');
-}
-
-// Setup form submission
-function setupForm() {
-    const form = document.getElementById('equipmentForm');
-    const cancelBtn = document.getElementById('cancelBtn');
-    
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            name: document.getElementById('name').value,
-            tags: selectedTags,
-            service_frequency: document.getElementById('serviceFrequency').value || null,
-            last_serviced_on: document.getElementById('lastServiced').value || null
-        };
-        
-        try {
-            let response;
-            if (isEditing) {
-                response = await fetch(`${API_BASE}/${editingId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-            } else {
-                response = await fetch(`${API_BASE}/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-            }
-            
-            if (response.ok) {
-                resetForm();
-                loadEquipment();
-                alert(isEditing ? 'Equipment updated!' : 'Equipment added!');
-            } else {
-                const errorText = await response.text();
-                throw new Error(`Failed to save equipment: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error saving equipment:', error);
-            alert('Failed to save equipment: ' + error.message);
-        }
-    });
-    
-    cancelBtn.addEventListener('click', resetForm);
-}
-
-// Edit equipment - Fixed to use correct parameter name
-async function editEquipment(id) {
-    try {
-        const response = await fetch(`${API_BASE}/one/${id}`);
+        const response = await fetch(`${API_BASE}/one/${itemId}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch equipment: ${response.status}`);
         }
-        
+
         const item = await response.json();
-        
-        document.getElementById('equipmentId').value = item.id;
-        document.getElementById('name').value = item.name;
-        document.getElementById('serviceFrequency').value = item.service_frequency || '';
-        document.getElementById('lastServiced').value = item.last_serviced_on || '';
-        
-        // Set selected tags
-        selectedTags = Array.isArray(item.tags) ? [...item.tags] : [];
-        updateTagDisplay();
-        
-        isEditing = true;
-        editingId = id;
-        
-        document.getElementById('form-title').textContent = 'Edit Lab Equipment';
-        document.getElementById('submitBtn').textContent = 'Update Equipment';
-        document.getElementById('cancelBtn').style.display = 'inline-block';
-        
-        // Scroll to form
-        document.getElementById('equipmentForm').scrollIntoView({ behavior: 'smooth' });
-        
-    } catch (error) {
-        console.error('Error loading equipment for edit:', error);
-        alert('Failed to load equipment for editing: ' + error.message);
-    }
-}
 
-// Delete equipment - Fixed to use correct parameter name
-async function deleteEquipment(id) {
-    if (!confirm('Are you sure you want to delete this equipment?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE}/${id}`, {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
-            loadEquipment();
-            alert('Equipment deleted!');
-        } else {
-            const errorText = await response.text();
-            throw new Error(`Failed to delete equipment: ${errorText}`);
+        // Make the fetched item available for the modal initializer
+        window.editingItemData = item;
+        window.editingItemId = itemId;
+
+        // Update modal UI elements
+        const titleEl = document.getElementById("addItemModalLabel");
+        const submitBtn = document.getElementById("createItemBtn");
+        if (titleEl) titleEl.textContent = "Edit Lab Equipment";
+        if (submitBtn) {
+            const textNodes = [];
+            for (const node of Array.from(submitBtn.childNodes)) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    textNodes.push(node);
+                }
+            }
+            textNodes.forEach((node) => node.remove());
+            submitBtn.appendChild(document.createTextNode(" Save Changes"));
         }
+
+        // Show modal - the modal's shown handler will prefill
+        const modalEl = document.getElementById("addItemModal");
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
     } catch (error) {
-        console.error('Error deleting equipment:', error);
-        alert('Failed to delete equipment: ' + error.message);
+        console.error("Error opening edit modal:", error);
+        alert("Failed to load equipment for editing:" + error.message);
     }
 }
 
-// Reset form
-function resetForm() {
-    document.getElementById('equipmentForm').reset();
-    document.getElementById('equipmentId').value = '';
-    
-    selectedTags = [];
-    updateTagDisplay();
-    document.getElementById('tagInput').value = '';
-    
-    isEditing = false;
-    editingId = null;
-    
-    document.getElementById('form-title').textContent = 'Add Lab Equipment';
-    document.getElementById('submitBtn').textContent = 'Add Equipment';
-    document.getElementById('cancelBtn').style.display = 'none';
+// Delete equipment
+async function deleteEquipment(id) {
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmBtn) {
+        confirmBtn.setAttribute("data-item-id", id);
+        const modal = new bootstrap.Modal(
+            document.getElementById("deleteConfirmModal"),
+        );
+        modal.show();
+    }
 }
 
-// Make functions global for onclick handlers
-window.editEquipment = editEquipment;
+// Setup delete confirmation handler
+function setupDeleteHandler() {
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener("click", async function() {
+            const itemId = this.getAttribute("data-item-id");
+            if (!itemId) return;
+
+            this.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/${itemId}`, {
+                    method: "DELETE",
+                });
+
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById("deleteConfirmModal"),
+                    );
+                    if (modal) modal.hide();
+
+                    // Remove from pagination data and refresh
+                    const allItems = Pagination.getAllItems();
+                    const filteredItems = allItems.filter((item) => item.id != itemId);
+                    Pagination.init(filteredItems);
+                    Pagination.setOnPageChange(() => {
+                        renderPaginatedTable();
+                    });
+                    renderPaginatedTable();
+                    Pagination.render();
+                } else {
+                    throw new Error("Failed to delete equipment");
+                }
+            } catch (error) {
+                console.error("Error deleting equipment:", error);
+                alert("Failed to delete equipment:" + error.message);
+            } finally {
+                this.disabled = false;
+            }
+        });
+    }
+}
+
+// Add item to table (called from modal)
+window.addLabEquipmentToTable = function(item) {
+    // Get current items and add new one
+    const allItems = Pagination.getAllItems();
+    allItems.unshift(item);
+
+    // Reinitialize pagination with updated items
+    Pagination.init(allItems);
+    Pagination.setOnPageChange(() => {
+        renderPaginatedTable();
+    });
+
+    // Render table and pagination
+    renderPaginatedTable();
+    Pagination.render();
+};
+
+// Update item in table (called from modal)
+window.updateLabEquipmentInTable = function(data) {
+    loadEquipment();
+};
+
+// Filter table
+function filterTable() {
+    const searchValue =
+        document.getElementById("search-input")?.value.toLowerCase() || "";
+    const nameFilter =
+        document.getElementById("filter-name")?.value.toLowerCase() || "";
+    const tagsFilter =
+        document.getElementById("filter-tags")?.value.toLowerCase() || "";
+    const serviceFrequencyFilter =
+        document.getElementById("filter-service-frequency")?.value || "";
+
+    // Get all items from pagination
+    const allItems = Pagination.getAllItems();
+
+    // Filter items
+    const filteredItems = allItems.filter((item) => {
+        const itemName = (item.name || "").toLowerCase();
+        const itemTags = Array.isArray(item.tags)
+            ? item.tags.join(", ").toLowerCase()
+            : (item.tags || "").toLowerCase();
+        const itemServiceFreq = (item.service_frequency || "").toLowerCase();
+
+        const searchMatch =
+            !searchValue ||
+            itemName.includes(searchValue) ||
+            itemTags.includes(searchValue);
+
+        const nameMatch = !nameFilter || itemName.includes(nameFilter);
+        const tagsMatch =
+            !tagsFilter || itemTags.includes(tagsFilter.toLowerCase());
+        const serviceFreqMatch =
+            !serviceFrequencyFilter ||
+            itemServiceFreq.includes(serviceFrequencyFilter.toLowerCase());
+
+        const hasSpecificFilters =
+            nameFilter || tagsFilter || serviceFrequencyFilter;
+        return (
+            searchMatch &&
+            (!hasSpecificFilters || (nameMatch && tagsMatch && serviceFreqMatch))
+        );
+    });
+
+    // Update pagination with filtered items
+    Pagination.setFilteredItems(filteredItems);
+
+    // Re-render table and pagination
+    renderPaginatedTable();
+    Pagination.render();
+}
+
+function clearFilters() {
+    document.getElementById("search-input").value = "";
+    document.getElementById("filter-name").value = "";
+    document.getElementById("filter-tags").value = "";
+    document.getElementById("filter-service-frequency").value = "";
+
+    // Reset to show all items
+    const allItems = Pagination.getAllItems();
+    Pagination.setFilteredItems(allItems);
+    renderPaginatedTable();
+    Pagination.render();
+}
+
+// Make functions global
+window.openEditModal = openEditModal;
 window.deleteEquipment = deleteEquipment;
-window.selectTag = selectTag;
-window.createAndSelectTag = createAndSelectTag;
-window.removeTag = removeTag;
+window.filterTable = filterTable;
+window.clearFilters = clearFilters;

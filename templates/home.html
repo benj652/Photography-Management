@@ -5,293 +5,235 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/home.css') }}"
 />
+<script>
+  // Make user data available to JavaScript
+  window.userData = {
+    firstName: "{{ current_user.first_name }}",
+    role: "{{ current_user.role.value|title }}",
+    profilePicture: "{{ current_user.profile_picture or '' }}",
+    homeUrl: "{{ url_for('home.home') }}"
+  };
+</script>
 {% endblock %} {% block content %}
 <!-- NavBar -->
-<nav
-  class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top"
->
-  <div class="container-fluid px-4">
-    <!-- Logo-->
-    <a
-      class="navbar-brand d-flex align-items-center"
-      href="{{ url_for('home.home') }}"
-    >
-      <div class="landing-logo">
-        <span class="logo-icon">📸</span>
-        <span class="logo-text">PhotoInventory</span>
-      </div>
-    </a>
-
-    <!-- User profile and logout-->
-    <div class="d-flex align-items-center">
-      <div class="user-profile d-flex align-items-center me-4">
-        {% if current_user.profile_picture %}
-        <img
-          src="{{ current_user.profile_picture }}"
-          alt="Profile"
-          class="user-avatar rounded-circle me-2"
-          height="45"
-          width="45"
-        />
-        {% else %}
-        <div
-          class="user-avatar-placeholder rounded-circle d-flex align-items-center justify-content-center me-2"
-        >
-          {{ current_user.first_name[0]|upper }}
-        </div>
-        {% endif %}
-        <div class="d-flex flex-column align-items-start">
-          <span class="fw-semibold text-dark"
-            >{{ current_user.first_name }}</span
-          >
-          <small class="text-muted">Admin</small>
-        </div>
-      </div>
-      <button id="logoutButton" class="btn btn-outline-dark btn-sm">
-        <i class="fas fa-sign-out-alt me-1"></i>Log Out
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Breadcrumb Navigation -->
-<nav aria-label="breadcrumb" class="bg-light border-bottom">
-  <div class="container py-2">
-    <div class="d-flex justify-content-between align-items-center">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item active" aria-current="page">
-          <i class="fas fa-home me-1"></i>Home
-        </li>
-      </ol>
-      <div class="breadcrumb-nav">
-        <a href="{{ url_for('home.lab_equipment') }}" class="btn btn-sm btn-outline-secondary me-2">
-          <i class="fas fa-microscope me-1"></i>Lab Equipment
-        </a>
-        <a href="{{ url_for('home.camera_gear') }}" class="btn btn-sm btn-outline-secondary me-2">
-          <i class="fas fa-camera me-1"></i>Camera Gear
-        </a>
-        {% if current_user.role.value == 'admin' %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
-          <i class="fas fa-user-shield me-1"></i>Admin
-        </a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</nav>
-
+<div id="navbar"></div>
+<!-- Breadcrumbs -->
+<div id="breadcrumbs"></div>
 <!-- Summary Statistics Cards -->
 <div class="container py-4">
-  <div class="row g-3 mb-4">
-    <div class="col-md-3 col-sm-6">
-      <div class="stat-card">
-        <div class="stat-card-body">
-          <h3 class="stat-card-title">Total Equipment</h3>
-          <p class="stat-card-value" id="stat-total">{{ total_items }} Items</p>
+  <!-- Inventory Overview -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2 class="section-title">Inventory Overview</h2>
+      <p class="section-subtitle">Totals across all item categories.</p>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-primary">
+              <i class="fas fa-flask"></i>
+            </div>
+            <h3 class="stat-card-title">Consumables</h3>
+            <p class="stat-card-value" id="stat-consumables">
+              {{ consumables_total }} Items
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-info">
+              <i class="fas fa-camera"></i>
+            </div>
+            <h3 class="stat-card-title">Camera Gear</h3>
+            <p class="stat-card-value" id="stat-camera-gear">
+              {{ camera_gear_total }} Items
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-success">
+              <i class="fas fa-microscope"></i>
+            </div>
+            <h3 class="stat-card-title">Lab Equipment</h3>
+            <p class="stat-card-value" id="stat-lab-equipment">
+              {{ lab_equipment_total }} Items
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-warning">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h3 class="stat-card-title">Total Inventory</h3>
+            <p class="stat-card-value" id="stat-total">
+              {{ inventory_total }} Items
+            </p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="stat-card stat-card-success">
-        <div class="stat-card-body">
-          <h3 class="stat-card-title">In Stock</h3>
-          <p class="stat-card-value" id="stat-in-stock">
-            {{ in_stock_count }} Items
-          </p>
+  </section>
+
+  <!-- Consumables Stats -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2 class="section-title">Consumables</h2>
+      <p class="section-subtitle">Expiration timelines and stock levels.</p>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-danger">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h3 class="stat-card-title">Next Expiration</h3>
+            {% if next_expiring %}
+            <p class="stat-card-value" id="stat-next-expiration">
+              {{ days_until_expiration }} days
+            </p>
+            <small class="text-muted d-block">
+              {{ next_expiring.name }} ({{ next_expiring.expires.strftime("%b %d, %Y") }})
+            </small>
+            {% else %}
+            <p class="stat-card-value" id="stat-next-expiration">
+              No upcoming expirations
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-danger">
+              <i class="fas fa-ban"></i>
+            </div>
+            <h3 class="stat-card-title">Expired Items</h3>
+            <p class="stat-card-value" id="stat-expired">
+              {{ expired_count }} Items
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-warning">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="stat-card-title">Expiring Soon</h3>
+            <p class="stat-card-value" id="stat-expiring-soon">
+              {{ expiring_soon_count }} Items
+            </p>
+            <small class="text-muted d-block">Within 14 days</small>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-secondary">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="stat-card-title">Out of Stock</h3>
+            <p class="stat-card-value" id="stat-out-of-stock">
+              {{ out_of_stock_count }} Items
+            </p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="stat-card stat-card-warning">
-        <div class="stat-card-body">
-          <h3 class="stat-card-title">Out of Stock</h3>
-          <p class="stat-card-value" id="stat-out-of-stock">
-            {{ out_of_stock_count }} Items
-          </p>
+  </section>
+
+  <!-- Camera Gear Stats -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2 class="section-title">Camera Gear</h2>
+      <p class="section-subtitle">Usage and availability.</p>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-info">
+              <i class="fas fa-external-link-alt"></i>
+            </div>
+            <h3 class="stat-card-title">Checked Out</h3>
+            <p class="stat-card-value" id="stat-checked-out">
+              {{ checked_out_count }} Items
+            </p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3 col-sm-6">
-      <div class="stat-card stat-card-danger">
-        <div class="stat-card-body">
-          <h3 class="stat-card-title">Expired</h3>
-          <p class="stat-card-value" id="stat-expired">
-            {{ expired_count }} Items
-          </p>
+  </section>
+
+  <!-- Lab Equipment Stats -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2 class="section-title">Lab Equipment</h2>
+      <p class="section-subtitle">Maintenance schedules and overdue service.</p>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-success">
+              <i class="fas fa-tools"></i>
+            </div>
+            <h3 class="stat-card-title">Next Service</h3>
+            {% if next_service_equipment %}
+            <p class="stat-card-value" id="stat-next-service">
+              {{ days_until_service }} days
+            </p>
+            <small class="text-muted d-block">
+              {{ next_service_equipment.name }} ({{ next_service_date.strftime("%b %d, %Y") }})
+            </small>
+            {% else %}
+            <p class="stat-card-value" id="stat-next-service">
+              No scheduled service
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card stat-card-compact">
+          <div class="stat-card-body">
+            <div class="stat-card-icon text-danger">
+              <i class="fas fa-wrench"></i>
+            </div>
+            <h3 class="stat-card-title">Service Overdue</h3>
+            <p class="stat-card-value" id="stat-service-overdue">
+              {{ service_overdue|length }} Items
+            </p>
+            {% if service_overdue %}
+            <small class="text-muted d-block">
+              {{ service_overdue|map(attribute='name')|join(', ') }}
+            </small>
+            {% else %}
+            <small class="text-muted d-block">All equipment up to date</small>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 
-<div class="container py-4">
-  <div class="search-filter-section mb-4">
-    <div class="d-flex align-items-center gap-3">
-      <!-- Search Bar -->
-      <div class="search-bar-wrapper flex-grow-1">
-        <div class="input-group">
-          <span class="input-group-text search-icon">
-            <i class="fas fa-search"></i>
-          </span>
-          <input
-            type="text"
-            id="search-input"
-            class="form-control search-input"
-            placeholder="Search by name, tags, location..."
-            oninput="filterTable()"
-          />
-        </div>
-      </div>
-
-      <!-- Filter Button -->
-      <button
-        type="button"
-        class="btn btn-outline-secondary filter-btn"
-        data-bs-toggle="collapse"
-        data-bs-target="#filterCollapse"
-        aria-expanded="false"
-        aria-controls="filterCollapse"
-      >
-        <i class="fas fa-filter me-2"></i>Filter
-      </button>
-
-      <!-- Add Item Button -->
-      <button
-        id="openAddItemBtn"
-        class="btn btn-primary add-item-btn"
-        data-bs-toggle="modal"
-        data-bs-target="#addItemModal"
-      >
-        <i class="fas fa-plus me-2"></i>Add Item
-      </button>
-    </div>
-
-    <!-- Collapsible Filter Section -->
-    <div class="collapse mt-3" id="filterCollapse">
-      <div class="card card-body filter-panel">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <label for="filter-name" class="form-label small fw-semibold"
-              >Name</label
-            >
-            <input
-              type="text"
-              id="filter-name"
-              class="form-control"
-              placeholder="Filter by name"
-              oninput="filterTable()"
-            />
-          </div>
-          <div class="col-md-4">
-            <label for="filter-tags" class="form-label small fw-semibold"
-              >Tags</label
-            >
-            <input
-              type="text"
-              id="filter-tags"
-              class="form-control"
-              placeholder="Tags (comma-separated)"
-              oninput="filterTable()"
-            />
-          </div>
-          <div class="col-md-4">
-            <label for="filter-location" class="form-label small fw-semibold"
-              >Location</label
-            >
-            <input
-              type="text"
-              id="filter-location"
-              class="form-control"
-              placeholder="Location"
-              oninput="filterTable()"
-            />
-          </div>
-          <div class="col-12">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              onclick="clearFilters()"
-            >
-              <i class="fas fa-times me-1"></i>Clear Filters
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Table Section -->
-  <div class="row g-3">
-    <div class="col-sm-12 col-lg-12">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Name</th>
-                  <th scope="col">Quantity</th>
-                  <th scope="col">Tags</th>
-                  <th scope="col">Location</th>
-                  <th scope="col">Expires</th>
-                  <th scope="col">Last updated</th>
-                  <th scope="col">Updated by</th>
-                  <th scope="col" class="text-end" style="width: 60px">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="items-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% include 'add_item_modal.html' %}
-
-<!-- Delete Confirmation Modal -->
-<div
-  class="modal fade"
-  id="deleteConfirmModal"
-  tabindex="-1"
-  aria-labelledby="deleteConfirmModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteConfirmModalLabel">
-          <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirm
-          Deletion
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>
-          Are you sure you want to delete this item? This action cannot be
-          undone.
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-          Delete Item
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="/static/js/home.js"></script>
+<script src="{{ url_for('static', filename='js/componenets/Navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/componenets/Breadcrumbs.js') }}"></script>
+<script src="{{ url_for('static', filename='js/utils/index.js') }}"></script>
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
 {% endblock %}

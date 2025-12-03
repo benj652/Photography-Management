@@ -118,16 +118,48 @@
   line-height: 1.2;
 }
 
-.stat-card-success .stat-card-value {
-  color: #28a745;
+.stat-card-compact {
+  padding: 1.1rem 1.25rem;
 }
 
-.stat-card-warning .stat-card-value {
-  color: #f3b808;
+.stat-card-compact .stat-card-value {
+  font-size: 1.3rem;
 }
 
-.stat-card-danger .stat-card-value {
-  color: #dc3545;
+.stat-card-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f2f4f7;
+  color: inherit;
+}
+
+.dashboard-section + .dashboard-section {
+  margin-top: 2.5rem;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #6c757d;
 }
 
 /* Search and Filter Section */
@@ -198,6 +230,7 @@
 .delete-btn:focus {
   box-shadow: none;
 }
+
 
 @media (max-width: 768px) {
   .search-filter-section .d-flex {
