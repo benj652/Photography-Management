@@ -1,3 +1,9 @@
+"""Camera gear model and convenience helpers.
+
+Defines the CameraGear SQLAlchemy model and helper methods such as
+``to_dict`` for API serialization.
+"""
+
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_TAGS,
@@ -8,6 +14,7 @@ from .base import db
 
 
 class CameraGear(db.Model):
+    """Represents a camera gear item stored in inventory."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     tags = db.relationship("Tag", secondary="camera_gear_tags", backref="camera_gear")
@@ -40,6 +47,7 @@ class CameraGear(db.Model):
     )
 
     def to_dict(self):
+        """Return a serializable dict for this CameraGear instance."""
         tags = [t.name for t in getattr(self, "tags", [])]
 
         # Get location name

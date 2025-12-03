@@ -53,7 +53,7 @@ def create_location():
     data = request.get_json()
     name = data.get(LOCATION_NAME)
     if not name:
-        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST 
+        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST
     new_location = Location(name=name)
     db.session.add(new_location)
     db.session.commit()
@@ -66,7 +66,7 @@ def update_location(location_id):
     data = request.get_json()
     name = data.get(LOCATION_NAME)
     if not name:
-        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST 
+        return {MESSAGE_KEY: LOCATION_NAME_NEEDED_MESSAGE}, ERROR_BAD_REQUEST
     location = Location.query.get_or_404(location_id)
     location.name = name
     db.session.commit()

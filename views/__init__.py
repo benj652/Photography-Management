@@ -1,3 +1,9 @@
+"""Views package re-exports.
+
+This package-level module re-exports blueprints and view helpers so
+callers can import them from ``views`` directly.
+"""
+
 from .auth_views import *
 from .tag_views import *
 from .location_views import *

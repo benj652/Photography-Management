@@ -1,3 +1,9 @@
+"""Consumable model and serialization helpers.
+
+Contains the Consumable SQLAlchemy model and ``to_dict`` helper used by
+the API views.
+"""
+
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_QUANTITY,
@@ -10,6 +16,7 @@ from .base import db
 
 
 class Consumable(db.Model):
+    """Represents a consumable inventory item (e.g., film, paper)."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)

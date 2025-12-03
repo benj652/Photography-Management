@@ -1,15 +1,10 @@
+"""Project constants: routes, field names, status codes and env names.
+
+This module centralizes application constants used across views,
+models and configuration. Keep the values simple and stable.
+"""
+
 import enum
-
-"""
-=========================================
-Standard user enum for roles.
-=========================================
-
-ADMIN: Below permissions and Has full access to all resources and can manage other users.
-TA: Below permissions Can view and modify resources but cannot manage users.
-STUDENT: Below permissions can only view resources and check out equipment.
-INVALID: Student not in Photography who can not see or edit the database at all.
-"""
 
 
 class UserRole(enum.Enum):
@@ -19,17 +14,13 @@ class UserRole(enum.Enum):
     INVALID = "invalid"
 
 
-"""
-=========================================
-Flask route constants
-=========================================
-"""
+# ----------------------------------------
+# Flask route constants
+# ----------------------------------------
 
-"""
------------------------------------------
-API version
------------------------------------------
-"""
+# ----------------------------------------
+# API version
+# ----------------------------------------
 API_BASE = "/api/"
 API_VERSION = "v1"
 API_PREFIX = API_BASE + API_VERSION

@@ -54,7 +54,7 @@ def create_tag():
     data = request.get_json()
     name = data.get(TAG_NAME)
     if not name:
-        return {MESSAGE_KEY: TAG_NAME_REQUIRED_MESSAGE}, ERROR_BAD_REQUEST 
+        return {MESSAGE_KEY: TAG_NAME_REQUIRED_MESSAGE}, ERROR_BAD_REQUEST
     new_tag = Tag(name=name)
     db.session.add(new_tag)
     db.session.commit()
