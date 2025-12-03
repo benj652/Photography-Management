@@ -27,6 +27,8 @@ lab_equipment_tags = db.Table(
 
 consumable_tags = db.Table(
     "consumable_tags",
-    db.Column("consumable_id", db.Integer, db.ForeignKey("consumable.id"), primary_key=True),
+    db.Column(
+        "consumable_id", db.Integer, db.ForeignKey("consumable.id"), primary_key=True
+    ),
     db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
 )

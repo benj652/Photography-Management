@@ -1,5 +1,5 @@
-from .base import db
 from constants import LOCATION_ID, LOCATION_NAME
+from .base import db
 
 
 class Location(db.Model):

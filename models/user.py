@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from sqlalchemy import Enum
-from .base import db
 from constants import UserRole
+from .base import db
 
 
 class User(db.Model, UserMixin):
