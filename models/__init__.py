@@ -1,3 +1,9 @@
+"""Model package exports.
+
+Re-export SQLAlchemy `db` and model classes for convenient imports
+from the top-level `models` package.
+"""
+
 from .base import db
 from .user import User
 from .camera_gear import CameraGear

@@ -1,3 +1,8 @@
+"""Lab equipment model definitions and helpers.
+
+Defines LabEquipment model and common serialization helpers.
+"""
+
 from constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_TAGS,
@@ -7,6 +12,7 @@ from .base import db
 
 
 class LabEquipment(db.Model):
+    """Represents lab equipment that can be tracked and serviced."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     tags = db.relationship(
@@ -23,6 +29,7 @@ class LabEquipment(db.Model):
     )  # e.g., "monthly", "yearly", etc.
 
     def __repr__(self):
+        """Return a readable representation for debugging."""
         return f"<LabEquipment {self.name}>"
 
     updated_by_user = db.relationship(
@@ -39,6 +46,7 @@ class LabEquipment(db.Model):
     )
 
     def to_dict(self):
+        """Return a serializable dict for this LabEquipment instance."""
         tags = [t.name for t in getattr(self, "tags", [])]
 
         updater = None

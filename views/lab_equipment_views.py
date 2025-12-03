@@ -9,10 +9,9 @@ POST    /api/v1/lab_equipment/                   → Create a new lab equipment 
 PUT     /api/v1/lab_equipment/<int:tag_id>       → Update an existing lab equipment item
 DELETE  /api/v1/lab_equipment/<int:tag_id>       → Delete a lab equipment item by ID
 """
-
-from flask import Blueprint, request
-from flask_login import current_user, login_required
 from datetime import datetime
+from flask import Blueprint, request
+from flask_login import current_user
 from constants import (
     DELETE,
     GET,
@@ -38,17 +37,15 @@ lab_equipment_blueprint = Blueprint(LAB_EQUIPMENT_DEFAULT_NAME, __name__)
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_ALL_ROUTE, methods=[GET])
 @require_approved
 def get_all_lab_equipment():
+    """Return all lab equipment items as a list of dicts."""
     all_equipment = LabEquipment.query.all()
-    return {
-        LAB_EQUIPMENT_DEFAULT_NAME: [
-            equipment_item.to_dict() for equipment_item in all_equipment
-        ]
-    }
+    return {LAB_EQUIPMENT_DEFAULT_NAME: [equipment_item.to_dict() for equipment_item in all_equipment]}
 
 
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_GET_ONE_ROUTE, methods=[GET])
 @require_ta
 def get_lab_equipment(equipment_id):
+    """Return a single lab equipment item by ID."""
     equipment_item = LabEquipment.query.get_or_404(equipment_id)
     return equipment_item.to_dict()
 
@@ -56,6 +53,8 @@ def get_lab_equipment(equipment_id):
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_CREATE_ROUTE, methods=[POST])
 @require_ta
 def create_lab_equipment():
+    """Create a new lab equipment record from the provided JSON body."""
+
     data = request.get_json()
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
     tag_names = data.get(LAB_EQUIPMENT_TAGS_FIELD, [])
@@ -101,6 +100,7 @@ def create_lab_equipment():
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_UPDATE_ROUTE, methods=[PUT])
 @require_ta
 def update_lab_equipment(equipment_id):
+    """Update an existing lab equipment record with provided JSON fields."""
     target_equipment = LabEquipment.query.get_or_404(equipment_id)
     data = request.get_json()
     name = data.get(LAB_EQUIPMENT_NAME_FIELD)
@@ -147,6 +147,7 @@ def update_lab_equipment(equipment_id):
 @lab_equipment_blueprint.route(LAB_EQUIPMENT_DELETE_ROUTE, methods=[DELETE])
 @require_ta
 def delete_lab_equipment(equipment_id):
+    """Delete the specified lab equipment and return a confirmation message."""
     target_equipment = LabEquipment.query.get_or_404(equipment_id)
     db.session.delete(target_equipment)
     db.session.commit()

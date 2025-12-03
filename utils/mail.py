@@ -1,3 +1,10 @@
+"""Mail helpers and small email utilities.
+
+Provides a thin wrapper around the Flask-Mailman extension. Functions
+are resilient when mail isn't configured so they won't break request
+flows if sending fails.
+"""
+
 import os
 from typing import Optional
 
@@ -65,7 +72,8 @@ def send_low_stock_alert(item, threshold: int | None = None) -> None:
         return
 
     subject = f"Low stock alert: {item.name}"
-    location_name = getattr(item, "location", None).name if getattr(item, "location", None) else "Unknown"
+    location = getattr(item, "location", None)
+    location_name = location.name if location else "Unknown"
     body_lines = [
         f"Item '{item.name}' (id: {item.id}) has low stock.",
         f"Quantity remaining: {item.quantity}",

@@ -1,3 +1,9 @@
+"""Association tables used by many-to-many relationships for models.
+
+This module defines SQLAlchemy Table objects that are used to relate
+items, tags and other models.
+"""
+
 from .base import db
 
 item_tags = db.Table(

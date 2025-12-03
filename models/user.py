@@ -1,10 +1,15 @@
+"""User model and authentication helpers.
+
+Defines the User SQLAlchemy model used for authentication and role checks.
+"""
+
 from flask_login import UserMixin
 from sqlalchemy import Enum
 from constants import UserRole
 from .base import db
 
-
 class User(db.Model, UserMixin):
+    """Application user with authentication and role information."""
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
@@ -13,9 +18,11 @@ class User(db.Model, UserMixin):
     role = db.Column(Enum(UserRole), nullable=False)
 
     def __repr__(self):
+        """Return a concise representation for debugging."""
         return f"<User {self.email} Role {self.role}>"
 
     def to_dict(self):
+        """Return a JSON-serializable representation of the user."""
         return {
             "id": self.id,
             "first_name": self.first_name,

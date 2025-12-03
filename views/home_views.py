@@ -9,11 +9,10 @@ GET     /home/lab-equipment        → Render the lab equipment page
 GET     /home/camera-gear          → Render the camera gear page
 REDIRECT home.home                 → Named route for "not found" fallback
 """
-
+from datetime import date, timedelta
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
 from models import Consumable, CameraGear, LabEquipment
-from datetime import date, timedelta
 from constants import (
     CAMERA_GEAR_ROUTE,
     CAMERA_GEAR_TEMPLATE,
@@ -24,8 +23,6 @@ from constants import (
     LAB_EQUIPMENT_TEMPLATE,
     CONSUMABLES_ROUTE,
     CONSUMABLES_TEMPLATE,
-    UNAUTHORIZED_ROUTE,
-    UNAUTHORIZED_TEMPLATE
     )
 from utils import require_approved
 
@@ -125,28 +122,19 @@ def home():
 @login_required
 @require_approved
 def lab_equipment():
+    """Render the lab equipment page template."""
     return render_template(LAB_EQUIPMENT_TEMPLATE)
 
 @home_blueprint.route(CAMERA_GEAR_ROUTE)
 @login_required
 @require_approved
 def camera_gear():
+    """Render the camera gear page template."""
     return render_template(CAMERA_GEAR_TEMPLATE)
 
 @home_blueprint.route(CONSUMABLES_ROUTE)
 @login_required
 @require_approved
 def consumables():
+    """Render the consumables page template."""
     return render_template(CONSUMABLES_TEMPLATE)
-
-
-
-
-
-
-
-
-
-
-
-
