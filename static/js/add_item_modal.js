@@ -610,6 +610,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ? parseInt(formData.get("location_id"))
           : null,
         expires: formData.get("expires") || null,
+        tags: selectedTags,
       };
     } else if (pageType === "camera-gear") {
       // Camera gear
