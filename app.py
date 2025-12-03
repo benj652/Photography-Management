@@ -5,7 +5,6 @@ from models import db, User, Consumable
 from views import (
     auth_blueprint,
     home_blueprint,
-    item_blueprint,
     init_oauth,
     tags_blueprint,
     location_blueprint,
@@ -87,7 +86,6 @@ except Exception:
 app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
 app.register_blueprint(home_blueprint, url_prefix=HOME_PREFIX)
 app.register_blueprint(admin_blueprint, url_prefix=ADMIN_PREFIX)
-app.register_blueprint(item_blueprint, url_prefix=API_PREFIX + ITEM_PREFIX)
 app.register_blueprint(
     camera_gear_blueprint, url_prefix=API_PREFIX + CAMERA_GEAR_PREFIX
 )
