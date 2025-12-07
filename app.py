@@ -22,6 +22,7 @@ from views import (
     lab_equipment_blueprint,
     camera_gear_blueprint,
     consumables_blueprint,
+    notes_blueprint,
 )
 from constants import (
     ADMIN_PREFIX,
@@ -40,6 +41,7 @@ from constants import (
     TAG_PREFIX,
     UNAUTHORIZED_TEMPLATE,
     CONSUMABLES_PREFIX,
+    NOTES_PREFIX,
 )
 
 load_dotenv()
@@ -61,6 +63,7 @@ app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICA
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = AUTH_PREFIX
+login_manager.login_message = None
 
 
 @login_manager.user_loader
@@ -117,7 +120,7 @@ app.register_blueprint(
 )
 app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX + TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=API_PREFIX + LOCATION_PREFIX)
-
+app.register_blueprint(notes_blueprint, url_prefix=API_PREFIX + NOTES_PREFIX)
 
 @app.errorhandler(ERROR_NOT_FOUND)
 def page_not_found(e):

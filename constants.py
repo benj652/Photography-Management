@@ -241,6 +241,38 @@ LOCATION_DELETE_ROUTE = "/<int:location_id>"
 LOCATION_DELETE_SUCCESS_MESSAGE = "location deleted successfully"
 LOCATION_NAME_NEEDED_MESSAGE = "location name is required."
 
+# =====================================================
+#  Notes Routes (prefixed with "/notes")
+# =====================================================
+#
+# GET     /api/v1/notes/all                → Retrieve all notes
+# GET     /api/v1/notes/one/<int:note_id>  → Retrieve a specific note by ID
+# GET     /api/v1/notes/by-item/<item_type>/<int:item_id> → Retrieve notes for a specific item
+# POST    /api/v1/notes/                   → Create a new note
+# PUT     /api/v1/notes/<int:note_id>      → Update an existing note
+# DELETE  /api/v1/notes/<int:note_id>      → Delete a note by ID
+
+
+NOTES_PREFIX = "/notes"
+NOTES_ALL_ROUTE = "/all"
+NOTES_GET_ONE_ROUTE = "/one/<int:note_id>"
+NOTES_BY_ITEM_ROUTE = "/by-item/<item_type>/<int:item_id>"
+NOTES_CREATE_ROUTE = "/"
+NOTES_UPDATE_ROUTE = "/<int:note_id>"
+NOTES_DELETE_ROUTE = "/<int:note_id>"
+
+# =====================================================
+#  Notes Fields
+# =====================================================
+NOTES_DEFAULT_NAME = "notes"
+NOTE_CONTENT_FIELD = "content"
+NOTE_ITEM_TYPE_FIELD = "item_type"
+NOTE_ITEM_ID_FIELD = "item_id"
+NOTE_CONTENT_REQUIRED_MESSAGE = "Note content is required."
+NOTE_ITEM_TYPE_REQUIRED_MESSAGE = "Item type is required."
+NOTE_ITEM_ID_REQUIRED_MESSAGE = "Item ID is required."
+NOTE_DELETE_SUCCESS_MESSAGE = "Note deleted successfully."
+
 # Admin routes
 ADMIN_PREFIX = "/admin"
 
