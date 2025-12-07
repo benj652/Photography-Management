@@ -79,11 +79,19 @@ class Note(db.Model):
         except Exception:
             pass
 
+        # Format timestamps as UTC ISO strings with 'Z' suffix
+        created_at_str = None
+        updated_at_str = None
+        if self.created_at:
+            created_at_str = self.created_at.isoformat() + 'Z' if self.created_at.tzinfo is None else self.created_at.isoformat()
+        if self.updated_at:
+            updated_at_str = self.updated_at.isoformat() + 'Z' if self.updated_at.tzinfo is None else self.updated_at.isoformat()
+
         return {
             "id": self.id,
             "content": self.content,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": created_at_str,
+            "updated_at": updated_at_str,
             "created_by": creator,
             "updated_by": updater,
             "item_type": item_type,

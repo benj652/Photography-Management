@@ -80,7 +80,7 @@ def get_note_by_item(item_type, item_id):
     
     if note:
         return note.to_dict()
-    return None
+    return {}
 
 
 @notes_blueprint.route(NOTES_CREATE_ROUTE, methods=[POST])

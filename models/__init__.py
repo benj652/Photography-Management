@@ -13,7 +13,6 @@ from .location import Location
 from .tag import Tag
 from .notes import Note
 from .associations import (
-    item_tags,
     camera_gear_tags,
     lab_equipment_tags,
     consumable_tags,
@@ -28,7 +27,6 @@ __all__ = [
     'Location',
     'Tag',
     'Note',
-    'item_tags',
     'camera_gear_tags',
     'lab_equipment_tags',
     'consumable_tags',
