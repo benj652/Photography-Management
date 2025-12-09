@@ -1,19 +1,24 @@
 function LabRow(
-    id,
-    name,
-    tags,
-    serviceFreq,
-    lastServiced,
-    lastServicedBy,
-    lastUpdated,
-    item,
+  id,
+  name,
+  tags,
+  serviceFreq,
+  lastServiced,
+  lastServicedBy,
+  lastUpdated,
+  item,
+  hasNote = false
 ) {
-    const canEditOrDelete =
-        window.userData.role &&
-        (window.userData.role === "Admin" || window.userData.role === "Ta");
-    return canEditOrDelete
-        ? `
-            <td class="text-center">${id}</td>
+  const noteIndicator = hasNote
+    ? '<span class="badge bg-success rounded-pill me-2" style="width: 8px; height: 8px; padding: 0; display: inline-block;" title="Has note"></span>'
+    : '<span style="width: 8px; height: 8px; margin-right: 0.5rem; display: inline-block;"></span>';
+
+  const canEditOrDelete =
+    window.userData.role &&
+    (window.userData.role === "Admin" || window.userData.role === "Ta");
+  return canEditOrDelete
+    ? `
+            <td class="text-center">${noteIndicator}${id}</td>
             <td class="text-start">${name}</td>
             <td class="text-start">${tags}</td>
             <td class="text-start">${serviceFreq}</td>
@@ -31,8 +36,8 @@ function LabRow(
                 </div>
             </td>
         `
-        : `
-            <td class="text-center">${id}</td>
+    : `
+            <td class="text-center">${noteIndicator}${id}</td>
             <td class="text-start">${name}</td>
             <td class="text-start">${tags}</td>
             <td class="text-start">${serviceFreq}</td>
