@@ -1,6 +1,12 @@
+"""Pytest fixtures for the test suite.
+
+These fixtures are intentionally simple and used only in tests; test
+files disable some pylint checks where appropriate.
+"""
+
+# pylint: disable=import-error,wrong-import-position,redefined-outer-name,broad-exception-caught
 import os
 import sys
-import types
 import pytest
 
 # ensure project root is on sys.path so tests can import app
@@ -48,7 +54,8 @@ def patcher():
         if had:
             setattr(mod, name, orig)
         else:
+            # best-effort removal; tests should not fail on cleanup errors
             try:
                 delattr(mod, name)
-            except Exception:
+            except Exception:  # pragma: no cover - defensive cleanup
                 pass

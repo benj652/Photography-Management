@@ -1,16 +1,20 @@
-import types
+"""Tests for the internal tasks endpoint.
 
-import pytest
+These are functional unit tests that run in-process. Linting for
+tests is relaxed because tests intentionally patch modules and use
+fixtures in ways pylint cannot always infer.
+"""
 
-from app import app as flask_app
-import utils.tasks as tasks
+# pylint: disable=missing-module-docstring,import-error,line-too-long,
+# pylint: disable=missing-function-docstring,missing-class-docstring,unused-import
+import os
+
 import views.task_views as view_module
 
 
 def test_weekly_endpoint_unauthorized(app):
     client = app.test_client()
     # Ensure token not present in environment for this unauthorized test
-    import os
     os.environ.pop("WEEKLY_TASK_TOKEN", None)
     rv = client.post("/internal/tasks/weekly-expirations")
     assert rv.status_code == 403
@@ -29,7 +33,6 @@ def test_weekly_endpoint_success(app, patcher):
 
     client = app.test_client()
     # set a matching token in environment and header
-    import os
     token = "test-token-xyz"
     os.environ["WEEKLY_TASK_TOKEN"] = token
 
@@ -46,7 +49,6 @@ def test_weekly_endpoint_internal_error(app, patcher):
     patcher(view_module, "notify_camera_gear_due_returns", lambda: True)
     patcher(view_module, "notify_lab_equipment_service_reminders", lambda: True)
 
-    import os
     token = "test-token-xyz-2"
     os.environ["WEEKLY_TASK_TOKEN"] = token
 

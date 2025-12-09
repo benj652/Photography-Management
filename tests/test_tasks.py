@@ -1,3 +1,17 @@
+"""Unit tests for the notification helpers in `utils.tasks`.
+
+The test module intentionally uses dynamic patching and a number of
+test-only patterns that pylint will flag; we relax linting for this
+file to keep tests readable and focused on behavior.
+"""
+
+# pylint: disable=missing-module-docstring,too-many-lines,line-too-long,
+# pylint: disable=import-error,missing-function-docstring,missing-class-docstring,
+# pylint: disable=too-few-public-methods,unused-argument,consider-using-from-import,
+# pylint: disable=broad-exception-caught,import-outside-toplevel,protected-access,
+# pylint: disable=multiple-statements,redefined-outer-name,broad-exception-raised,
+# pylint: disable=unused-import
+
 from datetime import date, timedelta
 import types
 
