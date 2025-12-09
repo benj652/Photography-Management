@@ -22,6 +22,7 @@ from views import (
     lab_equipment_blueprint,
     camera_gear_blueprint,
     consumables_blueprint,
+    tasks_blueprint,
 )
 from constants import (
     ADMIN_PREFIX,
@@ -117,6 +118,8 @@ app.register_blueprint(
 )
 app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX + TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=API_PREFIX + LOCATION_PREFIX)
+# internal task endpoints (used by GitHub Actions scheduled jobs)
+app.register_blueprint(tasks_blueprint)
 
 
 @app.errorhandler(ERROR_NOT_FOUND)
