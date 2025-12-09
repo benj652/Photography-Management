@@ -1,12 +1,15 @@
 {% extends "index.html" %} {% block head %} {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/home.css') }}"
+/>
 <script>
   // Make user data available to JavaScript
   window.userData = {
     firstName: "{{ current_user.first_name }}",
     role: "{{ current_user.role.value|title }}",
     profilePicture: "{{ current_user.profile_picture or '' }}",
-    homeUrl: "{{ url_for('home.home') }}"
+    homeUrl: "{{ url_for('home.home') }}",
   };
 </script>
 {% endblock %} {% block content %}
@@ -19,9 +22,7 @@
 
   <!-- table and features  -->
   <div class="container py-4">
-
     <h1>Lab Equipment</h1>
-
 
     <!-- search and filters -->
     <div class="search-filter-section mb-4">
@@ -32,26 +33,39 @@
             <span class="input-group-text search-icon">
               <i class="fas fa-search"></i>
             </span>
-            <input type="text" id="search-input" class="form-control search-input" placeholder="Search by name, tags..."
-              oninput="filterTable()" />
+            <input
+              type="text"
+              id="search-input"
+              class="form-control search-input"
+              placeholder="Search by name, tags..."
+              oninput="filterTable()"
+            />
           </div>
         </div>
 
         <!-- Filter Button -->
-        <button type="button" class="btn btn-outline-secondary filter-btn" data-bs-toggle="collapse"
-          data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        <button
+          type="button"
+          class="btn btn-outline-secondary filter-btn"
+          data-bs-toggle="collapse"
+          data-bs-target="#filterCollapse"
+          aria-expanded="false"
+          aria-controls="filterCollapse"
+        >
           <i class="fas fa-filter me-2"></i>Filter
         </button>
 
         <!-- Add Item Button -->
-{% if current_user.role.value != 'student' %}
-<button id="openAddItemBtn"
-        class="btn btn-primary add-item-btn"
-        data-bs-toggle="modal"
-        data-bs-target="#addItemModal">
-    <i class="fas fa-plus me-2"></i>Add Item
-</button>
-{% endif %}
+        {% if current_user.role.value != 'student' %}
+        <button
+          id="openAddItemBtn"
+          class="btn btn-primary add-item-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#addItemModal"
+        >
+          <i class="fas fa-plus me-2"></i>Add Item
+        </button>
+        {% endif %}
       </div>
 
       <!-- Collapsible Filter Section -->
@@ -59,18 +73,40 @@
         <div class="card card-body filter-panel">
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="filter-name" class="form-label small fw-semibold">Name</label>
-              <input type="text" id="filter-name" class="form-control" placeholder="Filter by name"
-                oninput="filterTable()" />
+              <label for="filter-name" class="form-label small fw-semibold"
+                >Name</label
+              >
+              <input
+                type="text"
+                id="filter-name"
+                class="form-control"
+                placeholder="Filter by name"
+                oninput="filterTable()"
+              />
             </div>
             <div class="col-md-4">
-              <label for="filter-tags" class="form-label small fw-semibold">Tags</label>
-              <input type="text" id="filter-tags" class="form-control" placeholder="Tags (comma-separated)"
-                oninput="filterTable()" />
+              <label for="filter-tags" class="form-label small fw-semibold"
+                >Tags</label
+              >
+              <input
+                type="text"
+                id="filter-tags"
+                class="form-control"
+                placeholder="Tags (comma-separated)"
+                oninput="filterTable()"
+              />
             </div>
             <div class="col-md-4">
-              <label for="filter-service-frequency" class="form-label small fw-semibold">Service Frequency</label>
-              <select id="filter-service-frequency" class="form-select" onchange="filterTable()">
+              <label
+                for="filter-service-frequency"
+                class="form-label small fw-semibold"
+                >Service Frequency</label
+              >
+              <select
+                id="filter-service-frequency"
+                class="form-select"
+                onchange="filterTable()"
+              >
                 <option value="">All</option>
                 <option value="weekly">Weekly</option>
                 <option value="bi-weekly">Bi-Weekly</option>
@@ -81,7 +117,11 @@
               </select>
             </div>
             <div class="col-12">
-              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                onclick="clearFilters()"
+              >
                 <i class="fas fa-times me-1"></i>Clear Filters
               </button>
             </div>
@@ -121,11 +161,16 @@
     </div>
   </div>
 
-  {% include 'add_item_modal.html' %}
+  {% include 'add_item_modal.html' %} {% include 'notes_modal.html' %}
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
-    aria-hidden="true">
+  <div
+    class="modal fade"
+    id="deleteConfirmModal"
+    tabindex="-1"
+    aria-labelledby="deleteConfirmModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -133,7 +178,12 @@
             <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirm
             Deletion
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <p>
@@ -142,7 +192,11 @@
           </p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
             Cancel
           </button>
           <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
@@ -158,6 +212,7 @@
   <script src="{{ url_for('static', filename='js/componenets/LabRow.js') }}"></script>
   <script src="{{ url_for('static', filename='js/utils/index.js') }}"></script>
   <script src="/static/js/pagination.js"></script>
+  <script src="/static/js/notes.js"></script>
   <script src="/static/js/labEquipment.js"></script>
 </body>
-  {% endblock %}
+{% endblock %}
