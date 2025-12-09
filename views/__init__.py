@@ -12,4 +12,5 @@ from .admin_views import *
 from .camera_gear_views import *
 from .lab_equipment_views import *
 from .consumables_views import *
+from .task_views import *
 from .notes_views import *

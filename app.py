@@ -22,6 +22,7 @@ from views import (
     lab_equipment_blueprint,
     camera_gear_blueprint,
     consumables_blueprint,
+    tasks_blueprint,
     notes_blueprint,
 )
 from constants import (
@@ -120,6 +121,7 @@ app.register_blueprint(
 )
 app.register_blueprint(tags_blueprint, url_prefix=API_PREFIX + TAG_PREFIX)
 app.register_blueprint(location_blueprint, url_prefix=API_PREFIX + LOCATION_PREFIX)
+app.register_blueprint(tasks_blueprint)
 app.register_blueprint(notes_blueprint, url_prefix=API_PREFIX + NOTES_PREFIX)
 
 @app.errorhandler(ERROR_NOT_FOUND)
@@ -140,7 +142,9 @@ def not_authorized(e):
     The error argument is required by Flask but not consumed.
     """
     # pylint: disable=unused-argument
-    return render_template(UNAUTHORIZED_TEMPLATE)
+    # return with the proper 403 status code so callers (and tests) can
+    # detect the unauthorized response programmatically.
+    return render_template(UNAUTHORIZED_TEMPLATE), ERROR_NOT_AUTHORIZED
 
 
 if __name__ == "__main__":
