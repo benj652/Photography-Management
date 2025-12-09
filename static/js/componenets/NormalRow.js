@@ -1,20 +1,24 @@
 function NormalRow(
-    id,
-    nameText,
-    quantityText,
-    tagsText,
-    locationText,
-    expires,
-    lastUpdated,
-    updatedByText,
+  id,
+  nameText,
+  quantityText,
+  tagsText,
+  locationText,
+  expires,
+  lastUpdated,
+  updatedByText,
+  hasNote = false
 ) {
-    // console.log(window.userData.role);
-    const canEditOrDelete =
-        window.userData &&
-        (window.userData.role === "Admin" || window.userData.role === "Ta");
-    return canEditOrDelete
-        ? `
-        <td class="item-id-${id}">${id}</td>
+  const noteIndicator = hasNote
+    ? '<span class="badge bg-success rounded-pill me-2" style="width: 8px; height: 8px; padding: 0; display: inline-block;" title="Has note"></span>'
+    : '<span style="width: 8px; height: 8px; margin-right: 0.5rem; display: inline-block;"></span>';
+
+  const canEditOrDelete =
+    window.userData &&
+    (window.userData.role === "Admin" || window.userData.role === "Ta");
+  return canEditOrDelete
+    ? `
+        <td class="item-id-${id}">${noteIndicator}${id}</td>
         <td>${nameText}</td>
         <td>${quantityText}</td>
         <td>${tagsText}</td>
@@ -29,8 +33,8 @@ function NormalRow(
           </div>
         </td>
 `
-        : `
-        <td class="item-id-${id}">${id}</td>
+    : `
+        <td class="item-id-${id}">${noteIndicator}${id}</td>
         <td>${nameText}</td>
         <td>${quantityText}</td>
         <td>${tagsText}</td>
@@ -45,4 +49,3 @@ function NormalRow(
         </td>
 `;
 }
-
