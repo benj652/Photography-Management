@@ -40,6 +40,7 @@ def weekly_expirations():
         notify_lab_equipment_service_reminders()
     except Exception:
         current_app.logger.exception("Error while running weekly expirations task")
-        abort(500)
+        # return an explicit 500 response so callers and tests can detect it
+        return ("Internal Server Error", 500)
 
     return ("OK", 200)

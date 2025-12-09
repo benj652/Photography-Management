@@ -140,7 +140,9 @@ def not_authorized(e):
     The error argument is required by Flask but not consumed.
     """
     # pylint: disable=unused-argument
-    return render_template(UNAUTHORIZED_TEMPLATE)
+    # return with the proper 403 status code so callers (and tests) can
+    # detect the unauthorized response programmatically.
+    return render_template(UNAUTHORIZED_TEMPLATE), ERROR_NOT_AUTHORIZED
 
 
 if __name__ == "__main__":

@@ -91,7 +91,7 @@ def send_weekly_expiration_notifications() -> bool:
 from models.camera_gear import CameraGear
 from models.lab_equipment import LabEquipment
 
-
+# Currently no return date for camera gear to work, will be implemented later
 def notify_camera_gear_due_returns(within_days: int = 7) -> bool:
 	"""Notify admins/TAs about camera gear that should be returned within
 	`within_days` (inclusive) or that are already overdue.

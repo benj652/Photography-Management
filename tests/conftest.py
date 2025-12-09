@@ -1,0 +1,54 @@
+import os
+import sys
+import types
+import pytest
+
+# ensure project root is on sys.path so tests can import app
+_proj_root = os.path.dirname(os.path.dirname(__file__))
+if _proj_root not in sys.path:
+    sys.path.insert(0, _proj_root)
+
+from app import app as flask_app
+
+
+@pytest.fixture(scope="module")
+def app():
+    """Provide Flask app object for tests (module scope)."""
+    return flask_app
+
+
+@pytest.fixture
+def app_ctx(app):
+    """Enter a Flask application context for tests."""
+    with app.app_context():
+        yield
+
+
+@pytest.fixture
+def patcher():
+    """A small patch helper to set module attributes and restore them after the test.
+
+    Usage:
+        patcher(module, 'AttribName', replacement)
+    """
+    originals = []
+
+    def _patch(mod, name, value):
+        # store original sentinel
+        had = hasattr(mod, name)
+        orig = getattr(mod, name) if had else None
+        setattr(mod, name, value)
+        originals.append((mod, name, had, orig))
+        return value
+
+    yield _patch
+
+    # teardown: restore originals in reverse order
+    for mod, name, had, orig in reversed(originals):
+        if had:
+            setattr(mod, name, orig)
+        else:
+            try:
+                delattr(mod, name)
+            except Exception:
+                pass
