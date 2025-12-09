@@ -39,7 +39,7 @@ def notify_consumables_expiring_this_week() -> bool:
             )
             .all()
         )
-    except Exception:  # pragma: no cover - fallback path exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback path exercised in tests
         # Fallback to in-Python filtering if the DB doesn't support comparisons
         items = [
             c
@@ -61,7 +61,7 @@ def notify_consumables_expiring_this_week() -> bool:
             .filter(User.role.in_([UserRole.ADMIN, UserRole.TA]))
             .all()
         )
-    except Exception:  # pragma: no cover - fallback path exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback path exercised in tests
         recipients_q = [u for u in User.query.all() if u.role in (UserRole.ADMIN, UserRole.TA)]
 
     recipients = [u.email for u in recipients_q if getattr(u, "email", None)]
@@ -86,7 +86,7 @@ def notify_consumables_expiring_this_week() -> bool:
     try:
         msg = EmailMessage(subject=subject, to=recipients, body=body)
         msg.send()
-    except Exception:  # pragma: no cover - error path exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - error path exercised in tests
         if current_app and current_app.logger:
             current_app.logger.exception("Failed to send weekly expiration email")
 
@@ -121,7 +121,7 @@ def notify_camera_gear_due_returns(within_days: int = 7) -> bool:  # pylint: dis
             )
             .all()
         )
-    except Exception:  # pragma: no cover - fallback exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback exercised in tests
         # fallback to in-Python filtering
         items = [
             g
@@ -134,7 +134,7 @@ def notify_camera_gear_due_returns(within_days: int = 7) -> bool:  # pylint: dis
         overdue = CameraGear.query.filter(
             CameraGear.is_checked_out is True, CameraGear.return_date < today
         ).all()
-    except Exception:  # pragma: no cover - fallback exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback exercised in tests
         overdue = [g for g in CameraGear.query.all() if g.is_checked_out and g.return_date and g.return_date < today]
 
     all_items = items + [o for o in overdue if o not in items]
@@ -146,7 +146,7 @@ def notify_camera_gear_due_returns(within_days: int = 7) -> bool:  # pylint: dis
     # recipients: admins and TAs
     try:
         recipients_q = User.query.filter(User.role.in_([UserRole.ADMIN, UserRole.TA])).all()
-    except Exception:  # pragma: no cover - fallback exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback exercised in tests
         recipients_q = [u for u in User.query.all() if u.role in (UserRole.ADMIN, UserRole.TA)]
 
     recipients = [u.email for u in recipients_q if getattr(u, "email", None)]
@@ -167,7 +167,7 @@ def notify_camera_gear_due_returns(within_days: int = 7) -> bool:  # pylint: dis
                 checked_out_by = g.checked_out_by_user.email
             else:
                 checked_out_by = g.checked_out_by
-        except Exception:  # pragma: no cover - defensive  # pylint: disable=broad-exception-caught
+        except Exception:  # pragma: no cover - defensive
             checked_out_by = None
         lines.append(
             f"- {g.name} (id: {g.id}) — return_date: {return_date} — checked_out_by: {checked_out_by} — location: {locname}"
@@ -178,7 +178,7 @@ def notify_camera_gear_due_returns(within_days: int = 7) -> bool:  # pylint: dis
     try:
         msg = EmailMessage(subject=subject, to=recipients, body=body)
         msg.send()
-    except Exception:  # pragma: no cover - error path exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - error path exercised in tests
         if current_app and current_app.logger:
             current_app.logger.exception("Failed to send camera gear return email")
 
@@ -209,7 +209,7 @@ def _parse_service_frequency(freq: str) -> int | None:
         if f.endswith(" days"):
             return int(f.split()[0])
         return int(f)
-    except Exception:  # pragma: no cover - parsing failure  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - parsing failure
         return None
 
 
@@ -232,7 +232,7 @@ def notify_lab_equipment_service_reminders() -> bool:  # pylint: disable=too-man
             next_due = eq.last_serviced_on + timedelta(days=days)
             if next_due <= today:
                 due_items.append((eq, next_due))
-        except Exception:  # pragma: no cover - skip problematic records  # pylint: disable=broad-exception-caught
+        except Exception:  # pragma: no cover - skip problematic records
             # be conservative and skip problematic records
             continue
 
@@ -244,7 +244,7 @@ def notify_lab_equipment_service_reminders() -> bool:  # pylint: disable=too-man
     # recipients: admins and TAs
     try:
         recipients_q = User.query.filter(User.role.in_([UserRole.ADMIN, UserRole.TA])).all()
-    except Exception:  # pragma: no cover - fallback exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - fallback exercised in tests
         recipients_q = [u for u in User.query.all() if u.role in (UserRole.ADMIN, UserRole.TA)]
 
     recipients = [u.email for u in recipients_q if getattr(u, "email", None)]
@@ -266,7 +266,7 @@ def notify_lab_equipment_service_reminders() -> bool:  # pylint: disable=too-man
     try:
         msg = EmailMessage(subject=subject, to=recipients, body=body)
         msg.send()
-    except Exception:  # pragma: no cover - error path exercised in tests  # pylint: disable=broad-exception-caught
+    except Exception:  # pragma: no cover - error path exercised in tests
         if current_app and current_app.logger:
             current_app.logger.exception("Failed to send lab equipment service email")
 
