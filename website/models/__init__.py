@@ -4,7 +4,6 @@ Re-export SQLAlchemy `db` and model classes for convenient imports
 from the top-level `models` package.
 """
 
-from .base import db
 from .user import User
 from .camera_gear import CameraGear
 from .lab_equipment import LabEquipment
@@ -19,7 +18,6 @@ from .associations import (
 )
 
 __all__ = [
-    'db',
     'User',
     'CameraGear',
     'LabEquipment',

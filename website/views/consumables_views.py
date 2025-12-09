@@ -13,7 +13,7 @@ DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by
 from datetime import datetime
 from flask import Blueprint, request
 from flask_login import current_user
-from constants import (
+from ..constants import (
     DELETE,
     GET,
     POST,
@@ -30,8 +30,9 @@ from constants import (
     ITEM_FIELD_LOCATION_ID,
     ITEM_FIELD_EXPIRES,
 )
-from models import Consumable, Location, Tag, db
-from utils import (
+from ..models import Consumable, Location, Tag
+from website import db
+from ..utils import (
     require_approved,
     require_ta,
     send_low_stock_alert

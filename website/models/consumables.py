@@ -1,18 +1,18 @@
-"""Consumable model and serialization helpers.
+"""Consumables model and convenience helpers.
 
-Contains the Consumable SQLAlchemy model and ``to_dict`` helper used by
-the API views.
+Defines the Consumable SQLAlchemy model and helper methods such as
+``to_dict`` for API serialization. Also includes low stock tracking.
 """
 
-from constants import (
+from ..constants import (
     ITEM_FIELD_NAME,
-    ITEM_FIELD_QUANTITY,
     ITEM_FIELD_TAGS,
     ITEM_FIELD_LOCATION_ID,
-    ITEM_FIELD_EXPIRES,
     ITEM_FIELD_UPDATED_BY,
+    ITEM_FIELD_QUANTITY,
+    ITEM_FIELD_EXPIRES,
 )
-from .base import db
+from website import db
 
 
 class Consumable(db.Model):

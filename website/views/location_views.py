@@ -11,7 +11,7 @@ DELETE  /api/v1/location/<int:location_id>     → Delete a location by ID
 """
 
 from flask import Blueprint, request
-from constants import (
+from ..constants import (
     DELETE,
     ERROR_BAD_REQUEST,
     GET,
@@ -27,8 +27,9 @@ from constants import (
     POST,
     PUT,
 )
-from models import Location, db
-from utils import require_approved, require_ta
+from ..models import Location
+from website import db
+from ..utils import require_approved, require_ta
 
 location_blueprint = Blueprint(LOCATION_DEFAULT_NAME, __name__)
 

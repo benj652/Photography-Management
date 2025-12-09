@@ -3,6 +3,6 @@
 This module exposes the SQLAlchemy ``db`` object used by models.
 """
 
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+# db = SQLAlchemy()

@@ -1,10 +1,10 @@
-"""Location model for storing human-readable locations.
+"""Location model for tracking where items are stored.
 
-Provides the Location SQLAlchemy model used by items and gear.
+This file defines the Location model which represents physical locations
+where inventory items can be stored.
 """
 
-from constants import LOCATION_ID, LOCATION_NAME
-from .base import db
+from website import db
 
 
 class Location(db.Model):
@@ -19,6 +19,6 @@ class Location(db.Model):
     def to_dict(self):
         """Return a simple dict representation of the location."""
         return {
-            LOCATION_ID: self.id,
-            LOCATION_NAME: self.name,
+            "id": self.id,
+            "name": self.name,
         }

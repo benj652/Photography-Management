@@ -13,10 +13,9 @@ DELETE  /api/v1/notes/<int:note_id>      → Delete a note by ID
 
 from datetime import datetime
 from flask import Blueprint, request
-from flask_login import current_user
-from flask_login.utils import login_required
+from flask_login import current_user, login_required
 
-from constants import (
+from ..constants import (
     DELETE,
     GET,
     POST,
@@ -37,8 +36,9 @@ from constants import (
     NOTE_DELETE_SUCCESS_MESSAGE,
     ERROR_BAD_REQUEST,
 )
-from models import Note, CameraGear, LabEquipment, Consumable, db
-from utils import require_ta, require_approved
+from ..models import Note, CameraGear, LabEquipment, Consumable
+from website import db
+from ..utils import require_ta, require_approved
 
 
 notes_blueprint = Blueprint(NOTES_DEFAULT_NAME, __name__)

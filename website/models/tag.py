@@ -1,10 +1,11 @@
-"""Tag model and helpers used for categorizing items.
+"""Tag model for categorizing inventory items.
 
-Defines Tag model used by items and gear.
+This file defines the Tag model which serves as categories/labels for
+CameraGear, LabEquipment, and Consumables.
 """
 
-from constants import TAG_ID, TAG_NAME
-from .base import db
+from website import db
+from ..constants import TAG_ID, TAG_NAME
 
 
 class Tag(db.Model):

@@ -5,8 +5,8 @@ Defines the User SQLAlchemy model used for authentication and role checks.
 
 from flask_login import UserMixin
 from sqlalchemy import Enum
-from constants import UserRole
-from .base import db
+from ..constants import UserRole
+from website import db
 
 class User(db.Model, UserMixin):
     """Application user with authentication and role information."""

@@ -1,11 +1,11 @@
-"""Note model and serialization helpers.
+"""Notes model for adding contextual information to inventory items.
 
-Defines the Note SQLAlchemy model for storing notes attached to inventory items
-such as camera gear, lab equipment, and consumables.
+This file defines the Note model which allows users to add timestamped
+notes to any inventory item for tracking maintenance, issues, etc.
 """
 
+from website import db
 from datetime import datetime
-from .base import db
 
 
 class Note(db.Model):
