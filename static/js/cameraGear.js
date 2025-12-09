@@ -242,7 +242,7 @@ async function openEditModal(itemId) {
 
 // Check out camera gear
 async function checkOutGear(id) {
-    if (!confirm("Are you sure you want to check out this camera gear?")) {
+    if (!confirm("\nColby College Photography:\n\nBy signing out this equipment, I understand that I take liability for its proper care and keeping, and will be responsible for any damages or loss.\n\nI have verified with with Prof. Nelson, and I have filled out the proper paperwork before checking out this equipment")) {
         return;
     }
 
@@ -268,7 +268,7 @@ async function checkOutGear(id) {
 
 // Check in camera gear
 async function checkInGear(id) {
-    if (!confirm("Are you sure you want to check in this camera gear?")) {
+    if (!confirm("\nColby College Photography:\n\nBefore checking in this equipment, I have verified with with Prof. Nelson, and I have filled out the proper check-in paperwork")) {
         return;
     }
 
