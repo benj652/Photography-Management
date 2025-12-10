@@ -38,6 +38,8 @@ def require_roles(roles: list[UserRole]):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                abort(ERROR_NOT_AUTHORIZED)
             if current_user.role not in roles:
                 abort(ERROR_NOT_AUTHORIZED)
             return f(*args, **kwargs)
