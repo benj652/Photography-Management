@@ -11,7 +11,7 @@ DELETE  /api/v1/items/<int:item_id>         → Delete an item by ID
 """
 
 from flask import Blueprint, request
-from constants import (
+from ..constants import (
     DELETE,
     GET,
     MESSAGE_KEY,
@@ -28,8 +28,10 @@ from constants import (
     TAG_UPDATE_ROUTE,
     ERROR_BAD_REQUEST
 )
-from models import Tag, db
-from utils import require_ta, require_approved
+from ..models import Tag
+from ..utils import require_ta, require_approved
+
+from website import db
 
 tags_blueprint = Blueprint(TAG_DEFAULT_NAME, __name__)
 

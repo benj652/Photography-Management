@@ -12,7 +12,7 @@ DELETE  /api/v1/lab_equipment/<int:tag_id>       → Delete a lab equipment item
 from datetime import datetime
 from flask import Blueprint, request
 from flask_login import current_user
-from constants import (
+from ..constants import (
     DELETE,
     GET,
     LAB_EQUIPMENT_ALL_ROUTE,
@@ -27,8 +27,10 @@ from constants import (
     POST,
     PUT,
 )
-from models import LabEquipment, Tag, db
-from utils import require_approved, require_ta
+from ..models import LabEquipment, Tag
+from ..utils import require_approved, require_ta
+
+from website import db
 
 
 lab_equipment_blueprint = Blueprint(LAB_EQUIPMENT_DEFAULT_NAME, __name__)

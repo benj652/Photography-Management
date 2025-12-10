@@ -10,14 +10,15 @@ sending fails so callers can invoke them from scheduled jobs safely.
 from datetime import date, timedelta
 from typing import List
 
-from flask import current_app
 from flask_mailman import EmailMessage
 
-from models.consumables import Consumable
-from models.user import User
-from models.camera_gear import CameraGear
-from models.lab_equipment import LabEquipment
-from constants import UserRole
+from ..models import (
+    Consumable,
+    User,
+    CameraGear,
+    LabEquipment
+)
+from ..constants import UserRole
 
 
 def notify_consumables_expiring_this_week() -> bool:

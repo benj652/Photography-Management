@@ -3,13 +3,13 @@
 Defines LabEquipment model and common serialization helpers.
 """
 
-from constants import (
+from ..constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_TAGS,
     ITEM_FIELD_UPDATED_BY,
 )
-from .base import db
 
+from website import db
 
 class LabEquipment(db.Model):
     """Represents lab equipment that can be tracked and serviced."""

@@ -6,3 +6,4 @@ import them from ``utils`` directly.
 
 from .role_decorators import *
 from .mail import *
+from .tasks import *

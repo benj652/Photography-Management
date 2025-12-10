@@ -10,7 +10,7 @@ import os
 
 from flask import Blueprint, request, abort, current_app
 
-from utils.tasks import (
+from ..utils import (
     notify_consumables_expiring_this_week,
     notify_camera_gear_due_returns,
     notify_lab_equipment_service_reminders,

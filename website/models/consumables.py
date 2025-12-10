@@ -4,7 +4,7 @@ Contains the Consumable SQLAlchemy model and ``to_dict`` helper used by
 the API views.
 """
 
-from constants import (
+from ..constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_QUANTITY,
     ITEM_FIELD_TAGS,
@@ -12,8 +12,8 @@ from constants import (
     ITEM_FIELD_EXPIRES,
     ITEM_FIELD_UPDATED_BY,
 )
-from .base import db
 
+from website import db
 
 class Consumable(db.Model):
     """Represents a consumable inventory item (e.g., film, paper)."""

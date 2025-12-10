@@ -14,7 +14,7 @@ import os
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, render_template, session, redirect, url_for
 from flask_login import login_required, login_user, logout_user
-from constants import (
+from ..constants import (
     AUTH_PREFIX,
     AUTH_REDIRECT_URI,
     AUTHORIZE_ROUTE,
@@ -39,7 +39,8 @@ from constants import (
     USER_KEY,
     UserRole,
 )
-from models import User, db
+from ..models import User
+from website import db
 
 oauth = OAuth()
 google = None

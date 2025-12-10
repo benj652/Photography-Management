@@ -12,8 +12,8 @@ REDIRECT home.home                 → Named route for "not found" fallback
 from datetime import date, timedelta
 from flask import Blueprint, render_template, current_app
 from flask_login import login_required, current_user
-from models import Consumable, CameraGear, LabEquipment
-from constants import (
+from ..models import Consumable, CameraGear, LabEquipment
+from ..constants import (
     CAMERA_GEAR_ROUTE,
     CAMERA_GEAR_TEMPLATE,
     HOME_ROUTE,
@@ -24,7 +24,8 @@ from constants import (
     CONSUMABLES_ROUTE,
     CONSUMABLES_TEMPLATE,
     )
-from utils import require_approved
+from ..utils import require_approved
+
 
 
 home_blueprint = Blueprint(HOME_BLUEPRINT_NAME, __name__)

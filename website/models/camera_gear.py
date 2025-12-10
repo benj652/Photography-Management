@@ -4,14 +4,14 @@ Defines the CameraGear SQLAlchemy model and helper methods such as
 ``to_dict`` for API serialization.
 """
 
-from constants import (
+from ..constants import (
     ITEM_FIELD_NAME,
     ITEM_FIELD_TAGS,
     ITEM_FIELD_LOCATION_ID,
     ITEM_FIELD_UPDATED_BY,
 )
-from .base import db
 
+from website import db
 
 class CameraGear(db.Model):
     """Represents a camera gear item stored in inventory."""
