@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from typing import List
 
 from flask_mailman import EmailMessage
+from flask import current_app
 
 from ..models import (
     Consumable,

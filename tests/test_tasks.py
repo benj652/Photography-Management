@@ -17,7 +17,7 @@ import types
 
 import pytest
 
-import utils.tasks as tasks
+import website.utils.tasks as tasks
 
 
 def make_fake_query(items=None, raise_on_filter=False):
@@ -103,8 +103,10 @@ def test_notify_consumables_email_failure_logs(app_ctx, patcher):
     def fake_exc(*a, **k):
         logged['exc'] = True
 
-    # attach logger.exception
-    from app import app as flask_app
+    # attach logger.exception on a fresh app instance from the factory
+    from website import create_app
+    flask_app = create_app()
+    flask_app.config.setdefault("TESTING", True)
     orig_exc = flask_app.logger.exception
     flask_app.logger.exception = fake_exc
 
@@ -277,8 +279,10 @@ def test_lab_equipment_recipient_filter_raises_and_send_exception_logged(app_ctx
 
     patcher(tasks, "EmailMessage", BadEM)
 
-    # attach logger.exception
-    from app import app as flask_app
+    # attach logger.exception on a fresh app instance from the factory
+    from website import create_app
+    flask_app = create_app()
+    flask_app.config.setdefault("TESTING", True)
     orig_exc = flask_app.logger.exception
     logged = {}
     flask_app.logger.exception = lambda *a, **k: logged.setdefault('exc', True)
@@ -981,7 +985,9 @@ def test_notify_camera_gear_send_exception_logs(app_ctx, patcher):
 
     logged = {}
 
-    from app import app as flask_app
+    from website import create_app
+    flask_app = create_app()
+    flask_app.config.setdefault("TESTING", True)
     orig_exc = flask_app.logger.exception
     flask_app.logger.exception = lambda *a, **k: logged.setdefault('exc', True)
 
@@ -1013,7 +1019,9 @@ def test_notify_lab_equipment_skips_problematic_record(app_ctx, patcher):
     fake_user.query = make_fake_query([u])
     patcher(tasks, "User", fake_user)
 
-    from app import app as flask_app
+    from website import create_app
+    flask_app = create_app()
+    flask_app.config.setdefault("TESTING", True)
     logged = {}
     orig_info = flask_app.logger.info
     flask_app.logger.info = lambda *a, **k: logged.setdefault('info', True)
