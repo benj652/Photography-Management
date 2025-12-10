@@ -15,6 +15,7 @@ if _proj_root not in sys.path:
     sys.path.insert(0, _proj_root)
 
 from app import app as flask_app
+from models import db
 
 
 @pytest.fixture(scope="module")
@@ -28,6 +29,39 @@ def app_ctx(app):
     """Enter a Flask application context for tests."""
     with app.app_context():
         yield
+
+
+@pytest.fixture(autouse=True)
+def cleanup_db(app_ctx):
+    """Automatically clean up database before and after each test."""
+    from models import Note, CameraGear, LabEquipment, Consumable, User
+    
+    # Clean up before test
+    db.session.rollback()
+    try:
+        # Delete in reverse order of dependencies
+        Note.query.delete()
+        CameraGear.query.delete()
+        LabEquipment.query.delete()
+        Consumable.query.delete()
+        User.query.delete()
+        db.session.commit()
+    except Exception:  # pragma: no cover
+        db.session.rollback()
+    
+    yield
+    
+    # Clean up after test
+    db.session.rollback()
+    try:
+        Note.query.delete()
+        CameraGear.query.delete()
+        LabEquipment.query.delete()
+        Consumable.query.delete()
+        User.query.delete()
+        db.session.commit()
+    except Exception:  # pragma: no cover
+        db.session.rollback()
 
 
 @pytest.fixture
