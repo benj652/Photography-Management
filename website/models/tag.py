@@ -3,9 +3,9 @@
 Defines Tag model used by items and gear.
 """
 
-from constants import TAG_ID, TAG_NAME
-from .base import db
+from ..constants import TAG_ID, TAG_NAME
 
+from website import db
 
 class Tag(db.Model):
     """Tag used to categorize items and equipment."""

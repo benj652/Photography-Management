@@ -4,9 +4,9 @@ Admin Views
 
 from flask import Blueprint, render_template
 
-from constants import ADMIN_TEMPLATE, GET, POST, UserRole
-from models import User
-from utils.role_decorators import require_admin
+from ..constants import ADMIN_TEMPLATE, GET, POST, UserRole
+from ..models import User
+from ..utils import require_admin
 
 
 admin_blueprint = Blueprint("admin", __name__)

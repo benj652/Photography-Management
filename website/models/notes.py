@@ -5,8 +5,8 @@ such as camera gear, lab equipment, and consumables.
 """
 
 from datetime import datetime
-from .base import db
 
+from website import db
 
 class Note(db.Model):
     """Represents a note that can be attached to inventory items."""

@@ -17,7 +17,7 @@ from flask import Blueprint, request
 from flask_login import current_user
 from flask_login.utils import login_required
 
-from constants import (
+from ..constants import (
     CAMERA_GEAR_ALL_ROUTE,
     CAMERA_GEAR_CREATE_ROUTE,
     CAMERA_GEAR_DEAFULT_NAME,
@@ -33,8 +33,10 @@ from constants import (
     POST,
     PUT,
 )
-from models import CameraGear, Location, Tag, db
-from utils import require_ta, require_approved
+from ..models import CameraGear, Location, Tag
+from ..utils import require_ta, require_approved
+
+from website import db
 
 
 camera_gear_blueprint = Blueprint(CAMERA_GEAR_DEAFULT_NAME, __name__)

@@ -10,11 +10,9 @@ import os
 
 from flask import Blueprint, request, abort, current_app
 
-from utils.tasks import (
-    notify_consumables_expiring_this_week,
-    notify_camera_gear_due_returns,
-    notify_lab_equipment_service_reminders,
-)
+# Importing the task helpers at module import time can create a cyclic
+# import with the utils module (which imports models and app context).
+# Import the helpers inside the endpoint function to break that cycle.
 
 tasks_blueprint = Blueprint("internal_tasks", __name__, url_prefix="/internal/tasks")
 
@@ -34,6 +32,13 @@ def weekly_expirations():
 
     # Run the helper synchronously inside the request (app) context.
     try:
+        # Import helpers here to avoid cyclic imports at module import time.
+        from ..utils import (
+            notify_consumables_expiring_this_week,
+            notify_camera_gear_due_returns,
+            notify_lab_equipment_service_reminders,
+        )
+
         # run all three weekly checks; each helper logs failures individually
         notify_consumables_expiring_this_week()
         notify_camera_gear_due_returns()

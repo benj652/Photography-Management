@@ -14,7 +14,9 @@ _proj_root = os.path.dirname(os.path.dirname(__file__))
 if _proj_root not in sys.path:
     sys.path.insert(0, _proj_root)
 
-from app import app as flask_app
+from website import create_app
+
+flask_app = create_app()
 from models import db
 
 

@@ -13,7 +13,7 @@ INVALID: Student not in Photography who can not see or edit the database at all.
 from functools import wraps
 from flask_login import current_user
 from flask import abort
-from constants import ERROR_NOT_AUTHORIZED, UserRole
+from ..constants import ERROR_NOT_AUTHORIZED, UserRole
 
 
 def require_approved(f):

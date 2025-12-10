@@ -3,9 +3,9 @@
 Provides the Location SQLAlchemy model used by items and gear.
 """
 
-from constants import LOCATION_ID, LOCATION_NAME
-from .base import db
+from ..constants import LOCATION_ID, LOCATION_NAME
 
+from website import db
 
 class Location(db.Model):
     """Simple location record used by items and gear."""
