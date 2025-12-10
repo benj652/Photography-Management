@@ -159,7 +159,7 @@ def update_note(note_id):
     data = request.get_json()
     content = data.get(NOTE_CONTENT_FIELD)
 
-    if content:
+    if content is not None:
         note.content = content
     
     note.updated_at = datetime.utcnow()
