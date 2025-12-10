@@ -13,7 +13,7 @@ from datetime import datetime
 
 import pytest
 
-from constants import (
+from website.constants import (
     API_PREFIX,
     NOTES_PREFIX,
     NOTES_ALL_ROUTE,
@@ -34,7 +34,8 @@ from constants import (
     ERROR_NOT_FOUND,
     UserRole,
 )
-from models import User, Note, CameraGear, LabEquipment, Consumable, db
+from website.models import User, Note, CameraGear, LabEquipment, Consumable
+from website import db
 
 
 def login_user_in_client(client, user):
