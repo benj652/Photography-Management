@@ -11,8 +11,9 @@ from datetime import datetime, timezone
 
 import pytest
 
-from models import Note, CameraGear, LabEquipment, Consumable, User, db
-from constants import UserRole
+from website.models import Note, CameraGear, LabEquipment, Consumable, User
+from website import db
+from website.constants import UserRole
 
 
 @pytest.fixture

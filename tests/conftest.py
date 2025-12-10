@@ -15,9 +15,10 @@ if _proj_root not in sys.path:
     sys.path.insert(0, _proj_root)
 
 from website import create_app
+from website import db
 
 flask_app = create_app()
-from models import db
+
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +37,7 @@ def app_ctx(app):
 @pytest.fixture(autouse=True)
 def cleanup_db(app_ctx):
     """Automatically clean up database before and after each test."""
-    from models import Note, CameraGear, LabEquipment, Consumable, User
+    from website.models import Note, CameraGear, LabEquipment, Consumable, User
     
     # Clean up before test
     db.session.rollback()
