@@ -8,6 +8,7 @@ configuration and wiring only.
 import os
 
 from dotenv import load_dotenv
+from flask.cli import with_appcontext
 from flask import Flask, redirect, render_template, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
@@ -101,14 +102,14 @@ def create_app():
 
     init_oauth(app)
 
-#   Initialize the mail helper (flask-mailman)
+    # Initialize the mail helper (flask-mailman)
     try:
-        from utils.mail import init_mail
+        from .utils.mail import init_mail
 
         init_mail(app)
     except Exception:
         # don't crash app if mail isn't available; emails will be a no-op
-        pass
+        app.logger.exception("Failed to initialize mail extension; emails will be disabled")
 
 
     app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
@@ -151,7 +152,17 @@ def create_app():
         return render_template(UNAUTHORIZED_TEMPLATE), ERROR_NOT_AUTHORIZED
 
 
-    with app.app_context():
-        db.create_all()  # Create database tables
+    # Do NOT create tables automatically on app creation in production
+    # (this would run in every gunicorn worker and race). Provide a
+    # CLI command below to run initialization once during deploy.
+
+    @app.cli.command("init-db")
+    @with_appcontext
+    def init_db_command():
+        """Create database tables.
+
+        Run this once during setup or from a release phase: `flask init-db`.
+        """
+        db.create_all()
 
     return app
