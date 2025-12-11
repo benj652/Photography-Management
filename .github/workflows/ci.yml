@@ -8,15 +8,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11"]
-    env:
-      DEFAULT_ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      LOW_STOCK_THRESHOLD: ${{ secrets.LOW_STOCK_THRESHOLD }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
-      SQLALCHEMY_TRACK_MODIFICATIONS: ${{ secrets.SQLALCHEMY_TRACK_MODIFICATIONS }}
-      WEEKLY_TASK_TOKEN: ${{ secrets.WEEKLY_TASK_TOKEN }}
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -32,3 +23,12 @@ jobs:
       run: |
         python -m pytest --cov=./ --cov-report=term-missing
         pytest --cov=./ --cov-branch --cov-report=term-missing
+      env:
+        DEFAULT_ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        LOW_STOCK_THRESHOLD: ${{ secrets.LOW_STOCK_THRESHOLD }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
+        SQLALCHEMY_TRACK_MODIFICATIONS: ${{ secrets.SQLALCHEMY_TRACK_MODIFICATIONS }}
+        WEEKLY_TASK_TOKEN: ${{ secrets.WEEKLY_TASK_TOKEN }}

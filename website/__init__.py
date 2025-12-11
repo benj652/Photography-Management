@@ -55,8 +55,8 @@ def create_app():
 
     app.secret_key = os.getenv(SECRET_KEY)
 
-    if not app.secret_key:
-        app.secret_key = "dev"  # fallback for development only
+    # if not app.secret_key:
+    #     app.secret_key = "dev"  # fallback for development only
     if os.environ.get("CLOUD"):  # check if cloud deployment
         db_url = os.environ.get("DATABASE_URL")
         if db_url and db_url.startswith("postgres://"):
@@ -65,8 +65,8 @@ def create_app():
     else:
         app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
 
-    if not app.config[SQLALCHEMY_DATABASE_URI]:
-        app.config[SQLALCHEMY_DATABASE_URI] = "sqlite:///photography_management.db"
+    # if not app.config[SQLALCHEMY_DATABASE_URI]:
+    #     app.config[SQLALCHEMY_DATABASE_URI] = "sqlite:///photography_management.db"
 
 
     # Keep the SQLAlchemy option as a boolean-like environment value if present.
