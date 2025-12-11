@@ -62,6 +62,9 @@ def create_app():
     else:
         app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
 
+    if not app.config[SQLALCHEMY_DATABASE_URI]:
+        app.config[SQLALCHEMY_DATABASE_URI] = "sqlite:///photography_management.db"
+
     # Keep the SQLAlchemy option as a boolean-like environment value if present.
     app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICATIONS)
 
