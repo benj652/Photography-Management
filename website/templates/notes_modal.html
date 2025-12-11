@@ -1,0 +1,102 @@
+<!-- Notes Modal -->
+<div
+  class="modal fade"
+  id="notesModal"
+  tabindex="-1"
+  aria-labelledby="notesModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="notesModalLabel">
+          <i class="fas fa-sticky-note me-2"></i>Notes
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Alert container for messages -->
+        <div id="notesModalAlert" class="alert d-none" role="alert"></div>
+
+        <!-- Item Info -->
+        <div class="mb-3">
+          <p class="mb-0">
+            <strong>Item:</strong>
+            <span id="notesItemName" class="fw-semibold"></span>
+            <span class="text-muted">(ID: <span id="notesItemId"></span>)</span>
+          </p>
+        </div>
+
+        <!-- Note Content Section -->
+        <div id="noteContentSection">
+          <div class="mb-3">
+            <textarea
+              id="noteContent"
+              class="form-control"
+              rows="8"
+              placeholder="Enter note content..."
+            ></textarea>
+          </div>
+
+          <!-- Note Metadata (shown when note exists) -->
+          <div id="noteMetadata" class="mb-3 d-none">
+            <hr />
+            <div class="row">
+              <div class="col-md-6">
+                <small class="text-muted">
+                  <strong>Created:</strong>
+                  <span id="noteCreatedAt"></span>
+                  <br />
+                  <strong>By:</strong>
+                  <span id="noteCreatedBy"></span>
+                </small>
+              </div>
+              <div class="col-md-6">
+                <small class="text-muted">
+                  <strong>Last Updated:</strong>
+                  <span id="noteUpdatedAt"></span>
+                  <br />
+                  <strong>By:</strong>
+                  <span id="noteUpdatedBy"></span>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Note State -->
+        <div id="noNoteSection" class="text-center py-4 d-none">
+          <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No note exists for this item.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <!-- Delete button -->
+        <button
+          type="button"
+          class="btn btn-danger d-none"
+          id="deleteNoteBtn"
+          title="Delete Note"
+        >
+          <i class="fas fa-trash"></i>
+        </button>
+        <!-- Save/Add button -->
+        <button type="button" class="btn btn-primary" id="saveNoteBtn">
+          <span
+            class="spinner-border spinner-border-sm d-none"
+            id="saveNoteSpinner"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <span id="saveNoteBtnText">Add Note</span>
+          <i class="fas fa-check d-none" id="saveNoteIcon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
