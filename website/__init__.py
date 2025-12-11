@@ -101,14 +101,16 @@ def create_app():
 
     init_oauth(app)
 
-#   Initialize the mail helper (flask-mailman)
+    # Initialize the mail helper (flask-mailman). Use a package-relative
+    # import so the helper is resolved when the app is inside the package.
     try:
-        from utils.mail import init_mail
+        from .utils.mail import init_mail
 
         init_mail(app)
     except Exception:
-        # don't crash app if mail isn't available; emails will be a no-op
-        pass
+        # Don't crash the app if mail isn't available, but log the
+        # exception so import/setup problems are visible in logs.
+        app.logger.exception("Failed to initialize mail extension; emails will be disabled")
 
 
     app.register_blueprint(auth_blueprint, url_prefix=AUTH_PREFIX)
