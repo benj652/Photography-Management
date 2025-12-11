@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from constants import (
+from website.constants import (
     API_PREFIX,
     TAG_PREFIX,
     TAG_ALL_ROUTE,
@@ -29,7 +29,8 @@ from constants import (
     ERROR_NOT_FOUND,
     UserRole,
 )
-from models import User, Tag, db
+from website.models import User, Tag
+from website import db
 
 
 def login_user_in_client(client, user):

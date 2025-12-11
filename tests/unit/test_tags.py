@@ -9,8 +9,9 @@ Tests focus on the to_dict() and __repr__() methods.
 
 import pytest
 
-from models import Tag, db
-from constants import TAG_ID, TAG_NAME
+from website.models import Tag
+from website import db
+from website.constants import TAG_ID, TAG_NAME
 
 
 @pytest.fixture
