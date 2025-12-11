@@ -6,11 +6,8 @@ role changes, and authorization requirements with comprehensive branch coverage.
 
 # pylint: disable=import-error,wrong-import-position,redefined-outer-name,unused-argument
 import pytest
-from unittest.mock import Mock, patch
-from flask import url_for
-from flask_login import current_user
+from unittest.mock import patch
 
-from website.views.admin_views import admin_blueprint
 from website.constants import (
     UserRole,
     ADMIN_TEMPLATE,
@@ -523,4 +520,4 @@ class TestAdminIntegration:
                 
                 roles = {user['email']: user['role'] for user in final_users_data['user']}
                 assert roles['student@example.com'] == UserRole.TA.value
-                assert roles['invalid@example.com'] == UserRole.STUDENT.value                /home/benj/documents/academic/cs/cs321/Photography-Management/env/bin/python -m pytest tests/test_admin.py -v
+                assert roles['invalid@example.com'] == UserRole.STUDENT.value
