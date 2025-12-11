@@ -1,0 +1,20 @@
+name: Weekly expirations
+
+on:
+  schedule:
+    - cron: '0 8 * * MON'  # Monday 08:00 UTC — adjust as needed
+  workflow_dispatch: {}
+
+jobs:
+  run-weekly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST to app endpoint
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          TASK_TOKEN: ${{ secrets.WEEKLY_TASK_TOKEN }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$TASK_TOKEN" ]; then
+            echo "Missing APP_URL or WEEKLY_TASK_TOKEN secret"; exit 1
+          fi
+          curl -X POST -H "X-Task-Token: ${TASK_TOKEN}" "${APP_URL}/internal/tasks/weekly-expirations" -sS -f
