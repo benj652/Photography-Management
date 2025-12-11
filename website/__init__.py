@@ -54,6 +54,9 @@ def create_app():
     app = Flask(__name__)
 
     app.secret_key = os.getenv(SECRET_KEY)
+
+    if not app.secret_key:
+        app.secret_key = "dev"  # fallback for development only
     if os.environ.get("CLOUD"):  # check if cloud deployment
         db_url = os.environ.get("DATABASE_URL")
         if db_url and db_url.startswith("postgres://"):
@@ -61,6 +64,10 @@ def create_app():
         app.config[SQLALCHEMY_DATABASE_URI] = db_url
     else:
         app.config[SQLALCHEMY_DATABASE_URI] = os.getenv(SQLALCHEMY_DATABASE_URI)
+
+    if not app.config[SQLALCHEMY_DATABASE_URI]:
+        app.config[SQLALCHEMY_DATABASE_URI] = "sqlite:///testing.db"
+
 
     # Keep the SQLAlchemy option as a boolean-like environment value if present.
     app.config[SQLALCHEMY_TRACK_MODIFICATIONS] = os.getenv(SQLALCHEMY_TRACK_MODIFICATIONS)
