@@ -38,7 +38,7 @@ def app_ctx(app):
 def cleanup_db(app_ctx):
     """Automatically clean up database before and after each test."""
     from website.models import Note, CameraGear, LabEquipment, Consumable, User, Tag
-    
+
     # Clean up before test
     db.session.rollback()
     try:
@@ -52,9 +52,9 @@ def cleanup_db(app_ctx):
         db.session.commit()
     except Exception:  # pragma: no cover
         db.session.rollback()
-    
+
     yield
-    
+
     # Clean up after test
     db.session.rollback()
     try:
