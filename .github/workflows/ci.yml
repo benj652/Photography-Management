@@ -9,7 +9,7 @@ jobs:
       matrix:
         python-version: ["3.11"]
     env:
-      DEFAULT_ADIMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
+      DEFAULT_ADMIN_EMAIL: ${{ secrets.DEFAULT_ADMIN_EMAIL }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       LOW_STOCK_THRESHOLD: ${{ secrets.LOW_STOCK_THRESHOLD }}
