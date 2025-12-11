@@ -6,5 +6,5 @@ requests==2.32.5
 flask_mailman==1.1.1
 dotenv==0.9.9
 gunicorn==21.2.0
-dotenvy==0.21.0
+dotenv==0.21.0
 python-dotenv==1.0.0
