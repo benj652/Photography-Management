@@ -158,3 +158,78 @@ class TestConsumablesEndpoints:
             payload = {"name": "Bad Loc", "location_id": 999}
             rv2 = client.post(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_CREATE_ROUTE}", json=payload)
             assert rv2.status_code == 400
+
+    def test_create_invalid_expires_format(self, app, app_ctx, ta_user):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            payload = {"name": "Bad Expire", "expires": "not-a-date"}
+            rv = client.post(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_CREATE_ROUTE}", json=payload)
+            assert rv.status_code == 400
+
+    def test_create_location_not_found(self, app, app_ctx, ta_user):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            payload = {"name": "LocMissing", "location_id": 99999}
+            rv = client.post(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_CREATE_ROUTE}", json=payload)
+            assert rv.status_code == 400
+
+    def test_create_with_new_tag_and_associates(self, app, app_ctx, ta_user):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            tag_name = f"cons-{uuid.uuid4().hex[:8]}"
+            payload = {"name": "Tagged Cons", "tags": [tag_name], "quantity": 2}
+            rv = client.post(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_CREATE_ROUTE}", json=payload)
+            assert rv.status_code == 200
+            data = json.loads(rv.data)
+            c = Consumable.query.get(data["id"])
+            assert any(t.name == tag_name for t in c.tags)
+
+    def test_update_tags_none_keeps_existing(self, app, app_ctx, ta_user):
+        # prepare existing tag and attach it to consumable
+        t = Tag(name="keep-cons")
+        db.session.add(t)
+        db.session.commit()
+        c = Consumable(name="KeepCons", quantity=1, last_updated=datetime.utcnow(), updated_by=ta_user.id)
+        db.session.add(c)
+        db.session.commit()
+        c.tags = [t]
+        db.session.commit()
+
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            rv = client.put(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_UPDATE_ROUTE}".replace('<int:consumable_id>', str(c.id)), json={"name": "KeepConsUpdated"})
+            assert rv.status_code == 200
+            fetched = Consumable.query.get(c.id)
+            assert any(tt.name == "keep-cons" for tt in fetched.tags)
+
+    def test_update_tags_empty_clears_tags(self, app, app_ctx, ta_user):
+        t = Tag(name="clear-cons")
+        db.session.add(t)
+        db.session.commit()
+        c = Consumable(name="ClearCons", quantity=1, last_updated=datetime.utcnow(), updated_by=ta_user.id)
+        db.session.add(c)
+        db.session.commit()
+        c.tags = [t]
+        db.session.commit()
+
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            rv = client.put(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_UPDATE_ROUTE}".replace('<int:consumable_id>', str(c.id)), json={"tags": []})
+            assert rv.status_code == 200
+            fetched = Consumable.query.get(c.id)
+            assert fetched.tags == []
+
+    def test_update_clear_location_with_empty_string(self, app, app_ctx, ta_user):
+        loc = Location(name="Shelf")
+        db.session.add(loc)
+        db.session.commit()
+        c = Consumable(name="LocClear", quantity=1, last_updated=datetime.utcnow(), updated_by=ta_user.id, location=loc)
+        db.session.add(c)
+        db.session.commit()
+
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            rv = client.put(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_UPDATE_ROUTE}".replace('<int:consumable_id>', str(c.id)), json={"location_id": ""})
+            assert rv.status_code == 200
+            fetched = Consumable.query.get(c.id)
+            assert fetched.location is None

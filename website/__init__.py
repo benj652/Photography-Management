@@ -8,7 +8,7 @@ configuration and wiring only.
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, redirect, render_template, url_for, request
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -145,6 +145,11 @@ def create_app():
         used here.
         """
         # pylint: disable=unused-argument
+        # For API requests return a proper 404 JSON so callers/tests can
+        # handle not-found programmatically. For UI routes preserve the
+        # existing redirect behavior to the named not-found page.
+        if request.path.startswith(API_PREFIX):
+            return {"error": "Not found"}, ERROR_NOT_FOUND
         return redirect(url_for(NOT_FOUND_ROUTE))
 
 
