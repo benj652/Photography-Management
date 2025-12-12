@@ -37,7 +37,15 @@ def app_ctx(app):
 @pytest.fixture(autouse=True)
 def cleanup_db(app_ctx):
     """Automatically clean up database before and after each test."""
-    from website.models import Note, CameraGear, LabEquipment, Consumable, User, Tag
+    from website.models import (
+        Note,
+        CameraGear,
+        LabEquipment,
+        Consumable,
+        Location,
+        User,
+        Tag,
+    )
 
     # Clean up before test
     db.session.rollback()
@@ -47,6 +55,7 @@ def cleanup_db(app_ctx):
         CameraGear.query.delete()
         LabEquipment.query.delete()
         Consumable.query.delete()
+        Location.query.delete()
         Tag.query.delete()
         User.query.delete()
         db.session.commit()
@@ -62,6 +71,7 @@ def cleanup_db(app_ctx):
         CameraGear.query.delete()
         LabEquipment.query.delete()
         Consumable.query.delete()
+        Location.query.delete()
         Tag.query.delete()
         User.query.delete()
         db.session.commit()
