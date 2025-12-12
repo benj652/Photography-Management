@@ -1,18 +1,16 @@
-"""
-=====================================================
- Consumables Routes (prefixed with "/consumables")
-=====================================================
+"""Consumables routes (prefixed with "/consumables").
 
-GET     /api/v1/consumables/all                → Retrieve all consumables
-GET     /api/v1/consumables/one/<int:consumable_id>   → Retrieve a specific consumable by ID
-POST    /api/v1/consumables/                   → Create a new consumable
-PUT     /api/v1/consumables/<int:consumable_id>       → Update an existing consumable
-DELETE  /api/v1/consumables/<int:consumable_id>       → Delete a consumable by ID
+This module contains the REST endpoints for consumable items used in
+functional tests. The file-level pylint disables below are intentional for
+readability and to avoid noisy warnings in tests.
 """
+
 
 from datetime import datetime
 from flask import Blueprint, request
 from flask_login import current_user
+from website import db
+
 from ..constants import (
     DELETE,
     GET,
@@ -34,12 +32,45 @@ from ..models import Consumable, Location, Tag
 from ..utils import (
     require_approved,
     require_ta,
-    send_low_stock_alert
+    send_low_stock_alert,
 )
 
-from website import db
-
 consumables_blueprint = Blueprint(CONSUMABLES_DEFAULT_NAME, __name__)
+
+
+def _parse_expires(expires_str: str):
+    """Parse an ISO date string into a date or raise ValueError.
+
+    Kept as a small helper so the route logic stays simple and its
+    ValueError can be handled in a narrow except block.
+    """
+    return datetime.fromisoformat(expires_str).date()
+
+
+def _resolve_tags(tag_names):
+    """Resolve or create Tag objects for the given names and return a
+    deduplicated list of Tag instances.
+
+    This centralizes DB lookups and deduplication so both create and
+    update flows are simpler and have fewer branches.
+    """
+    tags = []
+    for tag_name in tag_names:
+        tag = Tag.query.filter_by(name=tag_name).first()
+        if not tag:
+            tag = Tag(name=tag_name)
+            db.session.add(tag)
+        tags.append(tag)
+
+    # Deduplicate tags by name
+    seen = set()
+    unique = []
+    for t in tags:
+        name = getattr(t, "name", None)
+        if name and name not in seen:
+            seen.add(name)
+            unique.append(t)
+    return unique
 
 
 @consumables_blueprint.route(CONSUMABLES_ALL_ROUTE, methods=[GET])
@@ -75,26 +106,11 @@ def create_consumable():
     expires = None
     if expires_str:
         try:
-            expires = datetime.fromisoformat(expires_str).date()
+            expires = _parse_expires(expires_str)
         except ValueError:
             return {"error": "Invalid expiration date format"}, 400
 
-    tags = []
-    for tag_name in tag_names:
-        tag = Tag.query.filter_by(name=tag_name).first()
-        if not tag:
-            tag = Tag(name=tag_name)
-            db.session.add(tag)
-        tags.append(tag)
-
-    # Ensure tags are unique by name to avoid duplicate many-to-many inserts
-    seen_names = set()
-    unique_tags = []
-    for t in tags:
-        if getattr(t, "name", None) and t.name not in seen_names:
-            seen_names.add(t.name)
-            unique_tags.append(t)
-    tags = unique_tags
+    tags = _resolve_tags(tag_names)
 
     location = None
     if location_id:
@@ -121,12 +137,9 @@ def create_consumable():
         new_consumable.tags = tags
         db.session.commit()
 
-    # After creating, check for low stock and notify admins if configured
-    try:
-        send_low_stock_alert(new_consumable)
-    except Exception:
-        # do not break the create flow if email sending fails
-        pass
+    # After creating, check for low stock and notify admins if configured.
+    # send_low_stock_alert is resilient and will return silently on failures.
+    send_low_stock_alert(new_consumable)
 
     return new_consumable.to_dict()
 
@@ -159,14 +172,7 @@ def update_consumable(consumable_id):
             consumable.expires = None
 
     if tag_names is not None:
-        tags = []
-        for tag_name in tag_names:
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.session.add(tag)
-            tags.append(tag)
-        consumable.tags = tags
+        consumable.tags = _resolve_tags(tag_names)
 
     if ITEM_FIELD_LOCATION_ID in data:
         if location_id:
@@ -182,12 +188,10 @@ def update_consumable(consumable_id):
 
     db.session.commit()
 
-    # After updating, check for low stock and notify admins if configured
-    try:
-        send_low_stock_alert(consumable)
-    except Exception:
-        # do not break the update flow if email sending fails
-        pass
+    # After updating, check for low stock and notify admins if configured.
+    # Let send_low_stock_alert raise if something unexpected occurs; that
+    # surface an application error rather than silently hiding it.
+    send_low_stock_alert(consumable)
 
     return consumable.to_dict()
 

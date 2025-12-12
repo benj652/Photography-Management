@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring
+# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,too-few-public-methods,too-many-instance-attributes,unused-import,unused-argument
 import types
 from datetime import datetime, date
 

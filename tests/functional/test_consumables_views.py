@@ -1,5 +1,5 @@
 # Functional tests for the consumables API endpoints
-# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,too-many-lines
+# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,too-many-lines,line-too-long,import-outside-toplevel,unused-argument,redefined-outer-name,wrong-import-order,unused-import
 
 import json
 from datetime import datetime
