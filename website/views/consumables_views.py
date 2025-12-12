@@ -87,16 +87,27 @@ def create_consumable():
             db.session.add(tag)
         tags.append(tag)
 
+    # Ensure tags are unique by name to avoid duplicate many-to-many inserts
+    seen_names = set()
+    unique_tags = []
+    for t in tags:
+        if getattr(t, "name", None) and t.name not in seen_names:
+            seen_names.add(t.name)
+            unique_tags.append(t)
+    tags = unique_tags
+
     location = None
     if location_id:
         location = Location.query.get(location_id)
         if not location:
             return {"error": "Location not found"}, 400
 
+    # Create the consumable first without tags to avoid potential duplicate
+    # many-to-many association inserts when both sides are transient. After
+    # the consumable has a primary key, assign tags and commit again.
     new_consumable = Consumable(
         name=name,
         quantity=quantity,
-        tags=tags,
         location=location,
         expires=expires,
         last_updated=datetime.now(),
@@ -105,6 +116,10 @@ def create_consumable():
 
     db.session.add(new_consumable)
     db.session.commit()
+
+    if tags:
+        new_consumable.tags = tags
+        db.session.commit()
 
     # After creating, check for low stock and notify admins if configured
     try:
