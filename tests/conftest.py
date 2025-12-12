@@ -45,6 +45,9 @@ def cleanup_db(app_ctx):
         Location,
         User,
         Tag,
+        camera_gear_tags,
+        lab_equipment_tags,
+        consumable_tags,
     )
 
     # Clean up before test
@@ -52,6 +55,9 @@ def cleanup_db(app_ctx):
     try:
         # Delete in reverse order of dependencies
         Note.query.delete()
+        db.session.execute(camera_gear_tags.delete())
+        db.session.execute(lab_equipment_tags.delete())
+        db.session.execute(consumable_tags.delete())
         CameraGear.query.delete()
         LabEquipment.query.delete()
         Consumable.query.delete()
@@ -68,6 +74,9 @@ def cleanup_db(app_ctx):
     db.session.rollback()
     try:
         Note.query.delete()
+        db.session.execute(camera_gear_tags.delete())
+        db.session.execute(lab_equipment_tags.delete())
+        db.session.execute(consumable_tags.delete())
         CameraGear.query.delete()
         LabEquipment.query.delete()
         Consumable.query.delete()
