@@ -220,3 +220,22 @@ def test_home_dashboard_handles_non_comparable_service_dates(app, app_ctx):
     assert context["service_overdue"] == []
     assert context["next_service_equipment"] is None
 
+
+def test_home_requires_approved_role(app, app_ctx):
+    """Invalid roles should be rejected by the require_approved decorator."""
+    mock_user = make_user(UserRole.INVALID)
+    with app.test_client() as client:
+        with patch("flask_login.utils._get_user", return_value=mock_user):
+            response = client.get(f"{HOME_PREFIX}{HOME_ROUTE}")
+
+    assert response.status_code == ERROR_NOT_AUTHORIZED
+
+
+@pytest.mark.parametrize(
+    ("route", "template"),
+    [
+        (LAB_EQUIPMENT_ROUTE, LAB_EQUIPMENT_TEMPLATE),
+        (CAMERA_GEAR_ROUTE, CAMERA_GEAR_TEMPLATE),
+        (CONSUMABLES_ROUTE, CONSUMABLES_TEMPLATE),
+    ],
+)
