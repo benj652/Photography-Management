@@ -239,3 +239,15 @@ def test_home_requires_approved_role(app, app_ctx):
         (CONSUMABLES_ROUTE, CONSUMABLES_TEMPLATE),
     ],
 )
+
+def test_home_subpages_render_templates(route, template, app, app_ctx):
+    """Each secondary home route should render the corresponding template."""
+    mock_user = make_user(UserRole.STUDENT)
+    with app.test_client() as client:
+        with patch("flask_login.utils._get_user", return_value=mock_user):
+            with patch("website.views.home_views.render_template") as mock_render:
+                mock_render.return_value = "rendered"
+                response = client.get(f"{HOME_PREFIX}{route}")
+
+    assert response.status_code == 200
+    mock_render.assert_called_once_with(template)
