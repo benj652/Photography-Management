@@ -149,3 +149,32 @@ def test_home_dashboard_renders_aggregate_stats(app, app_ctx):
     assert context["days_until_service"] == 4
     assert context["next_service_date"] == next_due_date
     assert context["service_overdue"] == [overdue_equipment, unscheduled_equipment]
+
+
+def test_home_dashboard_handles_empty_inventory(app, app_ctx):
+    """When no inventory exists, verify the template receives zeroed statistics."""
+    mock_user = make_user(UserRole.TA)
+    with app.test_client() as client:
+        with patch("flask_login.utils._get_user", return_value=mock_user):
+            with patch("website.views.home_views.render_template") as mock_render:
+                mock_render.return_value = "rendered"
+                response = client.get(f"{HOME_PREFIX}{HOME_ROUTE}")
+
+    assert response.status_code == 200
+    mock_render.assert_called_once()
+    context = mock_render.call_args.kwargs
+
+    assert context["consumables_total"] == 0
+    assert context["camera_gear_total"] == 0
+    assert context["lab_equipment_total"] == 0
+    assert context["inventory_total"] == 0
+    assert context["next_expiring"] is None
+    assert context["days_until_expiration"] is None
+    assert context["expired_count"] == 0
+    assert context["expiring_soon_count"] == 0
+    assert context["out_of_stock_count"] == 0
+    assert context["checked_out_count"] == 0
+    assert context["next_service_equipment"] is None
+    assert context["days_until_service"] is None
+    assert context["next_service_date"] is None
+    assert context["service_overdue"] == []
