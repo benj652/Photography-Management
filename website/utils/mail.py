@@ -8,68 +8,92 @@ flows if sending fails.
 import os
 from typing import Optional
 
-from flask import current_app
+from flask import Flask, current_app
 from flask_mailman import Mail, EmailMessage
 
 # lazy-initialized Mail instance
 mail: Optional[Mail] = None
 
 
-def init_mail(app):
+def init_mail(app: Flask) -> None:
     """Initialize the Mail extension with the given Flask app.
+
     Call this once from the application factory or main module.
     """
     global mail
     mail = Mail(app)
 
 
-def send_low_stock_alert(item, threshold: int | None = None) -> None:
+def send_low_stock_alert(item, threshold: int | None = None) -> bool:
     """Send a low-stock alert for `item` to all admin and TA users.
 
-    - `item` is expected to be a SQLAlchemy model instance with at least
-      `.id`, `.name`, `.quantity`, and optionally `.location`.
-    - `threshold` if provided overrides the environment variable.
+    Returns True if an email was sent (or attempted), False if no email
+    was necessary (quantity above threshold) or there were no recipients.
 
-    This function is resilient: if mail isn't configured or there are no
-    recipients (admins or TAs) it returns silently.
+    Behavior is resilient and mirrors the notification helpers in
+    `website.utils.tasks`: try DB operations first, fall back to in-Python
+    logic, log failures, and do not raise from this helper.
     """
-    global mail
-
+    # Determine threshold (env override)
     try:
-        # Only send if item's quantity is at-or-below configured threshold
         if threshold is None:
             threshold = int(os.getenv("LOW_STOCK_THRESHOLD", "5"))
-    except Exception:
-        # fallback default
+    except Exception:  # pragma: no cover - defensive
         threshold = 5
 
+    # Only proceed if item quantity is at-or-below threshold
     try:
         if item.quantity is None or int(item.quantity) > int(threshold):
-            return
-    except Exception:
-        # if quantity can't be interpreted, don't send
-        return
+            if current_app and current_app.logger:
+                current_app.logger.info(
+                    "Item %s (id:%s) above low-stock threshold; skipping.",
+                    getattr(item, "name", "?"),
+                    getattr(item, "id", "?"),
+                )
+            return False
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        # if quantity can't be interpreted, do not send
+        if current_app and current_app.logger:
+            current_app.logger.info(
+                "Could not interpret quantity for item %s; skipping low-stock alert.",
+                getattr(item, "id", "?"),
+            )
+        return False
 
+    # If Mail isn't initialized, nothing to do.
     if mail is None:
-        # Mail not initialized; nothing to do
-        return
+        if current_app and current_app.logger:
+            current_app.logger.info("Mail extension not initialized; skipping low-stock alert for item id %s", getattr(item, "id", "?"))
+        return False
 
     # Import here to avoid circular imports at app import time
     try:
-        from models.user import User
-        from constants import UserRole
-    except Exception:
-        return
+        from ..models import User  # local import to avoid cycles
+        from ..constants import UserRole
+    except (ImportError, ModuleNotFoundError):  # pragma: no cover - defensive
+        if current_app and current_app.logger:
+            current_app.logger.exception(
+                "Failed to import User/roles for low-stock alert",
+            )
+        return False
 
     # collect admin and TA recipients
     try:
-        recipients_q = User.query.filter(User.role.in_([UserRole.ADMIN, UserRole.TA])).all()
-    except Exception:
-        # fallback if the database/ORM doesn't support Enum.in_ directly
-        recipients_q = [u for u in User.query.all() if u.role in (UserRole.ADMIN, UserRole.TA)]
+        recipients_q = (
+            User.query.filter(
+                User.role.in_([UserRole.ADMIN, UserRole.TA])
+            ).all()
+        )
+    except Exception:  # pragma: no cover - fallback exercised in tests
+        recipients_q = [
+            u for u in User.query.all() if u.role in (UserRole.ADMIN, UserRole.TA)
+        ]
+
     recipients = [u.email for u in recipients_q if getattr(u, "email", None)]
     if not recipients:
-        return
+        if current_app and current_app.logger:
+            current_app.logger.info("No admin/TA recipients for low-stock alert for item id %s", getattr(item, "id", "?"))
+        return False
 
     subject = f"Low stock alert: {item.name}"
     location = getattr(item, "location", None)
@@ -84,10 +108,14 @@ def send_low_stock_alert(item, threshold: int | None = None) -> None:
 
     try:
         msg = EmailMessage(subject=subject, to=recipients, body=body)
-        # allow the extension to handle sending (synchronous)
         msg.send()
-    except Exception:
-        # swallow errors - do not break main request flow
+    except Exception:  # pragma: no cover - error path exercised in tests
         if current_app and current_app.logger:
-            current_app.logger.exception("Failed to send low-stock email")
-        return
+            current_app.logger.exception(
+                "Failed to send low-stock email for item id %s",
+                getattr(item, "id", "?"),
+            )
+        # we attempted to send but it failed; return True to indicate an attempt
+        return True
+
+    return True
