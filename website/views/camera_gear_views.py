@@ -83,13 +83,30 @@ def create_camera_gear():
 
     new_gear = CameraGear(
         name=name,
-        tags=tags,
+        # create without tags first to avoid transient duplicate many-to-many inserts
         location_id=location_id,
         last_updated=datetime.now(),
         updated_by=current_user.id,
     )
     db.session.add(new_gear)
     db.session.commit()
+    # ensure Tag rows exist and attach them to the newly-created gear
+    if tag_names:
+        resolved = []
+        # create any missing Tag rows
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if not tag:
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+        # commit created tags (so they have ids)
+        db.session.commit()
+        for tag_name in tag_names:
+            tag = Tag.query.filter_by(name=tag_name).first()
+            if tag:
+                resolved.append(tag)
+        new_gear.tags = resolved
+        db.session.commit()
     return new_gear.to_dict()
 
 
