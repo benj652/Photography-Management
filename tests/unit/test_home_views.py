@@ -178,3 +178,45 @@ def test_home_dashboard_handles_empty_inventory(app, app_ctx):
     assert context["days_until_service"] is None
     assert context["next_service_date"] is None
     assert context["service_overdue"] == []
+
+
+def test_home_dashboard_handles_non_comparable_service_dates(app, app_ctx):
+    """Guard against odd data causing the service scheduling branch to skip."""
+    now = datetime.utcnow()
+    equipment = LabEquipment(
+        name="Weird Comparator",
+        last_updated=now,
+        updated_by=None,
+        service_frequency="weekly",
+        last_serviced_on=date.today(),
+    )
+    db.session.add(equipment)
+    db.session.commit()
+
+    class FakeComparable:
+        def __lt__(self, other):
+            return False
+
+        def __ge__(self, other):
+            return False
+
+    class FakeDate:
+        def __add__(self, delta):
+            # returning a comparable object ensures the first branch is skipped
+            return FakeComparable()
+
+    with db.session.no_autoflush:
+        equipment.last_serviced_on = FakeDate()
+        mock_user = make_user(UserRole.ADMIN)
+        with app.test_client() as client:
+            with patch("flask_login.utils._get_user", return_value=mock_user):
+                with patch("website.views.home_views.render_template") as mock_render:
+                    mock_render.return_value = "rendered"
+                    response = client.get(f"{HOME_PREFIX}{HOME_ROUTE}")
+
+    assert response.status_code == 200
+    mock_render.assert_called_once()
+    context = mock_render.call_args.kwargs
+    assert context["service_overdue"] == []
+    assert context["next_service_equipment"] is None
+
