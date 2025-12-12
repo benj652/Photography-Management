@@ -73,14 +73,6 @@ def create_camera_gear():
     if not name:
         return {"error": "Name is required"}, 400
 
-    tags = []
-    for tag_name in tag_names:
-        tag = Tag.query.filter_by(name=tag_name).first()
-        if not tag:
-            tag = Tag(name=tag_name)
-            db.session.add(tag)
-        tags.append(tag)
-
     new_gear = CameraGear(
         name=name,
         # create without tags first to avoid transient duplicate many-to-many inserts
