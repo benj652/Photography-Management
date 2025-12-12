@@ -233,6 +233,44 @@ class TestCameraGearEndpoints:
             g = CameraGear.query.get(gear_item.id)
             assert g.location_id == loc.id
 
+        def test_update_creates_new_tag_and_associates(self, app, app_ctx, ta_user):
+            # create gear without tags then update to add a new tag name
+            gear = CameraGear(name="UpdateTagGear", last_updated=datetime.utcnow(), updated_by=ta_user.id)
+            db.session.add(gear)
+            db.session.commit()
+
+            with app.test_client() as client:
+                login_user_in_client(client, ta_user)
+                new_tag = f"gear-update-{uuid.uuid4().hex[:8]}"
+                rv = client.put(f"{API_PREFIX}{CAMERA_GEAR_PREFIX}{CAMERA_GEAR_UPDATE_ROUTE}".replace('<int:gear_id>', str(gear.id)), json={"tags": [new_tag]})
+                assert rv.status_code == 200
+                g = CameraGear.query.get(gear.id)
+                assert any(t.name == new_tag for t in g.tags)
+
+        def test_update_uses_existing_tag_when_present(self, app, app_ctx, ta_user):
+            # pre-create a tag and then update an existing gear to use it
+            existing_tag = f"pre-update-{uuid.uuid4().hex[:8]}"
+            t = Tag(name=existing_tag)
+            db.session.add(t)
+            db.session.commit()
+
+            gear = CameraGear(name="UseExistingTagGear", last_updated=datetime.utcnow(), updated_by=ta_user.id)
+            db.session.add(gear)
+            db.session.commit()
+
+            with app.test_client() as client:
+                login_user_in_client(client, ta_user)
+                rv = client.put(f"{API_PREFIX}{CAMERA_GEAR_PREFIX}{CAMERA_GEAR_UPDATE_ROUTE}".replace('<int:gear_id>', str(gear.id)), json={"tags": [existing_tag]})
+                assert rv.status_code == 200
+                g = CameraGear.query.get(gear.id)
+                assert any(tt.name == existing_tag for tt in g.tags)
+
+        def test_get_nonexistent_returns_404(self, app, app_ctx, ta_user):
+            with app.test_client() as client:
+                login_user_in_client(client, ta_user)
+                rv = client.get(f"{API_PREFIX}{CAMERA_GEAR_PREFIX}/999999")
+                assert rv.status_code == 404
+
     def test_delete_nonexistent_returns_404(self, app, app_ctx, ta_user):
         with app.test_client() as client:
             login_user_in_client(client, ta_user)

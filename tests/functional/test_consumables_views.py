@@ -184,6 +184,32 @@ class TestConsumablesEndpoints:
             c = Consumable.query.get(data["id"])
             assert any(t.name == tag_name for t in c.tags)
 
+    def test_create_with_duplicate_tags_is_deduped(self, app, app_ctx, ta_user):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            tag_name = f"dup-{uuid.uuid4().hex[:8]}"
+            payload = {"name": "DupTagCons", "tags": [tag_name, tag_name], "quantity": 1}
+            rv = client.post(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_CREATE_ROUTE}", json=payload)
+            assert rv.status_code == 200
+            data = json.loads(rv.data)
+            c = Consumable.query.get(data["id"])
+            # tags should be deduplicated
+            assert len({t.name for t in c.tags}) == 1
+
+    def test_update_quantity_changes(self, app, app_ctx, ta_user, consumable_item):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            rv = client.put(f"{API_PREFIX}{CONSUMABLES_PREFIX}/{consumable_item.id}", json={"quantity": 42})
+            assert rv.status_code == 200
+            fetched = Consumable.query.get(consumable_item.id)
+            assert fetched.quantity == 42
+
+    def test_get_nonexistent_consumable_returns_404(self, app, app_ctx, ta_user):
+        with app.test_client() as client:
+            login_user_in_client(client, ta_user)
+            rv = client.get(f"{API_PREFIX}{CONSUMABLES_PREFIX}{CONSUMABLES_GET_ONE_ROUTE}".replace('<int:consumable_id>', '999999'))
+            assert rv.status_code == 404
+
     def test_update_tags_none_keeps_existing(self, app, app_ctx, ta_user):
         # prepare existing tag and attach it to consumable
         t = Tag(name="keep-cons")
